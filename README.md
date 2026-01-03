@@ -94,6 +94,7 @@ and manually search for the process name. Use `grep` to narrow down the results.
    ps -aux | grep "<search term>"
 ```
 Make sure the the search term finds only the game and not any other processes. Once you're done, write down the final expression.
+
 2. Right click on the game and go to the **Wine Bridge** menu.
 3. Select **Add custom async Linux action**.
 4. Enter the terminal command you've previously used to launch the game and confirm it with **OK**.
