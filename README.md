@@ -58,7 +58,7 @@ _A lot of these paths are using the default Wine drive mappings, meaning the roo
   - **Steam installation path (Wine)** - path to the Steam data folder, meaning the folder containing (among others) `steamapps` and `userdata` directories.
   - **Steam executable path (Linux)** - path to the `steam` executable in your Linux system.
   - _If you have installed the Steam client natively on your Linux machine, all you likely need to do is to change the `user` folder to your actual username. If you use Steam client installed as a Flatpak, the params should look more or less like this:_
-    - **_Steam installation path (Wine)_** - `/home/<user>/.var/app/com.valvesoftware.Steam/.local/share/Steam/`
+    - **_Steam installation path (Wine)_** - `Z:\home\<user>\.var\app\com.valvesoftware.Steam\.local\share\Steam`
     - **_Steam executable path (Linux)_** - `flatpak run com.valvesoftware.Steam`
 - If something doesn't work quite right, before reporting the issue, enable the **Enable debug logging** option and repeat the action. Include the `extensions.log` and `/tmp/wine-bridge.log` files in the report.
 
