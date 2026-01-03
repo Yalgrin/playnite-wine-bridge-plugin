@@ -1,0 +1,33 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_SectionName">Wine Bridge</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_AddCustomLinuxAction">Add custom Linux action</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_AddCustomAsyncLinuxAction">Add custom async Linux action</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_RemoveAllActions">Remove all actions</sys:String>
+
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterLinuxCommand">Enter Linux command</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterTrackingExpression">Enter tracking expression</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterActionName">Enter action name</sys:String>
+
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_Instructions">Instructions</sys:String>
+
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_TrackingDirectoryWine">Tracking directory (Wine)</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_TrackingDirectoryLinux">Tracking directory (Linux)</sys:String>
+
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_SteamIntegrationEnabled">Enable Steam integration</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_SteamInstallationPathWine">Steam installation path (Wine)</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_SteamExecutablePathLinux">Steam executable path (Linux)</sys:String>
+
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_DebugLoggingEnabled">Enable debug logging</sys:String>
+
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_SystemPatchingState">System patching state:</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_PlaynitePatchingState">Playnite patching state:</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_SteamPatchingState">Steam patching state:</sys:String>
+
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_PatchingState_Unpatched">Unpatched</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_PatchingState_Patched">Patched</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_PatchingState_MissingClasses">Classes not found!</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_PatchingState_Error">Error occurred!</sys:String>
+</ResourceDictionary>
