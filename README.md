@@ -85,7 +85,7 @@ For example:
 
 #### Asynchronous
 
-1. Determine the **tracking expression** for the game you want to launch. The script uses `pgrep` to find the exact process(es) it needs to track, so you want to the same format. One way to do it is to run the following commands:
+1. Determine the **tracking expression** for the game you want to launch. The script uses `pgrep` to find the exact process(es) it needs to track, so you want to use the same format. One way to do it is to run the following commands:
 ```shell
    ps -aux
 ```
