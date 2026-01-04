@@ -5,9 +5,13 @@
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_SectionName">Wine Bridge</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_AddCustomLinuxAction">Add custom Linux action</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_AddCustomAsyncLinuxAction">Add custom async Linux action</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_AddSteamLinuxAction">Add Steam game action</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_AddSteamNonSteamLinuxAction">Add Non-Steam game added to Steam action</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_RemoveAllActions">Remove all actions</sys:String>
 
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterLinuxCommand">Enter Linux command</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterSteamAppId">Enter the game's Steam AppID</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterSteamNonSteamAppId">Enter the game's Steam AppID (or BPID)</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterTrackingExpression">Enter tracking expression</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterActionName">Enter action name</sys:String>
 
@@ -25,6 +29,8 @@
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_SystemPatchingState">System patching state:</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_PlaynitePatchingState">Playnite patching state:</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_SteamPatchingState">Steam patching state:</sys:String>
+
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Error_InvalidNumber">Invalid number given!</sys:String>
 
     <sys:String x:Key="LOC_Yalgrin_WineBridge_PatchingState_Unpatched">Unpatched</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_PatchingState_Patched">Patched</sys:String>

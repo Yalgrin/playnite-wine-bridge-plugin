@@ -60,12 +60,42 @@ namespace WineBridgePlugin
                 MenuSection = menuSection,
                 Action = AddCustomAsyncLinuxAction
             };
+            yield return AddSeparator(menuSection);
+
+            if (Settings?.SteamIntegrationEnabled ?? false)
+            {
+                yield return new GameMenuItem
+                {
+                    Description = ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_AddSteamLinuxAction"),
+                    MenuSection = menuSection,
+                    Action = AddSteamLinuxAction
+                };
+
+                yield return new GameMenuItem
+                {
+                    Description =
+                        ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_AddSteamNonSteamLinuxAction"),
+                    MenuSection = menuSection,
+                    Action = AddSteamNonSteamLinuxAction
+                };
+
+                yield return AddSeparator(menuSection);
+            }
 
             yield return new GameMenuItem
             {
                 Description = ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_RemoveAllActions"),
                 MenuSection = menuSection,
                 Action = RemoveAllActions
+            };
+        }
+
+        private static GameMenuItem AddSeparator(string menuSection)
+        {
+            return new GameMenuItem
+            {
+                MenuSection = menuSection,
+                Description = "-"
             };
         }
 
@@ -131,6 +161,86 @@ namespace WineBridgePlugin
             }
         }
 
+        private void AddSteamLinuxAction(GameMenuItemActionArgs args)
+        {
+            foreach (var game in args.Games)
+            {
+                var mainCaption =
+                    $"{game.Name} - {ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_AddSteamLinuxAction")}";
+                var result = PlayniteApi.Dialogs.SelectString(
+                    $"{game.Name} - {ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterSteamAppId")}",
+                    mainCaption, "");
+                if (!result.Result)
+                {
+                    return;
+                }
+
+                if (!ulong.TryParse(result.SelectedString, out var steamAppId))
+                {
+                    PlayniteApi.Dialogs.ShowErrorMessage(
+                        ResourceProvider.GetString("LOC_Yalgrin_WineBridge_Error_InvalidNumber"));
+                    return;
+                }
+
+                var nameResult = PlayniteApi.Dialogs.SelectString(
+                    $"{game.Name} - {ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterActionName")}",
+                    mainCaption, "Play on Linux");
+                if (!nameResult.Result)
+                {
+                    return;
+                }
+
+                AddSteamWineBridgeAction(game, $"[WB] {nameResult.SelectedString}", steamAppId);
+            }
+        }
+
+        private void AddSteamNonSteamLinuxAction(GameMenuItemActionArgs args)
+        {
+            foreach (var game in args.Games)
+            {
+                var mainCaption =
+                    $"{game.Name} - {ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_AddSteamNonSteamLinuxAction")}";
+                var result = PlayniteApi.Dialogs.SelectString(
+                    $"{game.Name} - {ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterSteamNonSteamAppId")}",
+                    mainCaption, "");
+                if (!result.Result)
+                {
+                    return;
+                }
+
+                if (!ulong.TryParse(result.SelectedString, out var givenId))
+                {
+                    PlayniteApi.Dialogs.ShowErrorMessage(
+                        ResourceProvider.GetString("LOC_Yalgrin_WineBridge_Error_InvalidNumber"));
+                    return;
+                }
+
+                //https://github.com/ValveSoftware/steam-for-linux/issues/9463#issuecomment-2558366504
+                ulong appId;
+                ulong trackingId;
+                if (givenId >= (ulong)1 << 32)
+                {
+                    appId = givenId;
+                    trackingId = givenId >> 32;
+                }
+                else
+                {
+                    trackingId = givenId;
+                    appId = (givenId << 32) | (1L << 25);
+                }
+
+                var nameResult = PlayniteApi.Dialogs.SelectString(
+                    $"{game.Name} - {ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterActionName")}",
+                    mainCaption, "Play on Linux");
+                if (!nameResult.Result)
+                {
+                    return;
+                }
+
+                AddSteamWineBridgeAction(game, $"[WB] {nameResult.SelectedString}", appId, trackingId);
+            }
+        }
+
         private void RemoveAllActions(GameMenuItemActionArgs args)
         {
             foreach (var game in args.Games)
@@ -164,7 +274,31 @@ namespace WineBridgePlugin
             }
         }
 
+        private void AddSteamWineBridgeAction(Game game, string name, ulong steamAppId)
+        {
+            AddSteamWineBridgeAction(game, name, steamAppId, steamAppId);
+        }
+
+        private void AddSteamWineBridgeAction(Game game, string name, ulong steamAppId, ulong trackingAppId)
+        {
+            AddWineBridgeAction(game, name, $"{Constants.WineBridgeSteamPrefix}{steamAppId}", $"{trackingAppId}");
+        }
+
         private void AddWineBridgeAction(Game game, string name, string launchScript, bool asyncAction,
+            string trackingExpression)
+        {
+            var launchScriptWithPrefix = (asyncAction ? Constants.WineBridgeAsyncPrefix : Constants.WineBridgePrefix) +
+                                         launchScript;
+            string arguments = null;
+            if (asyncAction)
+            {
+                arguments = $"{trackingExpression}";
+            }
+
+            AddWineBridgeAction(game, name, launchScriptWithPrefix, arguments);
+        }
+
+        private void AddWineBridgeAction(Game game, string name, string launchScript,
             string trackingExpression)
         {
             var actions = game.GameActions;
@@ -204,8 +338,8 @@ namespace WineBridgePlugin
             action.IsPlayAction = true;
             action.Type = GameActionType.File;
             action.TrackingMode = TrackingMode.Default;
-            action.Path = (asyncAction ? "wine-bridge-async://" : "wine-bridge://") + launchScript;
-            if (asyncAction)
+            action.Path = launchScript;
+            if (trackingExpression != null)
             {
                 action.Arguments = $"{trackingExpression}";
             }

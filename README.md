@@ -21,11 +21,12 @@ The plugin currently supports:
 
 - installation, uninstallation and launching of Steam games
 - option to add custom play actions for any game
+- option to add custom Steam play actions including non-Steam games
 
 ## Planned features
 
 - support for GOG, Amazon and Epic games through Heroic Games Launcher
-- option to easily add custom play actions for Steam, Heroic and Lutris games
+- option to easily add custom play actions for Heroic and Lutris games
 
 ## Instructions
 
@@ -35,9 +36,9 @@ The plugin currently supports:
    This
    isn't a tutorial for that, but here are some general tips: use Wine 9 or above, install `corefonts dotnet48` inside
    the prefix using `winetricks` and once the app is installed disable the following option: Settings > Advanced >
-   Disable hardware acceleration. Don't use `gamemoderun` or any other wrappers.
+   Disable hardware acceleration. Avoid using `gamemoderun` or any other wrappers.
 
-**Note: Since you're using Playnite under Wine, which is not officially supported, you might encounter unexpected issues. If you do, please DON'T just blindly report them to the official Playnite (or related plugin) issue tracker. Check if the problem occurs on the Windows version first.** 
+> **Note: Since you're using Playnite under Wine, which is not officially supported, you might encounter unexpected issues. If you do, please DON'T just blindly report them to the official Playnite (or related plugin) issue tracker. Check if the problem occurs on the Windows version first.** 
 
 2. Install any library extensions you want to use with Playnite. Install this plugin from the official Playnite
    extension repository.
@@ -64,6 +65,17 @@ _A lot of these paths are using the default Wine drive mappings, meaning the roo
 - If something doesn't work quite right, before reporting the issue, enable the **Enable debug logging** option and repeat the action. Include the `extensions.log` and `/tmp/wine-bridge.log` files in the report.
 
 5. Restart Playnite. Go back to the settings and make sure that System and Playnite patching states are displayed as "Patched". If you use the Steam integration plugin as well, then Steam patching state should also be displayed as "Patched".
+
+### Custom Steam play actions
+
+If you want a specific play action to trigger a Steam game launch, you can add it as a custom Steam play action by right-clicking on the desired game and going to the **Wine Bridge** menu.
+
+First, find the App ID for the desired game. For bought Steam games, you can find it for example: in the store page URL or by going to game page in [SteamDB](https://steamdb.info). For non-Steam games, your best bet would likely be to create a desktop shortcut and check its properties for the ID.
+
+1. Right-click on the game and go to the **Wine Bridge** menu.
+2. Select **Add Steam game action** or **Add Non-Steam game added to Steam action**.
+3. Enter the App ID and confirm it with **OK**.
+4. The game should be marked as installed and you should be able to launch it from Playnite.
 
 ### Custom play actions
 

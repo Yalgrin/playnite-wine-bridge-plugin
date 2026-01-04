@@ -103,20 +103,29 @@ namespace WineBridgePlugin.Patchers
                 }
             }
 
-            if (fileName.StartsWith("wine-bridge://"))
+            if (fileName.StartsWith(Constants.WineBridgePrefix))
             {
                 var process = LinuxProcessStarter
-                    .Start(fileName.Substring("wine-bridge://".Length))
+                    .Start(fileName.Substring(Constants.WineBridgePrefix.Length))
                     .Process;
                 __result = process != null;
                 return false;
             }
 
-            if (fileName.StartsWith("wine-bridge-async://"))
+            if (fileName.StartsWith(Constants.WineBridgeAsyncPrefix))
             {
                 var process = LinuxProcessStarter
-                    .Start(fileName.Substring("wine-bridge-async://".Length), true,
+                    .Start(fileName.Substring(Constants.WineBridgeAsyncPrefix.Length), true,
                         __instance.StartInfo.Arguments).Process;
+                __result = process != null;
+                return false;
+            }
+
+            if (fileName.StartsWith(Constants.WineBridgeSteamPrefix))
+            {
+                var process = LinuxProcessStarter
+                    .StartSteamApp(fileName.Substring(Constants.WineBridgeSteamPrefix.Length))
+                    .Process;
                 __result = process != null;
                 return false;
             }

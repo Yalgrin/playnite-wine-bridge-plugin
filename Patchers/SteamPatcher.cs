@@ -182,7 +182,7 @@ namespace WineBridgePlugin.Patchers
             {
                 process = LinuxProcessStarter.Start(
                     $"{steamExecutable} -silent \"steam://launch/{gameInstance.GameId}/Dialog\" & disown", true,
-                    $"/reaper SteamLaunch AppId={gameInstance.GameId}");
+                    $"/reaper SteamLaunch AppId={gameInstance.GameId}.*waitforexitandrun");
             }
             else
             {

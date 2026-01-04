@@ -106,23 +106,36 @@ namespace WineBridgePlugin.Patchers
         {
             if (playAction.Type == GameActionType.File)
             {
-                if (playAction.Path.StartsWith("wine-bridge://"))
+                if (playAction.Path.StartsWith(Constants.WineBridgePrefix))
                 {
                     AccessTools.Property(__instance.GetType(), "StartingArgs").SetValue(__instance, startingArgs);
                     var watcherToken = new CancellationTokenSource();
                     PlayCancelationTokenSources[__instance] = watcherToken;
-                    var process = LinuxProcessStarter.Start(playAction.Path.Substring("wine-bridge://".Length));
+                    var process =
+                        LinuxProcessStarter.Start(playAction.Path.Substring(Constants.WineBridgePrefix.Length));
                     LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
                     return false;
                 }
 
-                if (playAction.Path.StartsWith("wine-bridge-async://"))
+                if (playAction.Path.StartsWith(Constants.WineBridgeAsyncPrefix))
                 {
                     AccessTools.Property(__instance.GetType(), "StartingArgs").SetValue(__instance, startingArgs);
                     var watcherToken = new CancellationTokenSource();
                     PlayCancelationTokenSources[__instance] = watcherToken;
-                    var process = LinuxProcessStarter.Start(playAction.Path.Substring("wine-bridge-async://".Length),
+                    var process = LinuxProcessStarter.Start(
+                        playAction.Path.Substring(Constants.WineBridgeAsyncPrefix.Length),
                         true, playAction.Arguments);
+                    LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
+                    return false;
+                }
+
+                if (playAction.Path.StartsWith(Constants.WineBridgeSteamPrefix))
+                {
+                    AccessTools.Property(__instance.GetType(), "StartingArgs").SetValue(__instance, startingArgs);
+                    var watcherToken = new CancellationTokenSource();
+                    PlayCancelationTokenSources[__instance] = watcherToken;
+                    var process = LinuxProcessStarter.StartSteamApp(
+                        playAction.Path.Substring(Constants.WineBridgeSteamPrefix.Length), playAction.Arguments);
                     LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
                     return false;
                 }

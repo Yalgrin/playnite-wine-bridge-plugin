@@ -12,6 +12,27 @@ namespace WineBridgePlugin.Processes
     {
         private static readonly ILogger Logger = LogManager.GetLogger();
 
+        public static ProcessWithCorrelationId StartSteamApp(string steamAppId)
+        {
+            return StartSteamApp(steamAppId, steamAppId);
+        }
+
+        public static ProcessWithCorrelationId StartSteamApp(string steamAppId, string trackingId)
+        {
+            if (!(WineBridgePlugin.Settings?.SteamIntegrationEnabled ?? false))
+            {
+                throw new Exception("Wine Bridge Steam integration is not enabled.");
+            }
+
+            return Start($"{GetSteamExecutable()} -silent steam://rungameid/{steamAppId}", true,
+                $"/reaper SteamLaunch AppId={trackingId}.*waitforexitandrun");
+        }
+
+        private static string GetSteamExecutable()
+        {
+            return WineBridgePlugin.Settings?.SteamExecutablePathLinux ?? "steam";
+        }
+
         public static ProcessWithCorrelationId Start(string command, bool asyncTracking = false,
             string trackingExpression = "-")
         {
