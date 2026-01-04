@@ -88,7 +88,8 @@ namespace WineBridgePlugin.Patchers
                 if (fileName.StartsWith("steam://"))
                 {
                     var process = LinuxProcessStarter
-                        .Start($"{GetSteamExecutable()} " + fileName + " " + __instance.StartInfo.Arguments).Process;
+                        .Start($"{GetSteamExecutable()} " + fileName + " " + __instance.StartInfo.Arguments +
+                               " & disown").Process;
                     __result = process != null;
                     return false;
                 }

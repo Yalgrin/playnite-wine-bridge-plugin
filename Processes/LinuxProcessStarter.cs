@@ -44,6 +44,7 @@ namespace WineBridgePlugin.Processes
             process.StartInfo.RedirectStandardOutput = true;
             process.StartInfo.RedirectStandardError = true;
             process.StartInfo.CreateNoWindow = true;
+            process.StartInfo.Environment.Remove("LD_LIBRARY_PATH");
 
             if (debugLogging)
             {

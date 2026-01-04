@@ -181,13 +181,13 @@ namespace WineBridgePlugin.Patchers
             if (!(gameId?.IsMod ?? false) && !(gameId?.IsShortcut ?? false) && ShouldShowLaunchDialog(__instance, api))
             {
                 process = LinuxProcessStarter.Start(
-                    $"{steamExecutable} -silent \"steam://launch/{gameInstance.GameId}/Dialog\"", true,
+                    $"{steamExecutable} -silent \"steam://launch/{gameInstance.GameId}/Dialog\" & disown", true,
                     $"/reaper SteamLaunch AppId={gameInstance.GameId}");
             }
             else
             {
                 process = LinuxProcessStarter.Start(
-                    $"{steamExecutable} -silent \"steam://rungameid/{gameInstance.GameId}\"", true,
+                    $"{steamExecutable} -silent \"steam://rungameid/{gameInstance.GameId}\" & disown", true,
                     $"/reaper SteamLaunch AppId={gameInstance.GameId}.*waitforexitandrun");
             }
 
