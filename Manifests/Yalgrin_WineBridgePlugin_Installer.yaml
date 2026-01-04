@@ -8,3 +8,10 @@ Packages:
       - Initial release
       - Added Steam integration
       - Added custom action support
+  - Version: 0.1.1
+    RequiredApiVersion: 6.11.0
+    ReleaseDate: 2026-01-04
+    PackageUrl: https://github.com/Yalgrin/playnite-wine-bridge-plugin/releases/download/0.1.1/Yalgrin_WineBridgePlugin_0_1_1.pext
+    Changelog:
+      - Fixed an error that occurred while starting Steam
+      - Added custom Steam play actions
