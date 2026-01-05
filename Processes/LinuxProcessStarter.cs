@@ -95,5 +95,45 @@ namespace WineBridgePlugin.Processes
                 CorrelationId = correlationId
             };
         }
+
+        public static Process StartRawCommand(string command)
+        {
+            var debugLogging = WineBridgePlugin.Settings?.DebugLoggingEnabled ?? false;
+
+            Logger.Info($"The following raw Linux command will be executed: {command}");
+
+            var process = new Process();
+            process.StartInfo.FileName = "cmd.exe";
+            process.StartInfo.Arguments = $"/c start /unix /bin/sh -c \"{command}\"";
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.RedirectStandardError = true;
+            process.StartInfo.CreateNoWindow = true;
+            process.StartInfo.Environment.Remove("LD_LIBRARY_PATH");
+
+            if (debugLogging)
+            {
+                Logger.Debug($"Running process: {process.StartInfo.FileName} {process.StartInfo.Arguments}");
+            }
+
+            process.Start();
+
+            if (debugLogging)
+            {
+                var output = process.StandardOutput.ReadToEnd();
+                if (output.Length > 0)
+                {
+                    Logger.Debug($"Process output: {output}");
+                }
+
+                var errorOutput = process.StandardError.ReadToEnd();
+                if (errorOutput.Length > 0)
+                {
+                    Logger.Debug($"Process error output: {errorOutput}");
+                }
+            }
+
+            return process;
+        }
     }
 }

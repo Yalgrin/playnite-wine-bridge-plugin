@@ -19,6 +19,7 @@
 
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_TrackingDirectoryWine">Tracking directory (Wine)</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_TrackingDirectoryLinux">Tracking directory (Linux)</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_SetScriptExecutePermissions">Set script execute permissions upon startup</sys:String>
 
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_SteamIntegrationEnabled">Enable Steam integration</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_SteamInstallationPathWine">Steam installation path (Wine)</sys:String>

@@ -35,18 +35,21 @@ The plugin currently supports:
 1. Install [Playnite](https://playnite.link/) inside a [Wine Prefix](https://www.winehq.org/) on your Linux machine.
    This
    isn't a tutorial for that, but here are some general tips: use Wine 9 or above, install `corefonts dotnet48` inside
-   the prefix using `winetricks` and once the app is installed disable the following option: Settings > Advanced >
+   the prefix using `winetricks` and once the app is installed enable the following option: Settings > Advanced >
    Disable hardware acceleration. Avoid using `gamemoderun` or any other wrappers.
 
 > **Note: Since you're using Playnite under Wine, which is not officially supported, you might encounter unexpected issues. If you do, please DON'T just blindly report them to the official Playnite (or related plugin) issue tracker. Check if the problem occurs on the Windows version first.** 
 
 2. Install any library extensions you want to use with Playnite. Install this plugin from the official Playnite
    extension repository.
-3. Make sure the Linux script has execution permissions. The script is located in the plugin directory within the
-   Resources folder. Run the following command to set the required permissions:
+3. Make sure the Linux script has execution permissions. The plugin should do that by itself upon first startup. If not, run the following command in the terminal (replace paths as needed):
 
 ```shell
-   chmod a+x <wine_prefix_path>/drive_c/users/<user>/AppData/Roaming/Playnite/Extensions/Yalgrin_WineBridgePlugin/Resources/run-in-linux.sh
+# Checks the execution permissions for the script
+ls -al <wine_prefix_path>/drive_c/users/<user>/AppData/Roaming/Playnite/Extensions/Yalgrin_WineBridgePlugin/Resources/run-in-linux.sh
+
+# Sets the execution permissions for the script
+chmod a+x <wine_prefix_path>/drive_c/users/<user>/AppData/Roaming/Playnite/Extensions/Yalgrin_WineBridgePlugin/Resources/run-in-linux.sh
 ```
 
 4. Configure the plugin in Playnite settings as follows:

@@ -10,6 +10,7 @@ namespace WineBridgePlugin
     {
         private string _trackingDirectoryWine = @"Z:\tmp";
         private string _trackingDirectoryLinux = "/tmp";
+        private bool _setScriptExecutePermissions = true;
 
         private bool _steamIntegrationEnabled = true;
         private string _steamInstallationPathWine = @"Z:\home\user\.local\share\Steam";
@@ -27,6 +28,12 @@ namespace WineBridgePlugin
         {
             get => _trackingDirectoryLinux;
             set => SetValue(ref _trackingDirectoryLinux, value);
+        }
+
+        public bool SetScriptExecutePermissions
+        {
+            get => _setScriptExecutePermissions;
+            set => SetValue(ref _setScriptExecutePermissions, value);
         }
 
         public bool SteamIntegrationEnabled

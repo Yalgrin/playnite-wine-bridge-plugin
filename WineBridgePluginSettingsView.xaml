@@ -27,6 +27,10 @@
             <TextBox Text="{Binding Settings.TrackingDirectoryLinux}" MinWidth="350" />
         </StackPanel>
 
+        <CheckBox IsChecked="{Binding Settings.SetScriptExecutePermissions}"
+                  Content="{DynamicResource LOC_Yalgrin_WineBridge_Settings_SetScriptExecutePermissions}"
+                  Margin="0, 15, 0, 0" />
+
         <CheckBox IsChecked="{Binding Settings.SteamIntegrationEnabled}"
                   Content="{DynamicResource LOC_Yalgrin_WineBridge_Settings_SteamIntegrationEnabled}"
                   Margin="0, 30, 0, 0" />

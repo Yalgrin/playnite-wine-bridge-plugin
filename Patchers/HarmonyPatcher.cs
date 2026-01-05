@@ -1,6 +1,10 @@
 ﻿using System;
+using System.IO;
+using System.Reflection;
 using HarmonyLib;
 using Playnite.SDK;
+using WineBridgePlugin.Models;
+using WineBridgePlugin.Processes;
 using WineBridgePlugin.Utils;
 
 namespace WineBridgePlugin.Patchers
@@ -35,6 +39,37 @@ namespace WineBridgePlugin.Patchers
                         break;
                 }
             };
+        }
+
+        public static void MakeScriptExecutable()
+        {
+            if (!(WineBridgePlugin.Settings?.SetScriptExecutePermissions ?? true))
+            {
+                return;
+            }
+
+            if (SystemPatcher.State != PatchingState.Patched)
+            {
+                Logger.Warn("System methods are not patched, skipping script executable modification.");
+                return;
+            }
+
+            try
+            {
+                var directoryName = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                if (directoryName == null)
+                {
+                    Logger.Error("Could not determine plugin directory.");
+                    return;
+                }
+
+                var scriptPath = Path.Combine(directoryName, @"Resources\run-in-linux.sh");
+                LinuxProcessStarter.StartRawCommand($"chmod a+x '%WINEPREFIX%/{scriptPath.WindowsPathToLinuxPath()}'");
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e, "Error occurred while making script executable!");
+            }
         }
     }
 }

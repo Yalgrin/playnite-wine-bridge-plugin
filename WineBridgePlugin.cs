@@ -31,6 +31,8 @@ namespace WineBridgePlugin
             {
                 HasSettings = true
             };
+
+            HarmonyPatcher.MakeScriptExecutable();
         }
 
         public override ISettings GetSettings(bool firstRunSettings)
