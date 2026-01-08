@@ -12,4 +12,4 @@ set trackingExpression=%trackingExpression:~1,-1%
 set trackingDirectory=%6
 set trackingDirectory=%trackingDirectory:~1,-1%
 
-cmd /c start /unix %WINEPREFIX%/%linuxScript% %encodedScript% %correlationId% %asyncTracking% %trackingExpression% %trackingDirectory%
+cmd /c start /unix %linuxScript% %encodedScript% %correlationId% %asyncTracking% %trackingExpression% %trackingDirectory%

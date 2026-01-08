@@ -12,14 +12,9 @@ namespace WineBridgePlugin.Utils
             return Convert.ToBase64String(plainTextBytes);
         }
 
-        public static string WindowsPathToLinuxPath(this string path)
+        public static string EscapeRegex(this string input)
         {
-            if (Regex.IsMatch(path, "^[A-Za-z]:"))
-            {
-                path = $"drive_{char.ToLowerInvariant(path[0])}{path.Substring(2)}";
-            }
-
-            return path.Replace(@"\", "/");
+            return Regex.Escape(input);
         }
     }
 }

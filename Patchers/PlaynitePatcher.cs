@@ -9,6 +9,8 @@ using Playnite.SDK;
 using Playnite.SDK.Events;
 using Playnite.SDK.Models;
 using Playnite.SDK.Plugins;
+using WineBridgePlugin.Integrations.Heroic;
+using WineBridgePlugin.Integrations.Steam;
 using WineBridgePlugin.Models;
 using WineBridgePlugin.Processes;
 
@@ -134,8 +136,19 @@ namespace WineBridgePlugin.Patchers
                     AccessTools.Property(__instance.GetType(), "StartingArgs").SetValue(__instance, startingArgs);
                     var watcherToken = new CancellationTokenSource();
                     PlayCancelationTokenSources[__instance] = watcherToken;
-                    var process = LinuxProcessStarter.StartSteamApp(
+                    var process = SteamProcessStarter.Start(
                         playAction.Path.Substring(Constants.WineBridgeSteamPrefix.Length), playAction.Arguments);
+                    LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
+                    return false;
+                }
+
+                if (playAction.Path.StartsWith(Constants.WineBridgeHeroicPrefix))
+                {
+                    AccessTools.Property(__instance.GetType(), "StartingArgs").SetValue(__instance, startingArgs);
+                    var watcherToken = new CancellationTokenSource();
+                    PlayCancelationTokenSources[__instance] = watcherToken;
+                    var process = HeroicProcessStarter.Start(
+                        playAction.Path.Substring(Constants.WineBridgeHeroicPrefix.Length));
                     LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
                     return false;
                 }

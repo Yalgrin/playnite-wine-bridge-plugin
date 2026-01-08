@@ -12,8 +12,6 @@ TRACKING_DIRECTORY=$(echo "$TRACKING_DIRECTORY" | base64 -d)
 
 print_log(){
   information=$1
-  #echo "$(date +'%Y-%m-%d %H:%M:%S)'" ${information} >> $logFile
-  #Improve performance by using printf instead of date
   echo "$(printf '%(%F %T)T')" ${1} | tee -a $TRACKING_DIRECTORY/wine-bridge.log
 }
 
@@ -28,13 +26,17 @@ print_log "Tracking directory: $TRACKING_DIRECTORY"
 
 if [ "$ASYNC_TRACKING" = "1" ];
 then
+  PREVIOUS_PROCESS_IDS=$(pgrep -f "$TRACKING_EXPRESSION")
+  
   print_log "Running async command..."
   eval $COMMAND
   print_log "Done execution, looking for processes..."
   
   for i in {0..59}
   do
-    ASYNC_PROCESS_IDS=$(pgrep -f "$TRACKING_EXPRESSION")
+    CURRENT_PROCESS_IDS=$(pgrep -f "$TRACKING_EXPRESSION")
+    ASYNC_PROCESS_IDS=$(comm -23 <(echo "$CURRENT_PROCESS_IDS" | sort) <(echo "$PREVIOUS_PROCESS_IDS" | sort))
+    
     if [[ -n "$ASYNC_PROCESS_IDS" ]]; then
       touch $TRACKING_DIRECTORY/wine-bridge-$CORRELATION_ID
       touch $TRACKING_DIRECTORY/wine-bridge-$CORRELATION_ID-ready

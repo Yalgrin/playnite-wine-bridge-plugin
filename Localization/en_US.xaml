@@ -7,31 +7,49 @@
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_AddCustomAsyncLinuxAction">Add custom async Linux action</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_AddSteamLinuxAction">Add Steam game action</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_AddSteamNonSteamLinuxAction">Add Non-Steam game added to Steam action</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_AddHeroicAction">Add Heroic installed game action</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_AddHeroicCustomAction">Add Heroic custom game action</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_RemoveAllActions">Remove all actions</sys:String>
 
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterLinuxCommand">Enter Linux command</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterSteamAppId">Enter the game's Steam AppID</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterSteamNonSteamAppId">Enter the game's Steam AppID (or BPID)</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterTrackingExpression">Enter tracking expression</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_SelectInstalledHeroicGame">Select installed Heroic game</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterHeroicAppId">Enter Heroic AppID</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterHeroicRunner">Enter Heroic runner</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterActionName">Enter action name</sys:String>
 
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_Instructions">Instructions</sys:String>
 
-    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_TrackingDirectoryWine">Tracking directory (Wine)</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_TrackingDirectoryLinux">Tracking directory (Linux)</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_SetScriptExecutePermissions">Set script execute permissions upon startup</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_AutoDetect">Auto-detect</sys:String>
 
-    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_SteamIntegrationEnabled">Enable Steam integration</sys:String>
-    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_SteamInstallationPathWine">Steam installation path (Wine)</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_SteamIntegrationEnabled">Enable Steam integration with Linux client</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_SteamDataPathLinux">Steam data path (Linux)</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_SteamExecutablePathLinux">Steam executable path (Linux)</sys:String>
+
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_HeroicGogIntegrationEnabled">Enable GOG integration with Heroic Games Launcher</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_HeroicAmazonIntegrationEnabled">Enable Amazon integration with Heroic Games Launcher</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_HeroicEpicIntegrationEnabled">Enable Epic integration with Heroic Games Launcher</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_HeroicDataPathLinux">Heroic data path (Linux)</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_HeroicExecutablePathLinux">Heroic executable path (Linux)</sys:String>
 
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_DebugLoggingEnabled">Enable debug logging</sys:String>
 
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_SystemPatchingState">System patching state:</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_PlaynitePatchingState">Playnite patching state:</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_SteamPatchingState">Steam patching state:</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_GogPatchingState">GOG patching state:</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_AmazonPatchingState">Amazon patching state:</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_EpicPatchingState">Epic patching state:</sys:String>
 
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Error_InvalidNumber">Invalid number given!</sys:String>
+
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Messages_FoundNativeConfiguration">Found configuration in directory: {0}. Going to use native executable. Make sure that it's correct!</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Messages_FoundFlatpakConfiguration">Found configuration in directory: {0}. Going to run the client as a flatpak. Make sure that it's correct!</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Messages_ConfigurationNotFoundPlaceholder">Configuration not found! Setting the placeholder configuration in folder: {0}. Make sure you manually change them to the right ones!</sys:String>
 
     <sys:String x:Key="LOC_Yalgrin_WineBridge_PatchingState_Unpatched">Unpatched</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_PatchingState_Patched">Patched</sys:String>

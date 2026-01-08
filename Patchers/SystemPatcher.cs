@@ -5,8 +5,11 @@ using System.IO;
 using System.Reflection;
 using HarmonyLib;
 using Playnite.SDK;
+using WineBridgePlugin.Integrations.Heroic;
+using WineBridgePlugin.Integrations.Steam;
 using WineBridgePlugin.Models;
 using WineBridgePlugin.Processes;
+using WineBridgePlugin.Settings;
 
 namespace WineBridgePlugin.Patchers
 {
@@ -62,7 +65,7 @@ namespace WineBridgePlugin.Patchers
             [SuppressMessage("ReSharper", "InconsistentNaming")]
             ref bool __result, string path)
         {
-            if (path == Constants.DummySteamExe)
+            if (path == Constants.DummySteamExe || path == Constants.DummyHeroicExe)
             {
                 __result = true;
                 return false;
@@ -83,12 +86,13 @@ namespace WineBridgePlugin.Patchers
         )
         {
             var fileName = __instance.StartInfo.FileName;
-            if (WineBridgePlugin.Settings?.SteamIntegrationEnabled ?? false)
+            if (WineBridgeSettings.SteamIntegrationEnabled)
             {
                 if (fileName.StartsWith("steam://"))
                 {
                     var process = LinuxProcessStarter
-                        .Start($"{GetSteamExecutable()} " + fileName + " " + __instance.StartInfo.Arguments +
+                        .Start($"{WineBridgeSettings.SteamExecutablePathLinux} " + fileName + " " +
+                               __instance.StartInfo.Arguments +
                                " & disown").Process;
                     __result = process != null;
                     return false;
@@ -96,7 +100,20 @@ namespace WineBridgePlugin.Patchers
 
                 if (fileName == Constants.DummySteamExe)
                 {
-                    var process = LinuxProcessStarter.Start($"{GetSteamExecutable()} " + __instance.StartInfo.Arguments)
+                    var process = LinuxProcessStarter.Start($"{WineBridgeSettings.SteamExecutablePathLinux} " +
+                                                            __instance.StartInfo.Arguments)
+                        .Process;
+                    __result = process != null;
+                    return false;
+                }
+            }
+
+            if (WineBridgeSettings.AnyHeroicIntegrationEnabled)
+            {
+                if (fileName == Constants.DummyHeroicExe)
+                {
+                    var process = LinuxProcessStarter.Start($"{WineBridgeSettings.HeroicExecutablePathLinux} " +
+                                                            __instance.StartInfo.Arguments)
                         .Process;
                     __result = process != null;
                     return false;
@@ -123,19 +140,23 @@ namespace WineBridgePlugin.Patchers
 
             if (fileName.StartsWith(Constants.WineBridgeSteamPrefix))
             {
-                var process = LinuxProcessStarter
-                    .StartSteamApp(fileName.Substring(Constants.WineBridgeSteamPrefix.Length))
+                var process = SteamProcessStarter
+                    .Start(fileName.Substring(Constants.WineBridgeSteamPrefix.Length))
+                    .Process;
+                __result = process != null;
+                return false;
+            }
+
+            if (fileName.StartsWith(Constants.WineBridgeHeroicPrefix))
+            {
+                var process = HeroicProcessStarter
+                    .Start(fileName.Substring(Constants.WineBridgeHeroicPrefix.Length))
                     .Process;
                 __result = process != null;
                 return false;
             }
 
             return true;
-        }
-
-        private static string GetSteamExecutable()
-        {
-            return WineBridgePlugin.Settings?.SteamExecutablePathLinux ?? "steam";
         }
     }
 }

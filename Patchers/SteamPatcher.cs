@@ -7,8 +7,10 @@ using HarmonyLib;
 using Playnite.SDK;
 using Playnite.SDK.Plugins;
 using SteamKit2;
+using WineBridgePlugin.Integrations.Steam;
 using WineBridgePlugin.Models;
 using WineBridgePlugin.Processes;
+using WineBridgePlugin.Settings;
 
 namespace WineBridgePlugin.Patchers
 {
@@ -94,7 +96,7 @@ namespace WineBridgePlugin.Patchers
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
         private static bool IsInstalledPrefix([SuppressMessage("ReSharper", "InconsistentNaming")] ref bool __result)
         {
-            if (!(WineBridgePlugin.Settings?.SteamIntegrationEnabled ?? false))
+            if (!WineBridgeSettings.SteamIntegrationEnabled)
             {
                 return true;
             }
@@ -108,12 +110,12 @@ namespace WineBridgePlugin.Patchers
             [SuppressMessage("ReSharper", "InconsistentNaming")]
             ref string __result)
         {
-            if (!(WineBridgePlugin.Settings?.SteamIntegrationEnabled ?? false))
+            if (!WineBridgeSettings.SteamIntegrationEnabled)
             {
                 return true;
             }
 
-            var installationPath = WineBridgePlugin.Settings?.SteamInstallationPathWine;
+            var installationPath = WineBridgeSettings.SteamDataPathLinux;
             if (installationPath != null)
             {
                 __result = installationPath;
@@ -128,7 +130,7 @@ namespace WineBridgePlugin.Patchers
             [SuppressMessage("ReSharper", "InconsistentNaming")]
             ref string __result)
         {
-            if (!(WineBridgePlugin.Settings?.SteamIntegrationEnabled ?? false))
+            if (!WineBridgeSettings.SteamIntegrationEnabled)
             {
                 return true;
             }
@@ -162,7 +164,7 @@ namespace WineBridgePlugin.Patchers
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
         private static bool PlayPrefix([SuppressMessage("ReSharper", "InconsistentNaming")] PlayController __instance)
         {
-            if (!(WineBridgePlugin.Settings?.SteamIntegrationEnabled ?? false))
+            if (!WineBridgeSettings.SteamIntegrationEnabled)
             {
                 return true;
             }
@@ -176,25 +178,18 @@ namespace WineBridgePlugin.Patchers
             var watcherToken = new CancellationTokenSource();
             PlayCancelationTokenSources[__instance] = watcherToken;
 
-            var steamExecutable = WineBridgePlugin.Settings?.SteamExecutablePathLinux ?? "steam";
-            ProcessWithCorrelationId process;
-            if (!(gameId?.IsMod ?? false) && !(gameId?.IsShortcut ?? false) && ShouldShowLaunchDialog(__instance, api))
-            {
-                process = LinuxProcessStarter.Start(
-                    $"{steamExecutable} -silent \"steam://launch/{gameInstance.GameId}/Dialog\" & disown", true,
-                    $"/reaper SteamLaunch AppId={gameInstance.GameId}.*waitforexitandrun");
-            }
-            else
-            {
-                process = LinuxProcessStarter.Start(
-                    $"{steamExecutable} -silent \"steam://rungameid/{gameInstance.GameId}\" & disown", true,
-                    $"/reaper SteamLaunch AppId={gameInstance.GameId}.*waitforexitandrun");
-            }
-
+            var shouldShowLaunchDialog = ShouldShowLaunchDialog(__instance, gameId, api);
+            var process = SteamProcessStarter.Start(gameInstance.GameId, shouldShowLaunchDialog);
 
             LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
 
             return false;
+        }
+
+        private static bool ShouldShowLaunchDialog(PlayController controller, GameID gameId, IPlayniteAPI api)
+        {
+            return !(gameId?.IsMod ?? false) && !(gameId?.IsShortcut ?? false) &&
+                   ShouldShowLaunchDialog(controller, api);
         }
 
         private static bool ShouldShowLaunchDialog(PlayController controller, IPlayniteAPI api)

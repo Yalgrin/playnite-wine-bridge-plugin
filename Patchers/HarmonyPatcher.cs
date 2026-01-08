@@ -5,6 +5,7 @@ using HarmonyLib;
 using Playnite.SDK;
 using WineBridgePlugin.Models;
 using WineBridgePlugin.Processes;
+using WineBridgePlugin.Settings;
 using WineBridgePlugin.Utils;
 
 namespace WineBridgePlugin.Patchers
@@ -26,6 +27,9 @@ namespace WineBridgePlugin.Patchers
             SystemPatcher.Patch();
             SteamPatcher.Patch();
             PlaynitePatcher.Patch();
+            GogPatcher.Patch();
+            AmazonPatcher.Patch();
+            EpicPatcher.Patch();
 
             AppDomain.CurrentDomain.AssemblyLoad += (sender, args) =>
             {
@@ -37,13 +41,22 @@ namespace WineBridgePlugin.Patchers
                     case "Playnite":
                         PlaynitePatcher.Patch();
                         break;
+                    case "GogLibrary":
+                        GogPatcher.Patch();
+                        break;
+                    case "AmazonLibrary":
+                        AmazonPatcher.Patch();
+                        break;
+                    case "EpicLibrary":
+                        EpicPatcher.Patch();
+                        break;
                 }
             };
         }
 
         public static void MakeScriptExecutable()
         {
-            if (!(WineBridgePlugin.Settings?.SetScriptExecutePermissions ?? true))
+            if (!WineBridgeSettings.SetScriptExecutePermissions)
             {
                 return;
             }
@@ -64,7 +77,7 @@ namespace WineBridgePlugin.Patchers
                 }
 
                 var scriptPath = Path.Combine(directoryName, @"Resources\run-in-linux.sh");
-                LinuxProcessStarter.StartRawCommand($"chmod a+x '%WINEPREFIX%/{scriptPath.WindowsPathToLinuxPath()}'");
+                LinuxProcessStarter.StartRawCommand($"chmod a+x '{WineUtils.WindowsPathToLinux(scriptPath)}'");
             }
             catch (Exception e)
             {

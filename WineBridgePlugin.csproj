@@ -34,6 +34,9 @@
         <Reference Include="0Harmony, Version=2.4.2.0, Culture=neutral, processorArchitecture=MSIL">
             <HintPath>packages\Lib.Harmony.2.4.2\lib\net452\0Harmony.dll</HintPath>
         </Reference>
+        <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+            <HintPath>packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+        </Reference>
         <Reference Include="Playnite.SDK, Version=6.11.0.0, Culture=neutral, processorArchitecture=MSIL">
             <HintPath>packages\PlayniteSDK.6.11.0\lib\net462\Playnite.SDK.dll</HintPath>
         </Reference>
@@ -59,21 +62,35 @@
     <ItemGroup>
         <Compile Include="Commands\Commands.cs"/>
         <Compile Include="Constants.cs"/>
+        <Compile Include="Integrations\Heroic\HeroicClient.cs"/>
+        <Compile Include="Integrations\Heroic\HeroicGamesService.cs"/>
+        <Compile Include="Integrations\Heroic\HeroicGameController.cs"/>
+        <Compile Include="Integrations\Heroic\HeroicProcessStarter.cs"/>
+        <Compile Include="Integrations\Steam\SteamProcessStarter.cs"/>
         <Compile Include="Models\PatchingState.cs"/>
         <Compile Include="Models\ProcessWithCorrelationId.cs"/>
+        <Compile Include="Patchers\AmazonPatcher.cs"/>
+        <Compile Include="Patchers\EpicPatcher.cs"/>
+        <Compile Include="Patchers\GogPatcher.cs"/>
         <Compile Include="Patchers\HarmonyPatcher.cs"/>
         <Compile Include="Patchers\PlaynitePatcher.cs"/>
         <Compile Include="Patchers\SteamPatcher.cs"/>
         <Compile Include="Patchers\SystemPatcher.cs"/>
         <Compile Include="Processes\LinuxProcessMonitor.cs"/>
         <Compile Include="Processes\LinuxProcessStarter.cs"/>
-        <Compile Include="Utils\StringUtils.cs"/>
-        <Compile Include="Utils\WineDetector.cs"/>
-        <Compile Include="WineBridgePlugin.cs"/>
-        <Compile Include="WineBridgePluginSettings.cs"/>
-        <Compile Include="WineBridgePluginSettingsView.xaml.cs">
+        <Compile Include="Settings\DefaultSettingFinder.cs"/>
+        <Compile Include="Settings\LinuxHeroicConfiguration.cs"/>
+        <Compile Include="Settings\LinuxSteamConfiguration.cs"/>
+        <Compile Include="Settings\WineBridgePluginSettingsModel.cs"/>
+        <Compile Include="Settings\WineBridgePluginSettingsView.xaml.cs">
             <DependentUpon>WineBridgePluginSettingsView.xaml</DependentUpon>
         </Compile>
+        <Compile Include="Settings\WineBridgeSettings.cs"/>
+        <Compile Include="Utils\HeroicPlatformExtensions.cs"/>
+        <Compile Include="Utils\StringUtils.cs"/>
+        <Compile Include="Utils\WineDetector.cs"/>
+        <Compile Include="Utils\WineUtils.cs"/>
+        <Compile Include="WineBridgePlugin.cs"/>
         <Compile Include="Properties\AssemblyInfo.cs"/>
     </ItemGroup>
     <ItemGroup>
@@ -92,7 +109,7 @@
             <Generator>MSBuild:Compile</Generator>
             <SubType>Designer</SubType>
         </Page>
-        <Page Include="WineBridgePluginSettingsView.xaml">
+        <Page Include="Settings\WineBridgePluginSettingsView.xaml">
             <SubType>Designer</SubType>
             <Generator>MSBuild:Compile</Generator>
         </Page>

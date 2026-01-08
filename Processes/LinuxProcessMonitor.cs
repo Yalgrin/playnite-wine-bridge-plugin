@@ -7,6 +7,8 @@ using HarmonyLib;
 using Playnite.SDK;
 using Playnite.SDK.Plugins;
 using WineBridgePlugin.Models;
+using WineBridgePlugin.Settings;
+using WineBridgePlugin.Utils;
 
 namespace WineBridgePlugin.Processes
 {
@@ -29,8 +31,8 @@ namespace WineBridgePlugin.Processes
             Stopwatch stopwatch = null;
             try
             {
-                var trackingDirectory = WineBridgePlugin.Settings?.TrackingDirectoryWine ?? @"Z:\tmp";
-                var debugLogging = WineBridgePlugin.Settings?.DebugLoggingEnabled ?? false;
+                var trackingDirectory = WineUtils.LinuxPathToWindows(WineBridgeSettings.TrackingDirectoryLinux);
+                var debugLogging = WineBridgeSettings.DebugLoggingEnabled;
                 var processTrackingFile = $"{trackingDirectory}\\wine-bridge-{process.CorrelationId}";
                 var readyTrackingFile = $"{processTrackingFile}-ready";
 

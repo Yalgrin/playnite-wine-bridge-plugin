@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows.Controls;
 using Playnite.SDK;
 using Playnite.SDK.Events;
 using Playnite.SDK.Models;
 using Playnite.SDK.Plugins;
+using WineBridgePlugin.Integrations.Heroic;
 using WineBridgePlugin.Patchers;
+using WineBridgePlugin.Utils;
 
 namespace WineBridgePlugin
 {
@@ -18,15 +22,15 @@ namespace WineBridgePlugin
             HarmonyPatcher.Initialize();
         }
 
-        private WineBridgePluginSettingsViewModel SettingsModel { get; set; }
-        public static WineBridgePluginSettings Settings { get; private set; }
+        private WineBridgePluginSettingsViewModel SettingsViewModel { get; set; }
+        public static WineBridgePluginSettingsModel Settings { get; private set; }
 
         public override Guid Id { get; } = Guid.Parse("bf485eaa-9e08-4697-baec-eabfb4c1d36e");
 
         public WineBridgePlugin(IPlayniteAPI api) : base(api)
         {
-            SettingsModel = new WineBridgePluginSettingsViewModel(this);
-            Settings = SettingsModel.Settings;
+            SettingsViewModel = new WineBridgePluginSettingsViewModel(this);
+            Settings = SettingsViewModel.Settings;
             Properties = new GenericPluginProperties
             {
                 HasSettings = true
@@ -37,7 +41,7 @@ namespace WineBridgePlugin
 
         public override ISettings GetSettings(bool firstRunSettings)
         {
-            return SettingsModel;
+            return SettingsViewModel;
         }
 
         public override UserControl GetSettingsView(bool firstRunSettings)
@@ -48,6 +52,41 @@ namespace WineBridgePlugin
         public override IEnumerable<GameMenuItem> GetGameMenuItems(GetGameMenuItemsArgs args)
         {
             var menuSection = ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_SectionName");
+
+            yield return new GameMenuItem
+            {
+                Description = ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_AddSteamLinuxAction"),
+                MenuSection = menuSection,
+                Action = AddSteamLinuxAction
+            };
+
+            yield return new GameMenuItem
+            {
+                Description =
+                    ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_AddSteamNonSteamLinuxAction"),
+                MenuSection = menuSection,
+                Action = AddSteamNonSteamLinuxAction
+            };
+
+            yield return AddSeparator(menuSection);
+
+            yield return new GameMenuItem
+            {
+                Description = ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_AddHeroicAction"),
+                MenuSection = menuSection,
+                Action = AddHeroicAction
+            };
+
+            yield return new GameMenuItem
+            {
+                Description =
+                    ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_AddHeroicCustomAction"),
+                MenuSection = menuSection,
+                Action = AddHeroicCustomAction
+            };
+
+            yield return AddSeparator(menuSection);
+
             yield return new GameMenuItem
             {
                 Description = ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_AddCustomLinuxAction"),
@@ -63,26 +102,6 @@ namespace WineBridgePlugin
                 Action = AddCustomAsyncLinuxAction
             };
             yield return AddSeparator(menuSection);
-
-            if (Settings?.SteamIntegrationEnabled ?? false)
-            {
-                yield return new GameMenuItem
-                {
-                    Description = ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_AddSteamLinuxAction"),
-                    MenuSection = menuSection,
-                    Action = AddSteamLinuxAction
-                };
-
-                yield return new GameMenuItem
-                {
-                    Description =
-                        ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_AddSteamNonSteamLinuxAction"),
-                    MenuSection = menuSection,
-                    Action = AddSteamNonSteamLinuxAction
-                };
-
-                yield return AddSeparator(menuSection);
-            }
 
             yield return new GameMenuItem
             {
@@ -243,6 +262,81 @@ namespace WineBridgePlugin
             }
         }
 
+        private void AddHeroicAction(GameMenuItemActionArgs args)
+        {
+            foreach (var game in args.Games)
+            {
+                var mainCaption =
+                    $"{game.Name} - {ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_SelectInstalledHeroicGame")}";
+                var installedGames = HeroicClient.GetInstalledGames();
+                var options = installedGames.ConvertAll(g => new GenericItemOption
+                {
+                    Name = g.Name,
+                    Description = $"{g.AppId} | {g.Platform.ToHeroicRunner()} | {g.Platform}"
+                }).OrderBy(g => g.Name).ToList();
+                var selectedItem = PlayniteApi.Dialogs.ChooseItemWithSearch(options,
+                    str => options.Where(o =>
+                        string.IsNullOrEmpty(str) || o.Name.ToLowerInvariant().Contains(str.ToLowerInvariant()) ||
+                        o.Description.ToLowerInvariant().Contains(str.ToLowerInvariant())).ToList(),
+                    caption: mainCaption);
+                if (selectedItem == null)
+                {
+                    return;
+                }
+
+                var split = Regex.Split(selectedItem.Description, " \\| ");
+                if (split.Length != 3)
+                {
+                    return;
+                }
+
+                var nameResult = PlayniteApi.Dialogs.SelectString(
+                    $"{game.Name} - {ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterActionName")}",
+                    mainCaption, "Play on Linux");
+                if (!nameResult.Result)
+                {
+                    return;
+                }
+
+                AddHeroicWineBridgeAction(game, $"[WB] {nameResult.SelectedString}", split[0], split[1]);
+            }
+        }
+
+        private void AddHeroicCustomAction(GameMenuItemActionArgs args)
+        {
+            foreach (var game in args.Games)
+            {
+                var mainCaption =
+                    $"{game.Name} - {ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_AddHeroicCustomAction")}";
+                var appIdResult = PlayniteApi.Dialogs.SelectString(
+                    $"{game.Name} - {ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterHeroicAppId")}",
+                    mainCaption, "");
+                if (!appIdResult.Result)
+                {
+                    return;
+                }
+
+                var runnerResult = PlayniteApi.Dialogs.SelectString(
+                    $"{game.Name} - {ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterHeroicRunner")}",
+                    mainCaption, "sideload");
+                if (!runnerResult.Result)
+                {
+                    return;
+                }
+
+                var nameResult = PlayniteApi.Dialogs.SelectString(
+                    $"{game.Name} - {ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterActionName")}",
+                    mainCaption, "Play on Linux");
+                if (!nameResult.Result)
+                {
+                    return;
+                }
+
+                AddHeroicWineBridgeAction(game, $"[WB] {nameResult.SelectedString}", appIdResult.SelectedString,
+                    runnerResult.SelectedString);
+            }
+        }
+
         private void RemoveAllActions(GameMenuItemActionArgs args)
         {
             foreach (var game in args.Games)
@@ -284,6 +378,11 @@ namespace WineBridgePlugin
         private void AddSteamWineBridgeAction(Game game, string name, ulong steamAppId, ulong trackingAppId)
         {
             AddWineBridgeAction(game, name, $"{Constants.WineBridgeSteamPrefix}{steamAppId}", $"{trackingAppId}");
+        }
+
+        private void AddHeroicWineBridgeAction(Game game, string name, string appId, string runner)
+        {
+            AddWineBridgeAction(game, name, $"{Constants.WineBridgeHeroicPrefix}{runner}/{appId}", null);
         }
 
         private void AddWineBridgeAction(Game game, string name, string launchScript, bool asyncAction,

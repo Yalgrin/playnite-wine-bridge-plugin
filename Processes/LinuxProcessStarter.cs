@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using Playnite.SDK;
 using WineBridgePlugin.Models;
+using WineBridgePlugin.Settings;
 using WineBridgePlugin.Utils;
 
 namespace WineBridgePlugin.Processes
@@ -11,27 +12,6 @@ namespace WineBridgePlugin.Processes
     public static class LinuxProcessStarter
     {
         private static readonly ILogger Logger = LogManager.GetLogger();
-
-        public static ProcessWithCorrelationId StartSteamApp(string steamAppId)
-        {
-            return StartSteamApp(steamAppId, steamAppId);
-        }
-
-        public static ProcessWithCorrelationId StartSteamApp(string steamAppId, string trackingId)
-        {
-            if (!(WineBridgePlugin.Settings?.SteamIntegrationEnabled ?? false))
-            {
-                throw new Exception("Wine Bridge Steam integration is not enabled.");
-            }
-
-            return Start($"{GetSteamExecutable()} -silent steam://rungameid/{steamAppId}", true,
-                $"/reaper SteamLaunch AppId={trackingId}.*waitforexitandrun");
-        }
-
-        private static string GetSteamExecutable()
-        {
-            return WineBridgePlugin.Settings?.SteamExecutablePathLinux ?? "steam";
-        }
 
         public static ProcessWithCorrelationId Start(string command, bool asyncTracking = false,
             string trackingExpression = "-")
@@ -46,11 +26,11 @@ namespace WineBridgePlugin.Processes
             var encodedCommand = command.Base64Encode();
             var asyncTrackingStr = asyncTracking ? "1" : "0";
             var encodedTrackingExpression = asyncTracking ? trackingExpression.Base64Encode() : "-".Base64Encode();
-            var linuxScript = $"{directoryName.WindowsPathToLinuxPath()}/Resources/run-in-linux.sh";
+            var linuxScript = WineUtils.WindowsPathToLinux(Path.Combine(directoryName, @"Resources\run-in-linux.sh"));
             var correlationId = DateTime.Now.ToString("yyyyMMddHHmmss") + "-" + Guid.NewGuid();
-            var trackingDirectory = (WineBridgePlugin.Settings?.TrackingDirectoryLinux ?? "/tmp").Base64Encode();
+            var trackingDirectory = WineBridgeSettings.TrackingDirectoryLinux.Base64Encode();
 
-            var debugLogging = WineBridgePlugin.Settings?.DebugLoggingEnabled ?? false;
+            var debugLogging = WineBridgeSettings.DebugLoggingEnabled;
             Logger.Info($"The following Linux command will be executed: {command}");
             if (asyncTracking && debugLogging)
             {
@@ -98,7 +78,7 @@ namespace WineBridgePlugin.Processes
 
         public static Process StartRawCommand(string command)
         {
-            var debugLogging = WineBridgePlugin.Settings?.DebugLoggingEnabled ?? false;
+            var debugLogging = WineBridgeSettings.DebugLoggingEnabled;
 
             Logger.Info($"The following raw Linux command will be executed: {command}");
 
