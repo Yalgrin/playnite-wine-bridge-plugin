@@ -7,6 +7,12 @@
         public static bool SetScriptExecutePermissions =>
             WineBridgePlugin.Settings?.SetScriptExecutePermissions ?? true;
 
+        public static bool RedirectExplorerCallsToLinux =>
+            WineBridgePlugin.Settings?.RedirectExplorerCallsToLinux ?? true;
+
+        public static bool RedirectProtocolCallsToLinux =>
+            WineBridgePlugin.Settings?.RedirectProtocolCallsToLinux ?? true;
+
         public static bool SteamIntegrationEnabled => WineBridgePlugin.Settings?.SteamIntegrationEnabled ?? false;
 
         public static string SteamDataPathLinux => WineBridgePlugin.Settings?.SteamDataPathLinux ??

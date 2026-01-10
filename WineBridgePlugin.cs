@@ -298,6 +298,13 @@ namespace WineBridgePlugin
                     return;
                 }
 
+                var foundGame =
+                    installedGames.Find(g => g.AppId == split[0] && g.Platform.ToHeroicRunner() == split[1]);
+                if (foundGame?.InstallPath != null)
+                {
+                    game.InstallDirectory = WineUtils.LinuxPathToWindows(foundGame.InstallPath);
+                }
+
                 AddHeroicWineBridgeAction(game, $"[WB] {nameResult.SelectedString}", split[0], split[1]);
             }
         }
@@ -330,6 +337,14 @@ namespace WineBridgePlugin
                 if (!nameResult.Result)
                 {
                     return;
+                }
+
+                var foundGame = HeroicClient.GetInstalledGames().Find(g =>
+                    g.AppId == appIdResult.SelectedString &&
+                    g.Platform.ToHeroicRunner() == runnerResult.SelectedString);
+                if (foundGame?.InstallPath != null)
+                {
+                    game.InstallDirectory = WineUtils.LinuxPathToWindows(foundGame.InstallPath);
                 }
 
                 AddHeroicWineBridgeAction(game, $"[WB] {nameResult.SelectedString}", appIdResult.SelectedString,

@@ -1,4 +1,6 @@
-﻿namespace WineBridgePlugin
+﻿using System.Collections.Generic;
+
+namespace WineBridgePlugin
 {
     public static class Constants
     {
@@ -9,5 +11,12 @@
         public const string WineBridgeAsyncPrefix = "wine-bridge-async://";
         public const string WineBridgeSteamPrefix = "wine-bridge-steam://";
         public const string WineBridgeHeroicPrefix = "wine-bridge-heroic://";
+
+        public const string HttpPrefix = "http://";
+        public const string HttpsPrefix = "https://";
+        public const string FilePrefix = "file://";
+
+        public static readonly List<string> RedirectedProtocols = new List<string>
+            { HttpPrefix, HttpsPrefix, FilePrefix };
     }
 }

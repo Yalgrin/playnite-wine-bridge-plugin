@@ -27,6 +27,12 @@
             <CheckBox IsChecked="{Binding Settings.SetScriptExecutePermissions}"
                       Content="{DynamicResource LOC_Yalgrin_WineBridge_Settings_SetScriptExecutePermissions}"
                       Margin="0, 15, 0, 0" />
+            <CheckBox IsChecked="{Binding Settings.RedirectExplorerCallsToLinux}"
+                      Content="{DynamicResource LOC_Yalgrin_WineBridge_Settings_RedirectExplorerCallsToLinux}"
+                      Margin="0, 15, 0, 0" />
+            <CheckBox IsChecked="{Binding Settings.RedirectProtocolCallsToLinux}"
+                      Content="{DynamicResource LOC_Yalgrin_WineBridge_Settings_RedirectProtocolCallsToLinux}"
+                      Margin="0, 15, 0, 0" />
 
             <CheckBox IsChecked="{Binding Settings.SteamIntegrationEnabled}"
                       Content="{DynamicResource LOC_Yalgrin_WineBridge_Settings_SteamIntegrationEnabled}"

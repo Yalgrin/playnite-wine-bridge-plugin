@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using Playnite.SDK;
@@ -10,6 +11,7 @@ using WineBridgePlugin.Integrations.Steam;
 using WineBridgePlugin.Models;
 using WineBridgePlugin.Processes;
 using WineBridgePlugin.Settings;
+using WineBridgePlugin.Utils;
 
 namespace WineBridgePlugin.Patchers
 {
@@ -77,6 +79,8 @@ namespace WineBridgePlugin.Patchers
 
     internal static class ProcessPatches
     {
+        private static readonly ILogger Logger = LogManager.GetLogger();
+
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
         private static bool Prefix(
             [SuppressMessage("ReSharper", "InconsistentNaming")]
@@ -156,7 +160,93 @@ namespace WineBridgePlugin.Patchers
                 return false;
             }
 
+            if (WineBridgeSettings.RedirectExplorerCallsToLinux &&
+                (fileName == "explorer.exe" || fileName.EndsWith(@"\explorer.exe")))
+            {
+                try
+                {
+                    var args = __instance.StartInfo.Arguments.Trim();
+                    if (args.StartsWith("shell:"))
+                    {
+                        return true;
+                    }
+
+                    var parentFolder = false;
+                    if (args.StartsWith("/select,"))
+                    {
+                        args = args.Substring("/select,".Length);
+                        parentFolder = true;
+                    }
+
+                    Process process;
+                    if (!string.IsNullOrEmpty(args))
+                    {
+                        var fullPath = CleanupAndTransformToLinuxFilePath(args, parentFolder);
+
+                        process = LinuxProcessStarter.Start($"xdg-open \"{fullPath}\"").Process;
+                    }
+                    else
+                    {
+                        process = LinuxProcessStarter.Start("xdg-open .").Process;
+                    }
+
+                    __result = process != null;
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    Logger.Error(e, "Error occurred while redirecting explorer call!");
+                }
+            }
+
+            if (WineBridgeSettings.RedirectProtocolCallsToLinux &&
+                Constants.RedirectedProtocols.Any(protocol => fileName.StartsWith(protocol)))
+            {
+                try
+                {
+                    var newFileName = fileName;
+                    if (fileName.StartsWith(Constants.FilePrefix))
+                    {
+                        newFileName = CleanupAndTransformToLinuxFilePath(newFileName.Replace(Constants.FilePrefix, ""));
+                    }
+                    else
+                    {
+                        newFileName = fileName;
+                    }
+
+                    var process = LinuxProcessStarter.Start($"xdg-open \"{newFileName}\"")
+                        .Process;
+                    __result = process != null;
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    Logger.Error(e, "Error occurred while redirecting protocol call!");
+                }
+            }
+
             return true;
+        }
+
+        private static string CleanupAndTransformToLinuxFilePath(string startingPath, bool parentFolder = false)
+        {
+            if (startingPath.StartsWith("\"") && startingPath.EndsWith("\""))
+            {
+                startingPath = startingPath.Substring(1, startingPath.Length - 2);
+            }
+
+            if (startingPath.StartsWith("/"))
+            {
+                startingPath = startingPath.Substring(1);
+            }
+
+            var fullPath = Path.GetFullPath(startingPath);
+            if (parentFolder)
+            {
+                fullPath = Path.GetDirectoryName(fullPath);
+            }
+
+            return WineUtils.WindowsPathToLinux(fullPath);
         }
     }
 }

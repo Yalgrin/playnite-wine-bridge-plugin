@@ -12,6 +12,8 @@ namespace WineBridgePlugin
     {
         private string _trackingDirectoryLinux;
         private bool _setScriptExecutePermissions = true;
+        private bool _redirectExplorerCallsToLinux = true;
+        private bool _redirectProtocolCallsToLinux = true;
 
         private bool _steamIntegrationEnabled;
         private string _steamDataPathLinux;
@@ -35,6 +37,18 @@ namespace WineBridgePlugin
         {
             get => _setScriptExecutePermissions;
             set => SetValue(ref _setScriptExecutePermissions, value);
+        }
+
+        public bool RedirectExplorerCallsToLinux
+        {
+            get => _redirectExplorerCallsToLinux;
+            set => SetValue(ref _redirectExplorerCallsToLinux, value);
+        }
+
+        public bool RedirectProtocolCallsToLinux
+        {
+            get => _redirectProtocolCallsToLinux;
+            set => SetValue(ref _redirectProtocolCallsToLinux, value);
         }
 
         public bool SteamIntegrationEnabled
