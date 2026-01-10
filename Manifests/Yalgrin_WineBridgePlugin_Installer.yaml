@@ -23,3 +23,10 @@ Packages:
       - Heroic Games Launcher integration
       - Easier configuration - auto-detect, no more Wine paths
       - No longer needed to set permissions for the script manually
+  - Version: 0.2.1
+    RequiredApiVersion: 6.11.0
+    ReleaseDate: 2026-01-10
+    PackageUrl: https://github.com/Yalgrin/playnite-wine-bridge-plugin/releases/download/0.2.1/Yalgrin_WineBridgePlugin_0_2_1.pext
+    Changelog:
+      - Added an option to redirect explorer.exe and protocol calls to Linux
+      - Adding a Heroic play action now sets the game install location
