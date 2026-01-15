@@ -78,6 +78,39 @@
             </StackPanel>
 
 
+            <CheckBox IsChecked="{Binding Settings.LutrisGogIntegrationEnabled}"
+                      Content="{DynamicResource LOC_Yalgrin_WineBridge_Settings_LutrisGogIntegrationEnabled}"
+                      Margin="0, 30, 0, 0" />
+            <CheckBox IsChecked="{Binding Settings.LutrisAmazonIntegrationEnabled}"
+                      Content="{DynamicResource LOC_Yalgrin_WineBridge_Settings_LutrisAmazonIntegrationEnabled}"
+                      Margin="0, 15, 0, 0" />
+            <CheckBox IsChecked="{Binding Settings.LutrisEpicIntegrationEnabled}"
+                      Content="{DynamicResource LOC_Yalgrin_WineBridge_Settings_LutrisEpicIntegrationEnabled}"
+                      Margin="0, 15, 0, 0" />
+            <CheckBox IsChecked="{Binding Settings.LutrisEaIntegrationEnabled}"
+                      Content="{DynamicResource LOC_Yalgrin_WineBridge_Settings_LutrisEaIntegrationEnabled}"
+                      Margin="0, 15, 0, 0" />
+            <CheckBox IsChecked="{Binding Settings.LutrisBattleNetIntegrationEnabled}"
+                      Content="{DynamicResource LOC_Yalgrin_WineBridge_Settings_LutrisBattleNetIntegrationEnabled}"
+                      Margin="0, 15, 0, 0" />
+            <CheckBox IsChecked="{Binding Settings.LutrisItchIoIntegrationEnabled}"
+                      Content="{DynamicResource LOC_Yalgrin_WineBridge_Settings_LutrisItchIoIntegrationEnabled}"
+                      Margin="0, 15, 0, 0" />
+
+            <StackPanel Orientation="Horizontal" Margin="0,15,5,0" HorizontalAlignment="Left">
+                <TextBlock Text="{DynamicResource LOC_Yalgrin_WineBridge_Settings_LutrisDataPathLinux}"
+                           MinWidth="200" />
+                <TextBox Text="{Binding Settings.LutrisDataPathLinux}" MinWidth="350" MaxWidth="350" />
+                <Button HorizontalAlignment="Right" Command="{Binding AutoDetectLutris}"
+                        Content="{DynamicResource LOC_Yalgrin_WineBridge_Settings_AutoDetect}" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Margin="0,15,5,0" HorizontalAlignment="Left">
+                <TextBlock Text="{DynamicResource LOC_Yalgrin_WineBridge_Settings_LutrisExecutablePathLinux}"
+                           MinWidth="200" />
+                <TextBox Text="{Binding Settings.LutrisExecutablePathLinux}" MinWidth="350" MaxWidth="350" />
+            </StackPanel>
+
             <CheckBox IsChecked="{Binding Settings.DebugLoggingEnabled}"
                       Content="{DynamicResource LOC_Yalgrin_WineBridge_Settings_DebugLoggingEnabled}"
                       Margin="0, 30, 0, 0" />
@@ -86,39 +119,48 @@
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="10" HorizontalAlignment="Left">
                         <TextBlock Text="{DynamicResource LOC_Yalgrin_WineBridge_Settings_SystemPatchingState}"
-                                   MinWidth="200">
-                        </TextBlock>
-                        <TextBlock Text="{Binding PatchingStatuses.SystemPatchingState}" MinWidth="350"></TextBlock>
+                                   MinWidth="200" />
+                        <TextBlock Text="{Binding PatchingStatuses.SystemPatchingState}" MinWidth="350" />
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="10" HorizontalAlignment="Left">
                         <TextBlock Text="{DynamicResource LOC_Yalgrin_WineBridge_Settings_PlaynitePatchingState}"
-                                   MinWidth="200">
-                        </TextBlock>
-                        <TextBlock Text="{Binding PatchingStatuses.PlaynitePatchingState}" MinWidth="350"></TextBlock>
+                                   MinWidth="200" />
+                        <TextBlock Text="{Binding PatchingStatuses.PlaynitePatchingState}" MinWidth="350" />
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="10" HorizontalAlignment="Left">
                         <TextBlock Text="{DynamicResource LOC_Yalgrin_WineBridge_Settings_SteamPatchingState}"
-                                   MinWidth="200">
-                        </TextBlock>
-                        <TextBlock Text="{Binding PatchingStatuses.SteamPatchingState}" MinWidth="350"></TextBlock>
+                                   MinWidth="200" />
+                        <TextBlock Text="{Binding PatchingStatuses.SteamPatchingState}" MinWidth="350" />
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="10" HorizontalAlignment="Left">
                         <TextBlock Text="{DynamicResource LOC_Yalgrin_WineBridge_Settings_GogPatchingState}"
-                                   MinWidth="200">
-                        </TextBlock>
-                        <TextBlock Text="{Binding PatchingStatuses.GogPatchingState}" MinWidth="350"></TextBlock>
+                                   MinWidth="200" />
+                        <TextBlock Text="{Binding PatchingStatuses.GogPatchingState}" MinWidth="350" />
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="10" HorizontalAlignment="Left">
                         <TextBlock Text="{DynamicResource LOC_Yalgrin_WineBridge_Settings_AmazonPatchingState}"
-                                   MinWidth="200">
-                        </TextBlock>
-                        <TextBlock Text="{Binding PatchingStatuses.AmazonPatchingState}" MinWidth="350"></TextBlock>
+                                   MinWidth="200" />
+                        <TextBlock Text="{Binding PatchingStatuses.AmazonPatchingState}" MinWidth="350" />
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="10" HorizontalAlignment="Left">
                         <TextBlock Text="{DynamicResource LOC_Yalgrin_WineBridge_Settings_EpicPatchingState}"
-                                   MinWidth="200">
-                        </TextBlock>
-                        <TextBlock Text="{Binding PatchingStatuses.EpicPatchingState}" MinWidth="350"></TextBlock>
+                                   MinWidth="200" />
+                        <TextBlock Text="{Binding PatchingStatuses.EpicPatchingState}" MinWidth="350" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="10" HorizontalAlignment="Left">
+                        <TextBlock Text="{DynamicResource LOC_Yalgrin_WineBridge_Settings_EaPatchingState}"
+                                   MinWidth="200" />
+                        <TextBlock Text="{Binding PatchingStatuses.EaPatchingState}" MinWidth="350" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="10" HorizontalAlignment="Left">
+                        <TextBlock Text="{DynamicResource LOC_Yalgrin_WineBridge_Settings_BattleNetPatchingState}"
+                                   MinWidth="200" />
+                        <TextBlock Text="{Binding PatchingStatuses.BattleNetPatchingState}" MinWidth="350" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="10" HorizontalAlignment="Left">
+                        <TextBlock Text="{DynamicResource LOC_Yalgrin_WineBridge_Settings_ItchIoPatchingState}"
+                                   MinWidth="200" />
+                        <TextBlock Text="{Binding PatchingStatuses.ItchIoPatchingState}" MinWidth="350" />
                     </StackPanel>
                 </StackPanel>
             </Border>

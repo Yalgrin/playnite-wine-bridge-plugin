@@ -7,6 +7,7 @@ using System.Reflection;
 using HarmonyLib;
 using Playnite.SDK;
 using WineBridgePlugin.Integrations.Heroic;
+using WineBridgePlugin.Integrations.Lutris;
 using WineBridgePlugin.Integrations.Steam;
 using WineBridgePlugin.Models;
 using WineBridgePlugin.Processes;
@@ -67,7 +68,7 @@ namespace WineBridgePlugin.Patchers
             [SuppressMessage("ReSharper", "InconsistentNaming")]
             ref bool __result, string path)
         {
-            if (path == Constants.DummySteamExe || path == Constants.DummyHeroicExe)
+            if (path == Constants.DummySteamExe || path == Constants.DummyHeroicExe || path == Constants.DummyLutrisExe)
             {
                 __result = true;
                 return false;
@@ -124,6 +125,18 @@ namespace WineBridgePlugin.Patchers
                 }
             }
 
+            if (WineBridgeSettings.AnyLutrisIntegrationEnabled)
+            {
+                if (fileName == Constants.DummyLutrisExe)
+                {
+                    var process = LinuxProcessStarter.Start($"{WineBridgeSettings.LutrisExecutablePathLinux} " +
+                                                            __instance.StartInfo.Arguments)
+                        .Process;
+                    __result = process != null;
+                    return false;
+                }
+            }
+
             if (fileName.StartsWith(Constants.WineBridgePrefix))
             {
                 var process = LinuxProcessStarter
@@ -155,6 +168,15 @@ namespace WineBridgePlugin.Patchers
             {
                 var process = HeroicProcessStarter
                     .Start(fileName.Substring(Constants.WineBridgeHeroicPrefix.Length))
+                    .Process;
+                __result = process != null;
+                return false;
+            }
+
+            if (fileName.StartsWith(Constants.WineBridgeLutrisPrefix))
+            {
+                var process = LutrisProcessStarter
+                    .StartUsingId(Convert.ToInt64(fileName.Substring(Constants.WineBridgeLutrisPrefix.Length)))
                     .Process;
                 __result = process != null;
                 return false;

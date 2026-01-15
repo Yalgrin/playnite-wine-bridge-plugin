@@ -9,6 +9,7 @@ using Playnite.SDK.Events;
 using Playnite.SDK.Models;
 using Playnite.SDK.Plugins;
 using WineBridgePlugin.Integrations.Heroic;
+using WineBridgePlugin.Integrations.Lutris;
 using WineBridgePlugin.Patchers;
 using WineBridgePlugin.Utils;
 
@@ -17,9 +18,18 @@ namespace WineBridgePlugin
     // ReSharper disable once ClassNeverInstantiated.Global
     public class WineBridgePlugin : GenericPlugin
     {
+        private static readonly ILogger Logger = LogManager.GetLogger();
+
         static WineBridgePlugin()
         {
-            HarmonyPatcher.Initialize();
+            try
+            {
+                HarmonyPatcher.Initialize();
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e, "Failed to initialize harmony patcher!");
+            }
         }
 
         private WineBridgePluginSettingsViewModel SettingsViewModel { get; set; }
@@ -83,6 +93,23 @@ namespace WineBridgePlugin
                     ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_AddHeroicCustomAction"),
                 MenuSection = menuSection,
                 Action = AddHeroicCustomAction
+            };
+
+            yield return AddSeparator(menuSection);
+
+            yield return new GameMenuItem
+            {
+                Description = ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_AddLutrisAction"),
+                MenuSection = menuSection,
+                Action = AddLutrisAction
+            };
+
+            yield return new GameMenuItem
+            {
+                Description =
+                    ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_AddLutrisCustomAction"),
+                MenuSection = menuSection,
+                Action = AddLutrisCustomAction
             };
 
             yield return AddSeparator(menuSection);
@@ -264,16 +291,19 @@ namespace WineBridgePlugin
 
         private void AddHeroicAction(GameMenuItemActionArgs args)
         {
+            var caption =
+                ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_SelectInstalledHeroicGame");
+            var installedGames = HeroicClient.GetInstalledGames();
+            var options = installedGames.ConvertAll(g => new GenericItemOption
+            {
+                Name = g.Name,
+                Description = $"{g.AppId} | {g.Platform.ToHeroicRunner()} | {g.Platform}"
+            }).OrderBy(g => g.Name).ToList();
+
             foreach (var game in args.Games)
             {
                 var mainCaption =
-                    $"{game.Name} - {ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_SelectInstalledHeroicGame")}";
-                var installedGames = HeroicClient.GetInstalledGames();
-                var options = installedGames.ConvertAll(g => new GenericItemOption
-                {
-                    Name = g.Name,
-                    Description = $"{g.AppId} | {g.Platform.ToHeroicRunner()} | {g.Platform}"
-                }).OrderBy(g => g.Name).ToList();
+                    $"{game.Name} - {caption}";
                 var selectedItem = PlayniteApi.Dialogs.ChooseItemWithSearch(options,
                     str => options.Where(o =>
                         string.IsNullOrEmpty(str) || o.Name.ToLowerInvariant().Contains(str.ToLowerInvariant()) ||
@@ -352,6 +382,107 @@ namespace WineBridgePlugin
             }
         }
 
+        private void AddLutrisAction(GameMenuItemActionArgs args)
+        {
+            var caption =
+                ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_SelectInstalledLutrisGame");
+            var installedGames = LutrisClient.GetInstalledGames();
+            var options = installedGames.ConvertAll(g => new GenericItemOption
+            {
+                Name = g.Name,
+                Description = $"{g.LutrisId} | {GetTranslatedServiceName(g.Service)}"
+            }).OrderBy(g => g.Name).ToList();
+            foreach (var game in args.Games)
+            {
+                var mainCaption =
+                    $"{game.Name} - {caption}";
+                var selectedItem = PlayniteApi.Dialogs.ChooseItemWithSearch(options,
+                    str => options.Where(o =>
+                        string.IsNullOrEmpty(str) || o.Name.ToLowerInvariant().Contains(str.ToLowerInvariant()) ||
+                        o.Description.ToLowerInvariant().Contains(str.ToLowerInvariant())).ToList(),
+                    caption: mainCaption);
+                if (selectedItem == null)
+                {
+                    return;
+                }
+
+                var split = Regex.Split(selectedItem.Description, " \\| ");
+                if (split.Length != 2)
+                {
+                    return;
+                }
+
+                var nameResult = PlayniteApi.Dialogs.SelectString(
+                    $"{game.Name} - {ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterActionName")}",
+                    mainCaption, "Play on Linux");
+                if (!nameResult.Result)
+                {
+                    return;
+                }
+
+                var searchId = Convert.ToInt64(split[0]);
+                var foundGame =
+                    installedGames.Find(g => g.LutrisId == searchId);
+                if (foundGame?.InstallPath != null)
+                {
+                    game.InstallDirectory = WineUtils.LinuxPathToWindows(foundGame.InstallPath);
+                }
+
+                AddLutrisWineBridgeAction(game, $"[WB] {nameResult.SelectedString}", split[0]);
+            }
+        }
+
+        private static string GetTranslatedServiceName(string service)
+        {
+            if (string.IsNullOrEmpty(service))
+            {
+                return ResourceProvider.GetString("LOC_Yalgrin_WineBridge_LutrisService_Custom");
+            }
+
+            var resource =
+                ResourceProvider.GetResource("LOC_Yalgrin_WineBridge_LutrisService_" + service.ToLowerInvariant());
+            if (resource == null)
+            {
+                return ResourceProvider.GetString("LOC_Yalgrin_WineBridge_LutrisService_Unknown") + "('" + service +
+                       "')";
+            }
+
+            return resource as string;
+        }
+
+        private void AddLutrisCustomAction(GameMenuItemActionArgs args)
+        {
+            foreach (var game in args.Games)
+            {
+                var mainCaption =
+                    $"{game.Name} - {ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_AddLutrisCustomAction")}";
+                var appIdResult = PlayniteApi.Dialogs.SelectString(
+                    $"{game.Name} - {ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterLutrisAppId")}",
+                    mainCaption, "");
+                if (!appIdResult.Result)
+                {
+                    return;
+                }
+
+                var nameResult = PlayniteApi.Dialogs.SelectString(
+                    $"{game.Name} - {ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterActionName")}",
+                    mainCaption, "Play on Linux");
+                if (!nameResult.Result)
+                {
+                    return;
+                }
+
+                var foundGame = HeroicClient.GetInstalledGames().Find(g =>
+                    g.AppId == appIdResult.SelectedString);
+                if (foundGame?.InstallPath != null)
+                {
+                    game.InstallDirectory = WineUtils.LinuxPathToWindows(foundGame.InstallPath);
+                }
+
+                AddLutrisWineBridgeAction(game, $"[WB] {nameResult.SelectedString}", appIdResult.SelectedString);
+            }
+        }
+
         private void RemoveAllActions(GameMenuItemActionArgs args)
         {
             foreach (var game in args.Games)
@@ -363,7 +494,7 @@ namespace WineBridgePlugin
                 }
 
                 var modified = false;
-                for (var i = 0; i < actions.Count; i++)
+                for (var i = actions.Count - 1; i >= 0; i--)
                 {
                     var gameAction = actions[i];
                     if (gameAction.Name.StartsWith("[WB]"))
@@ -398,6 +529,11 @@ namespace WineBridgePlugin
         private void AddHeroicWineBridgeAction(Game game, string name, string appId, string runner)
         {
             AddWineBridgeAction(game, name, $"{Constants.WineBridgeHeroicPrefix}{runner}/{appId}", null);
+        }
+
+        private void AddLutrisWineBridgeAction(Game game, string name, string appId)
+        {
+            AddWineBridgeAction(game, name, $"{Constants.WineBridgeLutrisPrefix}{appId}", null);
         }
 
         private void AddWineBridgeAction(Game game, string name, string launchScript, bool asyncAction,

@@ -20,23 +20,26 @@ was created.
 
 The plugin currently supports:
 
-- integrations for Steam, GOG, Amazon & Epic libraries using Steam Linux client and Heroic Games Launcher
+- integrations for libraries such as: Steam, GOG, Amazon & more using Steam Linux client, Heroic Games Launcher and
+  Lutris
 - option to add custom Steam play actions including non-Steam games
 - option to add Heroic play actions for any installed game
+- option to add Lutris play actions for any installed game
 - option to add custom play actions for any game
 
 ## Integrations
 
-| Linux launcher | Integrated libraries | Detecting installed games |                                                                 Installation & uninstallation                                                                  | Launching |
-|:--------------:|:--------------------:|:-------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------:|:---------:|
-|     Steam      |        Steam         |             ✅             |                                                                               ✅                                                                                |     ✅     |
-|     Heroic     |  GOG, Amazon, Epic   |             ✅             | ⚠️ <br/>Cannot install/uninstall from Playnite; it will launch Heroic client for you to do that manually. After it completes Playnite will properly detect it. |     ✅     |
+| Linux launcher |              Integrated libraries              | Detecting installed games |                                                                 Installation & uninstallation                                                                  | Launching |
+|:--------------:|:----------------------------------------------:|:-------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------:|:---------:|
+|     Steam      |                     Steam                      |             ✅             |                                                                               ✅                                                                                |     ✅     |
+|     Heroic     |               GOG, Amazon, Epic                |             ✅             | ⚠️ <br/>Cannot install/uninstall from Playnite; it will launch Heroic client for you to do that manually. After it completes Playnite will properly detect it. |     ✅     |
+|     Lutris     | GOG, Amazon, Epic, EA App, Battle.net, Itch.io |             ✅             |     ️⚠️ <br/>Cannot uninstall games from Playnite; it will launch Lutris for you to do that manually. After it completes Playnite will properly detect it.     |     ✅     |
 
 ## Planned features
 
-- Lutris integration
-- custom play actions for Lutris
 - search options when adding game actions for Steam
+- support for more libraries such as GOG OSS, Legendary and Nile
+- support for other Playnite features such as tools and emulators
 
 ## Instructions
 
@@ -45,7 +48,7 @@ The plugin currently supports:
 1. Install [Playnite](https://playnite.link/) inside a [Wine Prefix](https://www.winehq.org/) on your Linux machine.
    This isn't a tutorial for that, but here are some general tips: use Wine 9 or above, install `corefonts dotnet48`
    inside the prefix using `winetricks` and once the app is installed enable the following option: Settings > Advanced >
-   Disable hardware acceleration. Avoid using `gamemoderun` or any other wrappers.
+   Disable hardware acceleration (or try using a virtual desktop). Avoid using `gamemoderun` or any other wrappers.
 
 > **Note: Since you're using Playnite under Wine, which is not officially supported, you might encounter unexpected
 issues. If you do, please DON'T just blindly report them to the official Playnite (or related plugin) issue tracker.
@@ -77,6 +80,12 @@ Notable parameters:
     - For AppImage installation - `/home/<user>/.config/heroic` and `<path_to_Heroic_AppImage_file>`
     - For flatpak installation - `/home/<user>/.var/app/com.heroicgameslauncher.hgl/config/heroic` and
       `flatpak run com.heroicgameslauncher.hgl`
+- **Lutris data path (Linux)** and **Lutris executable path (Linux)** - paths to Lutris data folder and executable. The
+  data folder is the one containing database file `pga.db` and folders such as `games` and `runners`. Typical
+  configurations:
+    - For native installation - `/home/<user>/.local/share/lutris` and `lutris`
+    - For flatpak installation - `/home/<user>/.var/app/net.lutris.Lutris/data/lutris` and
+      `flatpak run net.lutris.Lutris`
 - **Enable debug logging** - enables more detailed logging. If you're facing a problem, then enable this option,
   reproduce the problem and report the issue with the logs attached.
 
@@ -113,6 +122,18 @@ from Heroic, which will automatically generate a play action.
 If you want to go the manual route you can still do that by using **Add Heroic custom game action** option. This
 requires you to manually enter app id and a runner for the specific game, which you can get for example by creating a
 desktop shortcut.
+
+### Custom Lutris play actions
+
+If you want a specific play action to trigger a Lutris game launch, you can add it as a custom Lutris play action by
+right-clicking on the desired game and going to the **Wine Bridge** menu.
+
+The first and easier option is to use **Add Lutris installed game action**. It allows you to select an installed game
+from Lutris, which will automatically generate a play action.
+
+If you want to go the manual route you can still do that by using **Add Lutris custom game action** option. This
+requires you to manually enter app id for the specific game, which you can get for example by creating a desktop
+shortcut.
 
 ### Custom play actions
 

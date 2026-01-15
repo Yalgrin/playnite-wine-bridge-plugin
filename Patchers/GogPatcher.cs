@@ -8,6 +8,7 @@ using Playnite.SDK;
 using Playnite.SDK.Models;
 using Playnite.SDK.Plugins;
 using WineBridgePlugin.Integrations.Heroic;
+using WineBridgePlugin.Integrations.Lutris;
 using WineBridgePlugin.Models;
 using WineBridgePlugin.Settings;
 
@@ -38,25 +39,25 @@ namespace WineBridgePlugin.Patchers
                     return;
                 }
 
-                var gogType = assembly.GetType("GogLibrary.Gog");
-                var gogLibraryType = assembly.GetType("GogLibrary.GogLibrary");
+                var mainType = assembly.GetType("GogLibrary.Gog");
+                var libraryType = assembly.GetType("GogLibrary.GogLibrary");
 
-                if (gogType == null || gogLibraryType == null)
+                if (mainType == null || libraryType == null)
                 {
                     Logger.Warn("Failed to find GogLibrary classes!");
                     State = PatchingState.MissingClasses;
                     return;
                 }
 
-                var isInstalledMethod = gogType.GetProperty("IsInstalled")?.GetGetMethod();
-                var isRunningMethod = gogType.GetProperty("IsRunning")?.GetGetMethod();
-                var installPathMethod = gogType.GetProperty("InstallationPath")?.GetGetMethod();
-                var clientPathMethod = gogType.GetProperty("ClientExecPath")?.GetGetMethod();
+                var isInstalledMethod = mainType.GetProperty("IsInstalled")?.GetGetMethod();
+                var isRunningMethod = mainType.GetProperty("IsRunning")?.GetGetMethod();
+                var installPathMethod = mainType.GetProperty("InstallationPath")?.GetGetMethod();
+                var clientPathMethod = mainType.GetProperty("ClientExecPath")?.GetGetMethod();
 
-                var getInstallActionsMethod = gogLibraryType.GetMethod("GetInstallActions");
-                var getUninstallActionsMethod = gogLibraryType.GetMethod("GetUninstallActions");
-                var getPlayActionsMethod = gogLibraryType.GetMethod("GetPlayActions");
-                var getInstalledGamesMethod = gogLibraryType.GetMethod("GetInstalledGames",
+                var getInstallActionsMethod = libraryType.GetMethod("GetInstallActions");
+                var getUninstallActionsMethod = libraryType.GetMethod("GetUninstallActions");
+                var getPlayActionsMethod = libraryType.GetMethod("GetPlayActions");
+                var getInstalledGamesMethod = libraryType.GetMethod("GetInstalledGames",
                     BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
 
                 if (isInstalledMethod == null || installPathMethod == null || clientPathMethod == null
@@ -69,18 +70,18 @@ namespace WineBridgePlugin.Patchers
                     return;
                 }
 
-                var gogIsInstalledPrefix = AccessTools.Method(typeof(GogPatches), "IsInstalledPrefix");
+                var isInstalledPrefix = AccessTools.Method(typeof(GogPatches), "IsInstalledPrefix");
                 HarmonyPatcher.HarmonyInstance.Patch(isInstalledMethod,
-                    prefix: new HarmonyMethod(gogIsInstalledPrefix));
-                var gogIsRunningPrefix = AccessTools.Method(typeof(GogPatches), "IsRunningPrefix");
+                    prefix: new HarmonyMethod(isInstalledPrefix));
+                var isRunningPrefix = AccessTools.Method(typeof(GogPatches), "IsRunningPrefix");
                 HarmonyPatcher.HarmonyInstance.Patch(isRunningMethod,
-                    prefix: new HarmonyMethod(gogIsRunningPrefix));
-                var gogInstallationPathPrefix = AccessTools.Method(typeof(GogPatches), "InstallationPathPrefix");
+                    prefix: new HarmonyMethod(isRunningPrefix));
+                var installationPathPrefix = AccessTools.Method(typeof(GogPatches), "InstallationPathPrefix");
                 HarmonyPatcher.HarmonyInstance.Patch(installPathMethod,
-                    prefix: new HarmonyMethod(gogInstallationPathPrefix));
-                var gogClientPathPrefix = AccessTools.Method(typeof(GogPatches), "ClientExecPathPrefix");
+                    prefix: new HarmonyMethod(installationPathPrefix));
+                var clientPathPrefix = AccessTools.Method(typeof(GogPatches), "ClientExecPathPrefix");
                 HarmonyPatcher.HarmonyInstance.Patch(clientPathMethod,
-                    prefix: new HarmonyMethod(gogClientPathPrefix));
+                    prefix: new HarmonyMethod(clientPathPrefix));
 
                 var getInstallActionsPrefix = AccessTools.Method(typeof(GogLibraryPatches), "GetInstallActionsPrefix");
                 HarmonyPatcher.HarmonyInstance.Patch(getInstallActionsMethod,
@@ -96,12 +97,12 @@ namespace WineBridgePlugin.Patchers
                 HarmonyPatcher.HarmonyInstance.Patch(getInstalledGamesMethod,
                     prefix: new HarmonyMethod(getInstalledGamesPrefix));
 
-                Logger.Info("Gog methods patched successfully!");
+                Logger.Info("GOG methods patched successfully!");
                 State = PatchingState.Patched;
             }
             catch (Exception e)
             {
-                Logger.Error(e, "Error occurred while patching Gog methods!");
+                Logger.Error(e, "Error occurred while patching GOG methods!");
                 State = PatchingState.Error;
             }
         }
@@ -112,7 +113,7 @@ namespace WineBridgePlugin.Patchers
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
         private static bool IsInstalledPrefix([SuppressMessage("ReSharper", "InconsistentNaming")] ref bool __result)
         {
-            if (!WineBridgeSettings.HeroicGogIntegrationEnabled)
+            if (!WineBridgeSettings.AnyGogIntegrationEnabled)
             {
                 return true;
             }
@@ -124,7 +125,7 @@ namespace WineBridgePlugin.Patchers
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
         private static bool IsRunningPrefix([SuppressMessage("ReSharper", "InconsistentNaming")] ref bool __result)
         {
-            if (!WineBridgeSettings.HeroicGogIntegrationEnabled)
+            if (!WineBridgeSettings.AnyGogIntegrationEnabled)
             {
                 return true;
             }
@@ -138,12 +139,14 @@ namespace WineBridgePlugin.Patchers
             [SuppressMessage("ReSharper", "InconsistentNaming")]
             ref string __result)
         {
-            if (!WineBridgeSettings.HeroicGogIntegrationEnabled)
+            if (!WineBridgeSettings.AnyGogIntegrationEnabled)
             {
                 return true;
             }
 
-            var installationPath = WineBridgeSettings.HeroicDataPathLinux;
+            var installationPath = WineBridgeSettings.HeroicGogIntegrationEnabled
+                ? WineBridgeSettings.HeroicDataPathLinux
+                : WineBridgeSettings.LutrisDataPathLinux;
             if (installationPath != null)
             {
                 __result = installationPath;
@@ -158,22 +161,28 @@ namespace WineBridgePlugin.Patchers
             [SuppressMessage("ReSharper", "InconsistentNaming")]
             ref string __result)
         {
-            if (!WineBridgeSettings.HeroicGogIntegrationEnabled)
+            if (!WineBridgeSettings.AnyGogIntegrationEnabled)
             {
                 return true;
             }
 
-            __result = Constants.DummyHeroicExe;
+            __result = WineBridgeSettings.HeroicGogIntegrationEnabled
+                ? Constants.DummyHeroicExe
+                : Constants.DummyLutrisExe;
             return false;
         }
     }
 
     internal static class GogLibraryPatches
     {
-        private static bool GetInstallActionsPrefix(LibraryPlugin __instance,
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        private static bool GetInstallActionsPrefix(
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
+            LibraryPlugin __instance,
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
             ref IEnumerable<InstallController> __result, GetInstallActionsArgs args)
         {
-            if (!WineBridgeSettings.HeroicGogIntegrationEnabled)
+            if (!WineBridgeSettings.AnyGogIntegrationEnabled)
             {
                 return true;
             }
@@ -182,21 +191,33 @@ namespace WineBridgePlugin.Patchers
             return false;
         }
 
-        private static IEnumerable<InstallController> GetInstallActions(LibraryPlugin __instance,
+        private static IEnumerable<InstallController> GetInstallActions(LibraryPlugin libraryPlugin,
             GetInstallActionsArgs args)
         {
-            if (args.Game.PluginId != __instance.Id)
+            if (args.Game.PluginId != libraryPlugin.Id)
             {
                 yield break;
             }
 
-            yield return new HeroicInstallController(args.Game, HeroicPlatform.Gog);
+            if (WineBridgeSettings.HeroicGogIntegrationEnabled)
+            {
+                yield return new HeroicInstallController(args.Game, HeroicPlatform.Gog);
+            }
+
+            if (WineBridgeSettings.LutrisGogIntegrationEnabled)
+            {
+                yield return new LutrisInstallController(args.Game, LutrisPlatform.Gog);
+            }
         }
 
-        private static bool GetUninstallActionsPrefix(LibraryPlugin __instance,
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        private static bool GetUninstallActionsPrefix(
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
+            LibraryPlugin __instance,
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
             ref IEnumerable<UninstallController> __result, GetUninstallActionsArgs args)
         {
-            if (!WineBridgeSettings.HeroicGogIntegrationEnabled)
+            if (!WineBridgeSettings.AnyGogIntegrationEnabled)
             {
                 return true;
             }
@@ -205,21 +226,38 @@ namespace WineBridgePlugin.Patchers
             return false;
         }
 
-        private static IEnumerable<UninstallController> GetUninstallActions(LibraryPlugin __instance,
+        private static IEnumerable<UninstallController> GetUninstallActions(LibraryPlugin libraryPlugin,
             GetUninstallActionsArgs args)
         {
-            if (args.Game.PluginId != __instance.Id)
+            if (args.Game.PluginId != libraryPlugin.Id)
             {
                 yield break;
             }
 
-            yield return new HeroicUninstallController(args.Game, HeroicPlatform.Gog);
+            if (WineBridgeSettings.HeroicGogIntegrationEnabled && (!WineBridgeSettings.LutrisGogIntegrationEnabled ||
+                                                                   HeroicGamesService.IsGameInstalled(args.Game,
+                                                                       HeroicPlatform.Gog)))
+            {
+                yield return new HeroicUninstallController(args.Game, HeroicPlatform.Gog);
+            }
+
+            if (WineBridgeSettings.LutrisGogIntegrationEnabled && (!WineBridgeSettings.HeroicGogIntegrationEnabled ||
+                                                                   LutrisGamesService.IsGameInstalled(args.Game,
+                                                                       LutrisPlatform.Gog)))
+            {
+                yield return new LutrisUninstallController(args.Game, LutrisPlatform.Gog);
+            }
         }
 
-        private static bool GetPlayActionsPrefix(LibraryPlugin __instance, ref IEnumerable<PlayController> __result,
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        private static bool GetPlayActionsPrefix(
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
+            LibraryPlugin __instance,
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
+            ref IEnumerable<PlayController> __result,
             GetPlayActionsArgs args)
         {
-            if (!WineBridgeSettings.HeroicGogIntegrationEnabled)
+            if (!WineBridgeSettings.AnyGogIntegrationEnabled)
             {
                 return true;
             }
@@ -228,25 +266,57 @@ namespace WineBridgePlugin.Patchers
             return false;
         }
 
-        private static IEnumerable<PlayController> GetPlayActions(LibraryPlugin __instance, GetPlayActionsArgs args)
+        private static IEnumerable<PlayController> GetPlayActions(LibraryPlugin libraryPlugin, GetPlayActionsArgs args)
         {
-            if (args.Game.PluginId != __instance.Id)
+            if (args.Game.PluginId != libraryPlugin.Id)
             {
                 yield break;
             }
 
-            yield return new HeroicPlayController(args.Game, HeroicPlatform.Gog);
+            if (WineBridgeSettings.HeroicGogIntegrationEnabled && (!WineBridgeSettings.LutrisGogIntegrationEnabled ||
+                                                                   HeroicGamesService.IsGameInstalled(args.Game,
+                                                                       HeroicPlatform.Gog)))
+            {
+                yield return new HeroicPlayController(args.Game, HeroicPlatform.Gog);
+            }
+
+            if (WineBridgeSettings.LutrisGogIntegrationEnabled && (!WineBridgeSettings.HeroicGogIntegrationEnabled ||
+                                                                   LutrisGamesService.IsGameInstalled(args.Game,
+                                                                       LutrisPlatform.Gog)))
+            {
+                yield return new LutrisPlayController(args.Game, LutrisPlatform.Gog);
+            }
         }
 
-
-        private static bool GetInstalledGamesPrefix(ref Dictionary<string, GameMetadata> __result)
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        private static bool GetInstalledGamesPrefix(
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
+            ref Dictionary<string, GameMetadata> __result)
         {
-            if (!WineBridgeSettings.HeroicGogIntegrationEnabled)
+            if (!WineBridgeSettings.AnyGogIntegrationEnabled)
             {
                 return true;
             }
 
-            __result = HeroicGamesService.GetInstalledGames(HeroicPlatform.Gog);
+            var result = new Dictionary<string, GameMetadata>();
+            if (WineBridgeSettings.HeroicGogIntegrationEnabled)
+            {
+                HeroicGamesService.GetInstalledGames(HeroicPlatform.Gog)
+                    .ForEach(game => result.Add(game.Key, game.Value));
+            }
+
+            if (WineBridgeSettings.LutrisGogIntegrationEnabled)
+            {
+                LutrisGamesService.GetInstalledGames(LutrisPlatform.Gog).ForEach(game =>
+                {
+                    if (!result.ContainsKey(game.Key))
+                    {
+                        result.Add(game.Key, game.Value);
+                    }
+                });
+            }
+
+            __result = result;
             return false;
         }
     }

@@ -6,17 +6,17 @@ using Playnite.SDK.Plugins;
 using WineBridgePlugin.Processes;
 using WineBridgePlugin.Settings;
 
-namespace WineBridgePlugin.Integrations.Heroic
+namespace WineBridgePlugin.Integrations.Lutris
 {
-    public class HeroicInstallController : InstallController
+    public class LutrisInstallController : InstallController
     {
         private CancellationTokenSource _watcherToken;
-        private readonly HeroicPlatform _platform;
+        private readonly LutrisPlatform _platform;
 
-        public HeroicInstallController(Game game, HeroicPlatform platform) : base(game)
+        public LutrisInstallController(Game game, LutrisPlatform platform) : base(game)
         {
             _platform = platform;
-            Name = "Install using Heroic";
+            Name = "Install using Lutris";
         }
 
         public override void Dispose()
@@ -26,13 +26,20 @@ namespace WineBridgePlugin.Integrations.Heroic
 
         public override void Install(InstallActionArgs args)
         {
-            var executablePath = WineBridgeSettings.HeroicExecutablePathLinux;
+            var executablePath = WineBridgeSettings.LutrisExecutablePathLinux;
             if (executablePath == null)
             {
-                throw new Exception("Heroic installation path not set.");
+                throw new Exception("Lutris installation path not set.");
             }
 
-            LinuxProcessStarter.Start($"{executablePath}");
+            var service = LutrisUtils.GetLutrisService(_platform);
+            var id = LutrisClient.GetInstallId(_platform, Game.GameId);
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new Exception("Could not find game id");
+            }
+
+            LinuxProcessStarter.Start($"{executablePath} \"lutris:{service}:{id}\"");
             StartInstallWatcher();
         }
 
@@ -48,7 +55,7 @@ namespace WineBridgePlugin.Integrations.Heroic
                         return;
                     }
 
-                    var installedGames = HeroicGamesService.GetInstalledGames(_platform);
+                    var installedGames = LutrisGamesService.GetInstalledGames(_platform);
                     if (installedGames.TryGetValue(Game.GameId, out var installedGame))
                     {
                         var installInfo = new GameInstallationData
@@ -66,15 +73,15 @@ namespace WineBridgePlugin.Integrations.Heroic
         }
     }
 
-    public class HeroicUninstallController : UninstallController
+    public class LutrisUninstallController : UninstallController
     {
         private CancellationTokenSource _watcherToken;
-        private readonly HeroicPlatform _platform;
+        private readonly LutrisPlatform _platform;
 
-        public HeroicUninstallController(Game game, HeroicPlatform platform) : base(game)
+        public LutrisUninstallController(Game game, LutrisPlatform platform) : base(game)
         {
             _platform = platform;
-            Name = "Uninstall using Heroic";
+            Name = "Uninstall using Lutris";
         }
 
         public override void Dispose()
@@ -84,10 +91,10 @@ namespace WineBridgePlugin.Integrations.Heroic
 
         public override void Uninstall(UninstallActionArgs args)
         {
-            var executablePath = WineBridgeSettings.HeroicExecutablePathLinux;
+            var executablePath = WineBridgeSettings.LutrisExecutablePathLinux;
             if (executablePath == null)
             {
-                throw new Exception("Heroic installation path not set.");
+                throw new Exception("Lutris installation path not set.");
             }
 
             LinuxProcessStarter.Start($"{executablePath}");
@@ -106,7 +113,7 @@ namespace WineBridgePlugin.Integrations.Heroic
                         return;
                     }
 
-                    var installedGames = HeroicGamesService.GetInstalledGames(_platform);
+                    var installedGames = LutrisGamesService.GetInstalledGames(_platform);
                     if (!installedGames.ContainsKey(Game.GameId))
                     {
                         InvokeOnUninstalled(new GameUninstalledEventArgs());
@@ -119,15 +126,15 @@ namespace WineBridgePlugin.Integrations.Heroic
         }
     }
 
-    public class HeroicPlayController : PlayController
+    public class LutrisPlayController : PlayController
     {
         private CancellationTokenSource _watcherToken;
-        private readonly HeroicPlatform _platform;
+        private readonly LutrisPlatform _platform;
 
-        public HeroicPlayController(Game game, HeroicPlatform platform) : base(game)
+        public LutrisPlayController(Game game, LutrisPlatform platform) : base(game)
         {
             _platform = platform;
-            Name = "Play using Heroic";
+            Name = "Play using Lutris";
         }
 
         public override void Dispose()
@@ -137,15 +144,15 @@ namespace WineBridgePlugin.Integrations.Heroic
 
         public override void Play(PlayActionArgs args)
         {
-            var executablePath = WineBridgeSettings.HeroicExecutablePathLinux;
+            var executablePath = WineBridgeSettings.LutrisExecutablePathLinux;
             if (executablePath == null)
             {
-                throw new Exception("Heroic installation path not set.");
+                throw new Exception("Lutris installation path not set.");
             }
 
             _watcherToken = new CancellationTokenSource();
 
-            var process = HeroicProcessStarter.Start(Game, _platform);
+            var process = LutrisProcessStarter.Start(Game, _platform);
 
             LinuxProcessMonitor.TrackLinuxProcess(this, process, _watcherToken);
         }

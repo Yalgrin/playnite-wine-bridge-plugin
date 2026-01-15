@@ -8,6 +8,7 @@ using Playnite.SDK;
 using Playnite.SDK.Models;
 using Playnite.SDK.Plugins;
 using WineBridgePlugin.Integrations.Heroic;
+using WineBridgePlugin.Integrations.Lutris;
 using WineBridgePlugin.Models;
 using WineBridgePlugin.Settings;
 
@@ -38,50 +39,48 @@ namespace WineBridgePlugin.Patchers
                     return;
                 }
 
-                var gogType = assembly.GetType("AmazonGamesLibrary.AmazonGames");
-                var gogLibraryType = assembly.GetType("AmazonGamesLibrary.AmazonGamesLibrary");
-                // var steamPlayControllerType = assembly.GetType("AmazonGamesLibrary.SteamPlayController");
+                var mainType = assembly.GetType("AmazonGamesLibrary.AmazonGames");
+                var libraryType = assembly.GetType("AmazonGamesLibrary.AmazonGamesLibrary");
 
-                if (gogType == null || gogLibraryType == null)
+                if (mainType == null || libraryType == null)
                 {
                     Logger.Warn("Failed to find AmazonGamesLibrary classes!");
                     State = PatchingState.MissingClasses;
                     return;
                 }
 
-                var isInstalledMethod = gogType.GetProperty("IsInstalled")?.GetGetMethod();
-                var isRunningMethod = gogType.GetProperty("IsRunning")?.GetGetMethod();
-                var installPathMethod = gogType.GetProperty("InstallationPath")?.GetGetMethod();
-                var clientPathMethod = gogType.GetProperty("ClientExecPath")?.GetGetMethod();
+                var isInstalledMethod = mainType.GetProperty("IsInstalled")?.GetGetMethod();
+                var isRunningMethod = mainType.GetProperty("IsRunning")?.GetGetMethod();
+                var installPathMethod = mainType.GetProperty("InstallationPath")?.GetGetMethod();
+                var clientPathMethod = mainType.GetProperty("ClientExecPath")?.GetGetMethod();
 
-                var getInstallActionsMethod = gogLibraryType.GetMethod("GetInstallActions");
-                var getUninstallActionsMethod = gogLibraryType.GetMethod("GetUninstallActions");
-                var getPlayActionsMethod = gogLibraryType.GetMethod("GetPlayActions");
-                var getInstalledGamesMethod = gogLibraryType.GetMethod("GetInstalledGames",
+                var getInstallActionsMethod = libraryType.GetMethod("GetInstallActions");
+                var getUninstallActionsMethod = libraryType.GetMethod("GetUninstallActions");
+                var getPlayActionsMethod = libraryType.GetMethod("GetPlayActions");
+                var getInstalledGamesMethod = libraryType.GetMethod("GetInstalledGames",
                     BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
                 if (isInstalledMethod == null || installPathMethod == null || clientPathMethod == null
                     || getInstallActionsMethod == null || getUninstallActionsMethod == null ||
-                    getPlayActionsMethod == null
-                    || getInstalledGamesMethod == null)
+                    getPlayActionsMethod == null || getInstalledGamesMethod == null)
                 {
                     Logger.Warn("Failed to find AmazonGamesLibrary methods!");
                     State = PatchingState.MissingClasses;
                     return;
                 }
 
-                var gogIsInstalledPrefix = AccessTools.Method(typeof(AmazonPatches), "IsInstalledPrefix");
+                var isInstalledPrefix = AccessTools.Method(typeof(AmazonPatches), "IsInstalledPrefix");
                 HarmonyPatcher.HarmonyInstance.Patch(isInstalledMethod,
-                    prefix: new HarmonyMethod(gogIsInstalledPrefix));
-                var gogIsRunningPrefix = AccessTools.Method(typeof(AmazonPatches), "IsRunningPrefix");
+                    prefix: new HarmonyMethod(isInstalledPrefix));
+                var isRunningPrefix = AccessTools.Method(typeof(AmazonPatches), "IsRunningPrefix");
                 HarmonyPatcher.HarmonyInstance.Patch(isRunningMethod,
-                    prefix: new HarmonyMethod(gogIsRunningPrefix));
-                var gogInstallationPathPrefix = AccessTools.Method(typeof(AmazonPatches), "InstallationPathPrefix");
+                    prefix: new HarmonyMethod(isRunningPrefix));
+                var installationPathPrefix = AccessTools.Method(typeof(AmazonPatches), "InstallationPathPrefix");
                 HarmonyPatcher.HarmonyInstance.Patch(installPathMethod,
-                    prefix: new HarmonyMethod(gogInstallationPathPrefix));
-                var gogClientPathPrefix = AccessTools.Method(typeof(AmazonPatches), "ClientExecPathPrefix");
+                    prefix: new HarmonyMethod(installationPathPrefix));
+                var clientPathPrefix = AccessTools.Method(typeof(AmazonPatches), "ClientExecPathPrefix");
                 HarmonyPatcher.HarmonyInstance.Patch(clientPathMethod,
-                    prefix: new HarmonyMethod(gogClientPathPrefix));
+                    prefix: new HarmonyMethod(clientPathPrefix));
 
                 var getInstallActionsPrefix =
                     AccessTools.Method(typeof(AmazonGamesLibraryPatches), "GetInstallActionsPrefix");
@@ -116,7 +115,7 @@ namespace WineBridgePlugin.Patchers
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
         private static bool IsInstalledPrefix([SuppressMessage("ReSharper", "InconsistentNaming")] ref bool __result)
         {
-            if (!WineBridgeSettings.HeroicAmazonIntegrationEnabled)
+            if (!WineBridgeSettings.AnyAmazonIntegrationEnabled)
             {
                 return true;
             }
@@ -128,7 +127,7 @@ namespace WineBridgePlugin.Patchers
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
         private static bool IsRunningPrefix([SuppressMessage("ReSharper", "InconsistentNaming")] ref bool __result)
         {
-            if (!WineBridgeSettings.HeroicAmazonIntegrationEnabled)
+            if (!WineBridgeSettings.AnyAmazonIntegrationEnabled)
             {
                 return true;
             }
@@ -142,12 +141,14 @@ namespace WineBridgePlugin.Patchers
             [SuppressMessage("ReSharper", "InconsistentNaming")]
             ref string __result)
         {
-            if (!WineBridgeSettings.HeroicAmazonIntegrationEnabled)
+            if (!WineBridgeSettings.AnyAmazonIntegrationEnabled)
             {
                 return true;
             }
 
-            var installationPath = WineBridgeSettings.HeroicDataPathLinux;
+            var installationPath = WineBridgeSettings.HeroicAmazonIntegrationEnabled
+                ? WineBridgeSettings.HeroicDataPathLinux
+                : WineBridgeSettings.LutrisDataPathLinux;
             if (installationPath != null)
             {
                 __result = installationPath;
@@ -162,22 +163,28 @@ namespace WineBridgePlugin.Patchers
             [SuppressMessage("ReSharper", "InconsistentNaming")]
             ref string __result)
         {
-            if (!WineBridgeSettings.HeroicAmazonIntegrationEnabled)
+            if (!WineBridgeSettings.AnyAmazonIntegrationEnabled)
             {
                 return true;
             }
 
-            __result = Constants.DummyHeroicExe;
+            __result = WineBridgeSettings.HeroicAmazonIntegrationEnabled
+                ? Constants.DummyHeroicExe
+                : Constants.DummyLutrisExe;
             return false;
         }
     }
 
     internal static class AmazonGamesLibraryPatches
     {
-        private static bool GetInstallActionsPrefix(LibraryPlugin __instance,
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        private static bool GetInstallActionsPrefix(
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
+            LibraryPlugin __instance,
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
             ref IEnumerable<InstallController> __result, GetInstallActionsArgs args)
         {
-            if (!WineBridgeSettings.HeroicAmazonIntegrationEnabled)
+            if (!WineBridgeSettings.AnyAmazonIntegrationEnabled)
             {
                 return true;
             }
@@ -186,21 +193,33 @@ namespace WineBridgePlugin.Patchers
             return false;
         }
 
-        private static IEnumerable<InstallController> GetInstallActions(LibraryPlugin __instance,
+        private static IEnumerable<InstallController> GetInstallActions(LibraryPlugin libraryPlugin,
             GetInstallActionsArgs args)
         {
-            if (args.Game.PluginId != __instance.Id)
+            if (args.Game.PluginId != libraryPlugin.Id)
             {
                 yield break;
             }
 
-            yield return new HeroicInstallController(args.Game, HeroicPlatform.Amazon);
+            if (WineBridgeSettings.HeroicAmazonIntegrationEnabled)
+            {
+                yield return new HeroicInstallController(args.Game, HeroicPlatform.Amazon);
+            }
+
+            if (WineBridgeSettings.LutrisAmazonIntegrationEnabled)
+            {
+                yield return new LutrisInstallController(args.Game, LutrisPlatform.Amazon);
+            }
         }
 
-        private static bool GetUninstallActionsPrefix(LibraryPlugin __instance,
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        private static bool GetUninstallActionsPrefix(
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
+            LibraryPlugin __instance,
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
             ref IEnumerable<UninstallController> __result, GetUninstallActionsArgs args)
         {
-            if (!WineBridgeSettings.HeroicAmazonIntegrationEnabled)
+            if (!WineBridgeSettings.AnyAmazonIntegrationEnabled)
             {
                 return true;
             }
@@ -209,21 +228,38 @@ namespace WineBridgePlugin.Patchers
             return false;
         }
 
-        private static IEnumerable<UninstallController> GetUninstallActions(LibraryPlugin __instance,
+        private static IEnumerable<UninstallController> GetUninstallActions(LibraryPlugin libraryPlugin,
             GetUninstallActionsArgs args)
         {
-            if (args.Game.PluginId != __instance.Id)
+            if (args.Game.PluginId != libraryPlugin.Id)
             {
                 yield break;
             }
 
-            yield return new HeroicUninstallController(args.Game, HeroicPlatform.Amazon);
+            if (WineBridgeSettings.HeroicAmazonIntegrationEnabled &&
+                (!WineBridgeSettings.LutrisAmazonIntegrationEnabled ||
+                 HeroicGamesService.IsGameInstalled(args.Game, HeroicPlatform.Amazon)))
+            {
+                yield return new HeroicUninstallController(args.Game, HeroicPlatform.Amazon);
+            }
+
+            if (WineBridgeSettings.LutrisAmazonIntegrationEnabled &&
+                (!WineBridgeSettings.HeroicAmazonIntegrationEnabled ||
+                 LutrisGamesService.IsGameInstalled(args.Game, LutrisPlatform.Amazon)))
+            {
+                yield return new LutrisUninstallController(args.Game, LutrisPlatform.Amazon);
+            }
         }
 
-        private static bool GetPlayActionsPrefix(LibraryPlugin __instance, ref IEnumerable<PlayController> __result,
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        private static bool GetPlayActionsPrefix(
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
+            LibraryPlugin __instance,
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
+            ref IEnumerable<PlayController> __result,
             GetPlayActionsArgs args)
         {
-            if (!WineBridgeSettings.HeroicAmazonIntegrationEnabled)
+            if (!WineBridgeSettings.AnyAmazonIntegrationEnabled)
             {
                 return true;
             }
@@ -232,25 +268,57 @@ namespace WineBridgePlugin.Patchers
             return false;
         }
 
-        private static IEnumerable<PlayController> GetPlayActions(LibraryPlugin __instance, GetPlayActionsArgs args)
+        private static IEnumerable<PlayController> GetPlayActions(LibraryPlugin libraryPlugin, GetPlayActionsArgs args)
         {
-            if (args.Game.PluginId != __instance.Id)
+            if (args.Game.PluginId != libraryPlugin.Id)
             {
                 yield break;
             }
 
-            yield return new HeroicPlayController(args.Game, HeroicPlatform.Amazon);
+            if (WineBridgeSettings.HeroicAmazonIntegrationEnabled &&
+                (!WineBridgeSettings.LutrisAmazonIntegrationEnabled ||
+                 HeroicGamesService.IsGameInstalled(args.Game, HeroicPlatform.Amazon)))
+            {
+                yield return new HeroicPlayController(args.Game, HeroicPlatform.Amazon);
+            }
+
+            if (WineBridgeSettings.LutrisAmazonIntegrationEnabled &&
+                (!WineBridgeSettings.HeroicAmazonIntegrationEnabled ||
+                 LutrisGamesService.IsGameInstalled(args.Game, LutrisPlatform.Amazon)))
+            {
+                yield return new LutrisPlayController(args.Game, LutrisPlatform.Amazon);
+            }
         }
 
-
-        private static bool GetInstalledGamesPrefix(ref Dictionary<string, GameMetadata> __result)
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        private static bool GetInstalledGamesPrefix(
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
+            ref Dictionary<string, GameMetadata> __result)
         {
-            if (!WineBridgeSettings.HeroicAmazonIntegrationEnabled)
+            if (!WineBridgeSettings.AnyAmazonIntegrationEnabled)
             {
                 return true;
             }
 
-            __result = HeroicGamesService.GetInstalledGames(HeroicPlatform.Amazon);
+            var result = new Dictionary<string, GameMetadata>();
+            if (WineBridgeSettings.HeroicAmazonIntegrationEnabled)
+            {
+                HeroicGamesService.GetInstalledGames(HeroicPlatform.Amazon)
+                    .ForEach(game => result.Add(game.Key, game.Value));
+            }
+
+            if (WineBridgeSettings.LutrisAmazonIntegrationEnabled)
+            {
+                LutrisGamesService.GetInstalledGames(LutrisPlatform.Amazon).ForEach(game =>
+                {
+                    if (!result.ContainsKey(game.Key))
+                    {
+                        result.Add(game.Key, game.Value);
+                    }
+                });
+            }
+
+            __result = result;
             return false;
         }
     }

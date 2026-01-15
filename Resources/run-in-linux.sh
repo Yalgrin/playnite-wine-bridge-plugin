@@ -32,7 +32,7 @@ then
   eval $COMMAND
   print_log "Done execution, looking for processes..."
   
-  for i in {0..59}
+  for i in {0..119}
   do
     CURRENT_PROCESS_IDS=$(pgrep -f "$TRACKING_EXPRESSION")
     ASYNC_PROCESS_IDS=$(comm -23 <(echo "$CURRENT_PROCESS_IDS" | sort) <(echo "$PREVIOUS_PROCESS_IDS" | sort))

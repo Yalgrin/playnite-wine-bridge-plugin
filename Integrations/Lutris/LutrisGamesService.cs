@@ -1,15 +1,14 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Playnite.SDK.Models;
 using WineBridgePlugin.Utils;
 
-namespace WineBridgePlugin.Integrations.Heroic
+namespace WineBridgePlugin.Integrations.Lutris
 {
-    public static class HeroicGamesService
+    public static class LutrisGamesService
     {
-        internal static Dictionary<string, GameMetadata> GetInstalledGames(HeroicPlatform platform)
+        internal static Dictionary<string, GameMetadata> GetInstalledGames(LutrisPlatform platform)
         {
-            var games = HeroicClient.GetInstalledGames(platform);
+            var games = LutrisClient.GetInstalledGames(platform);
 
             var result = new Dictionary<string, GameMetadata>();
             games?.ForEach(game =>
@@ -19,8 +18,8 @@ namespace WineBridgePlugin.Integrations.Heroic
                 {
                     Source = source != null ? new MetadataNameProperty(source) : null,
                     InstallDirectory = WineUtils.LinuxPathToWindows(game.InstallPath),
-                    GameId = game.AppId,
-                    Name = game.Name,
+                    GameId = game.PlayniteGameId,
+                    Name = game.ServiceName,
                     IsInstalled = true,
                     Platforms = new HashSet<MetadataProperty> { new MetadataSpecProperty("pc_windows") }
                 };
@@ -30,26 +29,30 @@ namespace WineBridgePlugin.Integrations.Heroic
             return result;
         }
 
-        private static string GetSource(HeroicPlatform platform)
+        private static string GetSource(LutrisPlatform platform)
         {
             switch (platform)
             {
-                case HeroicPlatform.Gog:
+                case LutrisPlatform.Gog:
                     return "GOG";
-                case HeroicPlatform.Amazon:
+                case LutrisPlatform.Amazon:
                     return "Amazon";
-                case HeroicPlatform.Epic:
+                case LutrisPlatform.Epic:
                     return "Epic";
-                case HeroicPlatform.Custom:
+                case LutrisPlatform.EaApp:
+                    return "EA app";
+                case LutrisPlatform.BattleNet:
+                    return "Battle.net";
+                case LutrisPlatform.ItchIo:
+                    return "itch.io";
                 default:
                     return null;
             }
         }
 
-        public static bool IsGameInstalled(Game game, HeroicPlatform platform)
+        public static bool IsGameInstalled(Game game, LutrisPlatform platform)
         {
-            var installedGames = HeroicClient.GetInstalledGames(platform);
-            return installedGames.Any(e => e.AppId == game.GameId);
+            return LutrisClient.IsGameInstalled(platform, game.GameId);
         }
     }
 }

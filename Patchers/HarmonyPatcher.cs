@@ -30,6 +30,9 @@ namespace WineBridgePlugin.Patchers
             GogPatcher.Patch();
             AmazonPatcher.Patch();
             EpicPatcher.Patch();
+            BattleNetPatcher.Patch();
+            ItchIoPatcher.Patch();
+            EaPatcher.Patch();
 
             AppDomain.CurrentDomain.AssemblyLoad += (sender, args) =>
             {
@@ -50,12 +53,27 @@ namespace WineBridgePlugin.Patchers
                     case "EpicLibrary":
                         EpicPatcher.Patch();
                         break;
+                    case "BattleNetLibrary":
+                        BattleNetPatcher.Patch();
+                        break;
+                    case "ItchioLibrary":
+                        ItchIoPatcher.Patch();
+                        break;
+                    case "EaLibrary":
+                        EaPatcher.Patch();
+                        break;
                 }
             };
         }
 
         public static void MakeScriptExecutable()
         {
+            if (!WineDetector.IsRunningUnderWine())
+            {
+                Logger.Warn("Not running under Wine, skipping making script executable.");
+                return;
+            }
+
             if (!WineBridgeSettings.SetScriptExecutePermissions)
             {
                 return;

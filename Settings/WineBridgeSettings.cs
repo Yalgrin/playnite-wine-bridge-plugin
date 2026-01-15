@@ -40,6 +40,47 @@
         public static string HeroicExecutablePathLinux => WineBridgePlugin.Settings?.HeroicExecutablePathLinux ??
                                                           DefaultSettingFinder.HeroicConfiguration.ExecutablePath;
 
+
+        public static bool AnyLutrisIntegrationEnabled => LutrisGogIntegrationEnabled ||
+                                                          LutrisAmazonIntegrationEnabled ||
+                                                          LutrisEpicIntegrationEnabled ||
+                                                          LutrisEaIntegrationEnabled ||
+                                                          LutrisBattleNetIntegrationEnabled ||
+                                                          LutrisItchIoIntegrationEnabled;
+
+        public static bool LutrisGogIntegrationEnabled =>
+            WineBridgePlugin.Settings?.LutrisGogIntegrationEnabled ?? false;
+
+        public static bool LutrisAmazonIntegrationEnabled =>
+            WineBridgePlugin.Settings?.LutrisAmazonIntegrationEnabled ?? false;
+
+        public static bool LutrisEpicIntegrationEnabled =>
+            WineBridgePlugin.Settings?.LutrisEpicIntegrationEnabled ?? false;
+
+        public static bool LutrisEaIntegrationEnabled =>
+            WineBridgePlugin.Settings?.LutrisEaIntegrationEnabled ?? false;
+
+        public static bool LutrisBattleNetIntegrationEnabled =>
+            WineBridgePlugin.Settings?.LutrisBattleNetIntegrationEnabled ?? false;
+
+        public static bool LutrisItchIoIntegrationEnabled =>
+            WineBridgePlugin.Settings?.LutrisItchIoIntegrationEnabled ?? false;
+
+        public static string LutrisDataPathLinux => WineBridgePlugin.Settings?.LutrisDataPathLinux ??
+                                                    DefaultSettingFinder.LutrisConfiguration.DataPath;
+
+        public static string LutrisExecutablePathLinux => WineBridgePlugin.Settings?.LutrisExecutablePathLinux ??
+                                                          DefaultSettingFinder.LutrisConfiguration.ExecutablePath;
+
         public static bool DebugLoggingEnabled => WineBridgePlugin.Settings?.DebugLoggingEnabled ?? false;
+
+        public static bool AnyGogIntegrationEnabled =>
+            LutrisGogIntegrationEnabled || HeroicGogIntegrationEnabled;
+
+        public static bool AnyAmazonIntegrationEnabled =>
+            LutrisAmazonIntegrationEnabled || HeroicAmazonIntegrationEnabled;
+
+        public static bool AnyEpicIntegrationEnabled =>
+            LutrisEpicIntegrationEnabled || HeroicEpicIntegrationEnabled;
     }
 }

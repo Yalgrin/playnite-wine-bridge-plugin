@@ -7,14 +7,13 @@ using HarmonyLib;
 using Playnite.SDK;
 using Playnite.SDK.Models;
 using Playnite.SDK.Plugins;
-using WineBridgePlugin.Integrations.Heroic;
 using WineBridgePlugin.Integrations.Lutris;
 using WineBridgePlugin.Models;
 using WineBridgePlugin.Settings;
 
 namespace WineBridgePlugin.Patchers
 {
-    public static class EpicPatcher
+    public static class ItchIoPatcher
     {
         private static readonly ILogger Logger = LogManager.GetLogger();
 
@@ -30,21 +29,21 @@ namespace WineBridgePlugin.Patchers
             try
             {
                 var assembly = AppDomain.CurrentDomain.GetAssemblies()
-                    .FirstOrDefault(a => a.GetName().Name == "EpicLibrary");
+                    .FirstOrDefault(a => a.GetName().Name == "ItchioLibrary");
 
                 if (assembly == null)
                 {
-                    Logger.Warn("Failed to find EpicLibrary assembly!");
+                    Logger.Warn("Failed to find ItchioLibrary assembly!");
                     State = PatchingState.MissingClasses;
                     return;
                 }
 
-                var mainType = assembly.GetType("EpicLibrary.EpicLauncher");
-                var libraryType = assembly.GetType("EpicLibrary.EpicLibrary");
+                var mainType = assembly.GetType("ItchioLibrary.Itch");
+                var libraryType = assembly.GetType("ItchioLibrary.ItchioLibrary");
 
                 if (mainType == null || libraryType == null)
                 {
-                    Logger.Warn("Failed to find EpicLibrary classes!");
+                    Logger.Warn("Failed to find ItchioLibrary classes!");
                     State = PatchingState.MissingClasses;
                     return;
                 }
@@ -64,60 +63,59 @@ namespace WineBridgePlugin.Patchers
                     getPlayActionsMethod == null
                     || getInstalledGamesMethod == null)
                 {
-                    Logger.Warn("Failed to find EpicLibrary methods!");
+                    Logger.Warn("Failed to find ItchioLibrary methods!");
                     State = PatchingState.MissingClasses;
                     return;
                 }
 
-                var isInstalledPrefix = AccessTools.Method(typeof(EpicPatches), "IsInstalledPrefix");
+                var isInstalledPrefix = AccessTools.Method(typeof(ItchIoPatches), "IsInstalledPrefix");
                 HarmonyPatcher.HarmonyInstance.Patch(isInstalledMethod,
                     prefix: new HarmonyMethod(isInstalledPrefix));
-                var installationPathPrefix = AccessTools.Method(typeof(EpicPatches), "InstallationPathPrefix");
+                var installationPathPrefix = AccessTools.Method(typeof(ItchIoPatches), "InstallationPathPrefix");
                 HarmonyPatcher.HarmonyInstance.Patch(installPathMethod,
                     prefix: new HarmonyMethod(installationPathPrefix));
-                var clientPathPrefix = AccessTools.Method(typeof(EpicPatches), "ClientExecPathPrefix");
+                var clientPathPrefix = AccessTools.Method(typeof(ItchIoPatches), "ClientExecPathPrefix");
                 HarmonyPatcher.HarmonyInstance.Patch(clientPathMethod,
                     prefix: new HarmonyMethod(clientPathPrefix));
 
-                var getInstallActionsPrefix = AccessTools.Method(typeof(EpicLibraryPatches), "GetInstallActionsPrefix");
+                var getInstallActionsPrefix =
+                    AccessTools.Method(typeof(ItchioLibraryPatches), "GetInstallActionsPrefix");
                 HarmonyPatcher.HarmonyInstance.Patch(getInstallActionsMethod,
                     prefix: new HarmonyMethod(getInstallActionsPrefix));
                 var getUninstallActionsPrefix =
-                    AccessTools.Method(typeof(EpicLibraryPatches), "GetUninstallActionsPrefix");
+                    AccessTools.Method(typeof(ItchioLibraryPatches), "GetUninstallActionsPrefix");
                 HarmonyPatcher.HarmonyInstance.Patch(getUninstallActionsMethod,
                     prefix: new HarmonyMethod(getUninstallActionsPrefix));
-                var getPlayActionsPrefix = AccessTools.Method(typeof(EpicLibraryPatches), "GetPlayActionsPrefix");
+                var getPlayActionsPrefix =
+                    AccessTools.Method(typeof(ItchioLibraryPatches), "GetPlayActionsPrefix");
                 HarmonyPatcher.HarmonyInstance.Patch(getPlayActionsMethod,
                     prefix: new HarmonyMethod(getPlayActionsPrefix));
-                var getInstalledGamesPrefix = AccessTools.Method(typeof(EpicLibraryPatches), "GetInstalledGamesPrefix");
+                var getInstalledGamesPrefix =
+                    AccessTools.Method(typeof(ItchioLibraryPatches), "GetInstalledGamesPrefix");
                 HarmonyPatcher.HarmonyInstance.Patch(getInstalledGamesMethod,
                     prefix: new HarmonyMethod(getInstalledGamesPrefix));
 
-                Logger.Info("Epic methods patched successfully!");
+                Logger.Info("Itch.io methods patched successfully!");
                 State = PatchingState.Patched;
             }
             catch (Exception e)
             {
-                Logger.Error(e, "Error occurred while patching Epic methods!");
+                Logger.Error(e, "Error occurred while patching Itch.io methods!");
                 State = PatchingState.Error;
             }
         }
     }
 
-    internal static class EpicPatches
+    internal static class ItchIoPatches
     {
-        private static readonly ILogger Logger = LogManager.GetLogger();
-
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
         private static bool IsInstalledPrefix([SuppressMessage("ReSharper", "InconsistentNaming")] ref bool __result)
         {
-            if (!WineBridgeSettings.AnyEpicIntegrationEnabled)
+            if (!WineBridgeSettings.LutrisBattleNetIntegrationEnabled)
             {
-                Logger.Debug("Heroic integration disabled.");
                 return true;
             }
 
-            Logger.Debug("Heroic integration enabled.");
             __result = true;
             return false;
         }
@@ -125,7 +123,7 @@ namespace WineBridgePlugin.Patchers
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
         private static bool IsRunningPrefix([SuppressMessage("ReSharper", "InconsistentNaming")] ref bool __result)
         {
-            if (!WineBridgeSettings.AnyEpicIntegrationEnabled)
+            if (!WineBridgeSettings.LutrisBattleNetIntegrationEnabled)
             {
                 return true;
             }
@@ -139,14 +137,12 @@ namespace WineBridgePlugin.Patchers
             [SuppressMessage("ReSharper", "InconsistentNaming")]
             ref string __result)
         {
-            if (!WineBridgeSettings.AnyEpicIntegrationEnabled)
+            if (!WineBridgeSettings.LutrisBattleNetIntegrationEnabled)
             {
                 return true;
             }
 
-            var installationPath = WineBridgeSettings.HeroicEpicIntegrationEnabled
-                ? WineBridgeSettings.HeroicDataPathLinux
-                : WineBridgeSettings.LutrisDataPathLinux;
+            var installationPath = WineBridgeSettings.LutrisDataPathLinux;
             if (installationPath != null)
             {
                 __result = installationPath;
@@ -161,19 +157,17 @@ namespace WineBridgePlugin.Patchers
             [SuppressMessage("ReSharper", "InconsistentNaming")]
             ref string __result)
         {
-            if (!WineBridgeSettings.AnyEpicIntegrationEnabled)
+            if (!WineBridgeSettings.LutrisBattleNetIntegrationEnabled)
             {
                 return true;
             }
 
-            __result = WineBridgeSettings.HeroicEpicIntegrationEnabled
-                ? Constants.DummyHeroicExe
-                : Constants.DummyLutrisExe;
+            __result = Constants.DummyLutrisExe;
             return false;
         }
     }
 
-    internal static class EpicLibraryPatches
+    internal static class ItchioLibraryPatches
     {
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
         private static bool GetInstallActionsPrefix(
@@ -182,7 +176,7 @@ namespace WineBridgePlugin.Patchers
             [SuppressMessage("ReSharper", "InconsistentNaming")]
             ref IEnumerable<InstallController> __result, GetInstallActionsArgs args)
         {
-            if (!WineBridgeSettings.AnyEpicIntegrationEnabled)
+            if (!WineBridgeSettings.LutrisBattleNetIntegrationEnabled)
             {
                 return true;
             }
@@ -199,15 +193,7 @@ namespace WineBridgePlugin.Patchers
                 yield break;
             }
 
-            if (WineBridgeSettings.HeroicEpicIntegrationEnabled)
-            {
-                yield return new HeroicInstallController(args.Game, HeroicPlatform.Epic);
-            }
-
-            if (WineBridgeSettings.LutrisEpicIntegrationEnabled)
-            {
-                yield return new LutrisInstallController(args.Game, LutrisPlatform.Epic);
-            }
+            yield return new LutrisInstallController(args.Game, LutrisPlatform.ItchIo);
         }
 
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
@@ -217,7 +203,7 @@ namespace WineBridgePlugin.Patchers
             [SuppressMessage("ReSharper", "InconsistentNaming")]
             ref IEnumerable<UninstallController> __result, GetUninstallActionsArgs args)
         {
-            if (!WineBridgeSettings.AnyEpicIntegrationEnabled)
+            if (!WineBridgeSettings.LutrisBattleNetIntegrationEnabled)
             {
                 return true;
             }
@@ -234,19 +220,7 @@ namespace WineBridgePlugin.Patchers
                 yield break;
             }
 
-            if (WineBridgeSettings.HeroicEpicIntegrationEnabled && (!WineBridgeSettings.LutrisEpicIntegrationEnabled ||
-                                                                    HeroicGamesService.IsGameInstalled(args.Game,
-                                                                        HeroicPlatform.Epic)))
-            {
-                yield return new HeroicUninstallController(args.Game, HeroicPlatform.Epic);
-            }
-
-            if (WineBridgeSettings.LutrisEpicIntegrationEnabled && (!WineBridgeSettings.HeroicEpicIntegrationEnabled ||
-                                                                    LutrisGamesService.IsGameInstalled(args.Game,
-                                                                        LutrisPlatform.Epic)))
-            {
-                yield return new LutrisUninstallController(args.Game, LutrisPlatform.Epic);
-            }
+            yield return new LutrisUninstallController(args.Game, LutrisPlatform.ItchIo);
         }
 
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
@@ -257,7 +231,7 @@ namespace WineBridgePlugin.Patchers
             ref IEnumerable<PlayController> __result,
             GetPlayActionsArgs args)
         {
-            if (!WineBridgeSettings.AnyEpicIntegrationEnabled)
+            if (!WineBridgeSettings.LutrisBattleNetIntegrationEnabled)
             {
                 return true;
             }
@@ -273,19 +247,7 @@ namespace WineBridgePlugin.Patchers
                 yield break;
             }
 
-            if (WineBridgeSettings.HeroicEpicIntegrationEnabled && (!WineBridgeSettings.LutrisEpicIntegrationEnabled ||
-                                                                    HeroicGamesService.IsGameInstalled(args.Game,
-                                                                        HeroicPlatform.Epic)))
-            {
-                yield return new HeroicPlayController(args.Game, HeroicPlatform.Epic);
-            }
-
-            if (WineBridgeSettings.LutrisEpicIntegrationEnabled && (!WineBridgeSettings.HeroicEpicIntegrationEnabled ||
-                                                                    LutrisGamesService.IsGameInstalled(args.Game,
-                                                                        LutrisPlatform.Epic)))
-            {
-                yield return new LutrisPlayController(args.Game, LutrisPlatform.Epic);
-            }
+            yield return new LutrisPlayController(args.Game, LutrisPlatform.ItchIo);
         }
 
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
@@ -293,30 +255,12 @@ namespace WineBridgePlugin.Patchers
             [SuppressMessage("ReSharper", "InconsistentNaming")]
             ref Dictionary<string, GameMetadata> __result)
         {
-            if (!WineBridgeSettings.AnyEpicIntegrationEnabled)
+            if (!WineBridgeSettings.LutrisBattleNetIntegrationEnabled)
             {
                 return true;
             }
 
-            var result = new Dictionary<string, GameMetadata>();
-            if (WineBridgeSettings.HeroicEpicIntegrationEnabled)
-            {
-                HeroicGamesService.GetInstalledGames(HeroicPlatform.Epic)
-                    .ForEach(game => result.Add(game.Key, game.Value));
-            }
-
-            if (WineBridgeSettings.LutrisEpicIntegrationEnabled)
-            {
-                LutrisGamesService.GetInstalledGames(LutrisPlatform.Epic).ForEach(game =>
-                {
-                    if (!result.ContainsKey(game.Key))
-                    {
-                        result.Add(game.Key, game.Value);
-                    }
-                });
-            }
-
-            __result = result;
+            __result = LutrisGamesService.GetInstalledGames(LutrisPlatform.ItchIo);
             return false;
         }
     }

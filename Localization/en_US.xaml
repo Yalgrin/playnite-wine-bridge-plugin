@@ -9,6 +9,8 @@
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_AddSteamNonSteamLinuxAction">Add Non-Steam game added to Steam action</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_AddHeroicAction">Add Heroic installed game action</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_AddHeroicCustomAction">Add Heroic custom game action</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_AddLutrisAction">Add Lutris installed game action</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_AddLutrisCustomAction">Add Lutris custom game action</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_RemoveAllActions">Remove all actions</sys:String>
 
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterLinuxCommand">Enter Linux command</sys:String>
@@ -18,6 +20,8 @@
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_SelectInstalledHeroicGame">Select installed Heroic game</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterHeroicAppId">Enter Heroic AppID</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterHeroicRunner">Enter Heroic runner</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_SelectInstalledLutrisGame">Select installed Lutris game</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterLutrisAppId">Enter Lutris AppID</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterActionName">Enter action name</sys:String>
 
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_Instructions">Instructions</sys:String>
@@ -38,6 +42,15 @@
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_HeroicDataPathLinux">Heroic data path (Linux)</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_HeroicExecutablePathLinux">Heroic executable path (Linux)</sys:String>
 
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_LutrisGogIntegrationEnabled">Enable GOG integration with Lutris</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_LutrisAmazonIntegrationEnabled">Enable Amazon integration with Lutris</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_LutrisEpicIntegrationEnabled">Enable Epic integration with Lutris</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_LutrisEaIntegrationEnabled">Enable EA integration with Lutris</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_LutrisBattleNetIntegrationEnabled">Enable Battle.net integration with Lutris</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_LutrisItchIoIntegrationEnabled">Enable Itch.io integration with Lutris</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_LutrisDataPathLinux">Lutris data path (Linux)</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_LutrisExecutablePathLinux">Lutris executable path (Linux)</sys:String>
+
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_DebugLoggingEnabled">Enable debug logging</sys:String>
 
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_SystemPatchingState">System patching state:</sys:String>
@@ -46,6 +59,9 @@
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_GogPatchingState">GOG patching state:</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_AmazonPatchingState">Amazon patching state:</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_EpicPatchingState">Epic patching state:</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_EaPatchingState">EA patching state:</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_BattleNetPatchingState">Battle.net patching state:</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_ItchIoPatchingState">Itch.io patching state:</sys:String>
 
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Error_InvalidNumber">Invalid number given!</sys:String>
 
@@ -57,4 +73,17 @@
     <sys:String x:Key="LOC_Yalgrin_WineBridge_PatchingState_Patched">Patched</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_PatchingState_MissingClasses">Classes not found!</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_PatchingState_Error">Error occurred!</sys:String>
+
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_LutrisService_Custom">Custom</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_LutrisService_Unknown">Unknown</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_LutrisService_steam">Steam</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_LutrisService_gog">GOG</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_LutrisService_egs">Epic Games Store</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_LutrisService_amazon">Amazon</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_LutrisService_ea_app">EA App</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_LutrisService_battlenet">Battle.net</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_LutrisService_itchio">Itch.io</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_LutrisService_ubisoft">Ubisoft Connect</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_LutrisService_humblebundle">Humble Bundle</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_LutrisService_xdg">Local</sys:String>
 </ResourceDictionary>

@@ -37,7 +37,7 @@ namespace WineBridgePlugin.Processes
                 var readyTrackingFile = $"{processTrackingFile}-ready";
 
                 var ready = false;
-                for (var i = 0; i <= 31; i++)
+                for (var i = 0; i <= 90; i++)
                 {
                     if (watcherToken.IsCancellationRequested)
                     {

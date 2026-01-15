@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Windows.Input;
 using Playnite.SDK;
 using Playnite.SDK.Data;
 using WineBridgePlugin.Models;
 using WineBridgePlugin.Patchers;
 using WineBridgePlugin.Settings;
+using WineBridgePlugin.Utils;
 
 namespace WineBridgePlugin
 {
@@ -24,6 +26,15 @@ namespace WineBridgePlugin
         private bool _heroicEpicIntegrationEnabled;
         private string _heroicDataPathLinux;
         private string _heroicExecutablePathLinux;
+
+        private bool _lutrisGogIntegrationEnabled;
+        private bool _lutrisAmazonIntegrationEnabled;
+        private bool _lutrisEpicIntegrationEnabled;
+        private bool _lutrisEaIntegrationEnabled;
+        private bool _lutrisBattleNetIntegrationEnabled;
+        private bool _lutrisItchIoIntegrationEnabled;
+        private string _lutrisDataPathLinux;
+        private string _lutrisExecutablePathLinux;
 
         private bool _debugLoggingEnabled;
 
@@ -100,6 +111,54 @@ namespace WineBridgePlugin
             set => SetValue(ref _heroicExecutablePathLinux, value);
         }
 
+        public bool LutrisGogIntegrationEnabled
+        {
+            get => _lutrisGogIntegrationEnabled;
+            set => SetValue(ref _lutrisGogIntegrationEnabled, value);
+        }
+
+        public bool LutrisAmazonIntegrationEnabled
+        {
+            get => _lutrisAmazonIntegrationEnabled;
+            set => SetValue(ref _lutrisAmazonIntegrationEnabled, value);
+        }
+
+        public bool LutrisEpicIntegrationEnabled
+        {
+            get => _lutrisEpicIntegrationEnabled;
+            set => SetValue(ref _lutrisEpicIntegrationEnabled, value);
+        }
+
+        public bool LutrisEaIntegrationEnabled
+        {
+            get => _lutrisEaIntegrationEnabled;
+            set => SetValue(ref _lutrisEaIntegrationEnabled, value);
+        }
+
+        public bool LutrisBattleNetIntegrationEnabled
+        {
+            get => _lutrisBattleNetIntegrationEnabled;
+            set => SetValue(ref _lutrisBattleNetIntegrationEnabled, value);
+        }
+
+        public bool LutrisItchIoIntegrationEnabled
+        {
+            get => _lutrisItchIoIntegrationEnabled;
+            set => SetValue(ref _lutrisItchIoIntegrationEnabled, value);
+        }
+
+        public string LutrisDataPathLinux
+        {
+            get => _lutrisDataPathLinux;
+            set => SetValue(ref _lutrisDataPathLinux, value);
+        }
+
+        public string LutrisExecutablePathLinux
+        {
+            get => _lutrisExecutablePathLinux;
+            set => SetValue(ref _lutrisExecutablePathLinux, value);
+        }
+
         public bool DebugLoggingEnabled
         {
             get => _debugLoggingEnabled;
@@ -115,10 +174,15 @@ namespace WineBridgePlugin
         public string GogPatchingState { get; set; }
         public string AmazonPatchingState { get; set; }
         public string EpicPatchingState { get; set; }
+        public string EaPatchingState { get; set; }
+        public string BattleNetPatchingState { get; set; }
+        public string ItchIoPatchingState { get; set; }
     }
 
     public class WineBridgePluginSettingsViewModel : ObservableObject, ISettings
     {
+        private static readonly ILogger Logger = LogManager.GetLogger();
+
         private readonly WineBridgePlugin _plugin;
         private WineBridgePluginSettingsModel EditingClone { get; set; }
 
@@ -137,6 +201,7 @@ namespace WineBridgePlugin
         public PatchingStatuses PatchingStatuses { get; set; }
         public ICommand AutoDetectSteam { get; private set; }
         public ICommand AutoDetectHeroic { get; private set; }
+        public ICommand AutoDetectLutris { get; private set; }
 
         public WineBridgePluginSettingsViewModel(WineBridgePlugin plugin)
         {
@@ -145,14 +210,28 @@ namespace WineBridgePlugin
             var savedSettings = plugin.LoadPluginSettings<WineBridgePluginSettingsModel>();
 
             Settings = savedSettings ?? new WineBridgePluginSettingsModel();
-            FillSettingsWithDefaults();
+            try
+            {
+                FillSettingsWithDefaults();
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e, "Failed to fill settings with default values!");
+            }
 
             AutoDetectSteam = new RelayCommand(DoAutoDetectSteam);
             AutoDetectHeroic = new RelayCommand(DoAutoDetectHeroic);
+            AutoDetectLutris = new RelayCommand(DoAutoDetectLutris);
         }
 
         private void FillSettingsWithDefaults()
         {
+            if (!WineDetector.IsRunningUnderWine())
+            {
+                Logger.Warn("Not running under Wine, skipping default settings filling.");
+                return;
+            }
+
             if (Settings.TrackingDirectoryLinux == null)
             {
                 Settings.TrackingDirectoryLinux = "/tmp";
@@ -177,6 +256,16 @@ namespace WineBridgePlugin
                     Settings.HeroicExecutablePathLinux = foundConfiguration.ExecutablePath;
                 }
             }
+
+            if (Settings.LutrisDataPathLinux == null || Settings.LutrisExecutablePathLinux == null)
+            {
+                var foundConfiguration = DefaultSettingFinder.LutrisConfiguration;
+                if (foundConfiguration != null)
+                {
+                    Settings.LutrisDataPathLinux = foundConfiguration.DataPath;
+                    Settings.LutrisExecutablePathLinux = foundConfiguration.ExecutablePath;
+                }
+            }
         }
 
         public void BeginEdit()
@@ -189,7 +278,10 @@ namespace WineBridgePlugin
                 SteamPatchingState = TranslatePatchingState(SteamPatcher.State),
                 GogPatchingState = TranslatePatchingState(GogPatcher.State),
                 AmazonPatchingState = TranslatePatchingState(AmazonPatcher.State),
-                EpicPatchingState = TranslatePatchingState(EpicPatcher.State)
+                EpicPatchingState = TranslatePatchingState(EpicPatcher.State),
+                EaPatchingState = TranslatePatchingState(EaPatcher.State),
+                BattleNetPatchingState = TranslatePatchingState(BattleNetPatcher.State),
+                ItchIoPatchingState = TranslatePatchingState(ItchIoPatcher.State)
             };
         }
 
@@ -229,6 +321,32 @@ namespace WineBridgePlugin
             var foundConfiguration = DefaultSettingFinder.HeroicConfiguration;
             Settings.HeroicDataPathLinux = foundConfiguration.DataPath;
             Settings.HeroicExecutablePathLinux = foundConfiguration.ExecutablePath;
+
+            switch (foundConfiguration.Type)
+            {
+                case "Native":
+                    _plugin.PlayniteApi.Dialogs.ShowMessage(string.Format(
+                        ResourceProvider.GetString("LOC_Yalgrin_WineBridge_Messages_FoundNativeConfiguration"),
+                        foundConfiguration.DataPath));
+                    break;
+                case "Flatpak":
+                    _plugin.PlayniteApi.Dialogs.ShowMessage(string.Format(
+                        ResourceProvider.GetString("LOC_Yalgrin_WineBridge_Messages_FoundFlatpakConfiguration"),
+                        foundConfiguration.DataPath));
+                    break;
+                default:
+                    _plugin.PlayniteApi.Dialogs.ShowErrorMessage(string.Format(
+                        ResourceProvider.GetString("LOC_Yalgrin_WineBridge_Messages_ConfigurationNotFoundPlaceholder"),
+                        foundConfiguration.DataPath));
+                    break;
+            }
+        }
+
+        private void DoAutoDetectLutris()
+        {
+            var foundConfiguration = DefaultSettingFinder.LutrisConfiguration;
+            Settings.LutrisDataPathLinux = foundConfiguration.DataPath;
+            Settings.LutrisExecutablePathLinux = foundConfiguration.ExecutablePath;
 
             switch (foundConfiguration.Type)
             {

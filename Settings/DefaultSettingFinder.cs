@@ -108,7 +108,7 @@ namespace WineBridgePlugin.Settings
                 {
                     Type = "Placeholder",
                     ExecutablePath = "steam",
-                    DataPath = "/home/user/.local/share/Steam"
+                    DataPath = $"{HomeFolderLinux ?? "/home/user"}/.local/share/Steam"
                 };
             }
         }
@@ -189,7 +189,7 @@ namespace WineBridgePlugin.Settings
                 {
                     Type = "Placeholder",
                     ExecutablePath = "heroic",
-                    DataPath = "/home/user/.config/heroic"
+                    DataPath = $"{HomeFolderLinux ?? "/home/user"}/.config/heroic"
                 };
             }
         }
@@ -238,6 +238,84 @@ namespace WineBridgePlugin.Settings
             }
 
             Logger.Debug($"Cloud not find flatpak Heroic data folder at: {dataFolder}");
+            heroicConfiguration = null;
+            return false;
+        }
+
+        public static LinuxLutrisConfiguration LutrisConfiguration
+        {
+            get
+            {
+                var homeFolder = HomeFolderWindows;
+                if (homeFolder == null)
+                {
+                    Logger.Debug("Could not find home folder. Going to use a placeholder Lutris configuration.");
+                    return new LinuxLutrisConfiguration
+                    {
+                        Type = "Placeholder",
+                        ExecutablePath = "lutris",
+                        DataPath = "/home/user/.local/share/lutris/"
+                    };
+                }
+
+                if (GetNativeLutrisConfiguration(homeFolder, out var nativeConfig))
+                {
+                    return nativeConfig;
+                }
+
+                if (GetFlatpakLutrisConfiguration(homeFolder, out var flatpakConfig))
+                {
+                    return flatpakConfig;
+                }
+
+                Logger.Debug("Did not manage to find Lutris configuration. Going to use a placeholder configuration.");
+                return new LinuxLutrisConfiguration
+                {
+                    Type = "Placeholder",
+                    ExecutablePath = "lutris",
+                    DataPath = $"{HomeFolderLinux ?? "/home/user"}/.local/share/lutris/"
+                };
+            }
+        }
+
+        private static bool GetNativeLutrisConfiguration(string homeFolder,
+            out LinuxLutrisConfiguration heroicConfiguration)
+        {
+            var dataFolder = Path.Combine(homeFolder, @".local\share\lutris");
+            if (Directory.Exists(dataFolder) && File.Exists(Path.Combine(dataFolder, "pga.db")))
+            {
+                Logger.Debug($"Found native Lutris data folder at {dataFolder}");
+                heroicConfiguration = new LinuxLutrisConfiguration
+                {
+                    Type = "Native",
+                    ExecutablePath = "lutris",
+                    DataPath = WineUtils.WindowsPathToLinux(dataFolder)
+                };
+                return true;
+            }
+
+            Logger.Debug($"Cloud not find native Lutris data folder at: {dataFolder}");
+            heroicConfiguration = null;
+            return false;
+        }
+
+        private static bool GetFlatpakLutrisConfiguration(string homeFolder,
+            out LinuxLutrisConfiguration heroicConfiguration)
+        {
+            var dataFolder = Path.Combine(homeFolder, @".var\app\net.lutris.Lutris\data\lutris");
+            if (Directory.Exists(dataFolder) && File.Exists(Path.Combine(dataFolder, "pga.db")))
+            {
+                Logger.Debug($"Found flatpak Lutris data folder at {dataFolder}");
+                heroicConfiguration = new LinuxLutrisConfiguration
+                {
+                    Type = "Flatpak",
+                    ExecutablePath = "flatpak run net.lutris.Lutris",
+                    DataPath = WineUtils.WindowsPathToLinux(dataFolder)
+                };
+                return true;
+            }
+
+            Logger.Debug($"Cloud not find flatpak Lutris data folder at: {dataFolder}");
             heroicConfiguration = null;
             return false;
         }
