@@ -195,7 +195,7 @@ namespace WineBridgePlugin.Integrations.Lutris
             try
             {
                 var deserializer = new DeserializerBuilder()
-                    .WithNamingConvention(UnderscoredNamingConvention.Instance)
+                    .WithNamingConvention(new UnderscoredNamingConvention())
                     .IgnoreUnmatchedProperties()
                     .Build();
                 var config = deserializer.Deserialize<LutrisConfig>(File.ReadAllText(
