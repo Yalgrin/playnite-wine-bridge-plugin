@@ -37,3 +37,10 @@ Packages:
     Changelog:
       - Added Lutris integration for GOG, Amazon, Epic, EA App, Battle.net and Itch.io libraries
       - Added Lutris play actions
+  - Version: 0.3.1
+    RequiredApiVersion: 6.11.0
+    ReleaseDate: 2026-01-24
+    PackageUrl: https://github.com/Yalgrin/playnite-wine-bridge-plugin/releases/download/0.3.1/Yalgrin_WineBridgePlugin_0_3_1.pext
+    Changelog:
+      - Fixed Open metadata folder button not opening in Linux when option for redirecting explorer.exe is enabled
+      - Fixed tool throwing an error when defining it with wine-bridge:// prefix
