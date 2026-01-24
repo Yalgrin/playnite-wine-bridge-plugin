@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 using Playnite.SDK;
 using WineBridgePlugin.Models;
 using WineBridgePlugin.Settings;
@@ -56,17 +57,7 @@ namespace WineBridgePlugin.Processes
 
             if (debugLogging)
             {
-                var output = process.StandardOutput.ReadToEnd();
-                if (output.Length > 0)
-                {
-                    Logger.Debug($"Process output: {output}");
-                }
-
-                var errorOutput = process.StandardError.ReadToEnd();
-                if (errorOutput.Length > 0)
-                {
-                    Logger.Debug($"Process error output: {errorOutput}");
-                }
+                LogProcessOutputInBackground(process);
             }
 
             return new ProcessWithCorrelationId
@@ -100,20 +91,42 @@ namespace WineBridgePlugin.Processes
 
             if (debugLogging)
             {
-                var output = process.StandardOutput.ReadToEnd();
-                if (output.Length > 0)
-                {
-                    Logger.Debug($"Process output: {output}");
-                }
-
-                var errorOutput = process.StandardError.ReadToEnd();
-                if (errorOutput.Length > 0)
-                {
-                    Logger.Debug($"Process error output: {errorOutput}");
-                }
+                LogProcessOutputInBackground(process);
             }
 
             return process;
+        }
+
+        private static void LogProcessOutputInBackground(Process process)
+        {
+            Task.Run(async () =>
+            {
+                try
+                {
+                    var stdoutTask = process.StandardOutput.ReadToEndAsync();
+                    var stderrTask = process.StandardError.ReadToEndAsync();
+
+                    await Task.WhenAll(stdoutTask, stderrTask).ConfigureAwait(false);
+
+                    process.WaitForExit();
+
+                    var output = stdoutTask.Result;
+                    if (!string.IsNullOrWhiteSpace(output))
+                    {
+                        Logger.Debug($"Process output: {output}");
+                    }
+
+                    var errorOutput = stderrTask.Result;
+                    if (!string.IsNullOrWhiteSpace(errorOutput))
+                    {
+                        Logger.Debug($"Process error output: {errorOutput}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Debug(ex, "Error while reading process output!");
+                }
+            });
         }
     }
 }
