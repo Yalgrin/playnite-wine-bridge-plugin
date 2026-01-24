@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
+using System.Reflection;
 using Playnite.SDK;
 using WineBridgePlugin.Settings;
 
@@ -8,6 +10,22 @@ namespace WineBridgePlugin.Utils
     public static class WineUtils
     {
         private static readonly ILogger Logger = LogManager.GetLogger();
+
+        private static readonly Lazy<string> InnerScriptPathLinux = new Lazy<string>(GetScriptPathLinux);
+
+        public static string ScriptPathLinux => InnerScriptPathLinux.Value;
+
+        private static string GetScriptPathLinux()
+        {
+            var directoryName = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            if (directoryName == null)
+            {
+                throw new Exception("Could not determine plugin directory.");
+            }
+
+            var scriptPath = Path.Combine(directoryName, @"Resources\run-in-linux.sh");
+            return WindowsPathToLinux(scriptPath);
+        }
 
         public static string WindowsPathToLinux(string windowsPath)
         {

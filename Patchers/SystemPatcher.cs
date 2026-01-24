@@ -36,8 +36,9 @@ namespace WineBridgePlugin.Patchers
                     Type.EmptyTypes, null);
                 var fileExistsMethod = typeof(File).GetMethod("Exists", BindingFlags.Static | BindingFlags.Public, null,
                     new[] { typeof(string) }, null);
+                var fileInfoConstructors = AccessTools.GetDeclaredConstructors(typeof(FileInfo));
 
-                if (processStartMethod == null || fileExistsMethod == null)
+                if (processStartMethod == null || fileExistsMethod == null || (fileInfoConstructors?.Count ?? 0) == 0)
                 {
                     Logger.Warn("Failed to find system methods to patch!");
                     State = PatchingState.MissingClasses;
@@ -49,6 +50,18 @@ namespace WineBridgePlugin.Patchers
 
                 var fileExistsPrefix = AccessTools.Method(typeof(FilePatches), "Prefix");
                 HarmonyPatcher.HarmonyInstance.Patch(fileExistsMethod, prefix: new HarmonyMethod(fileExistsPrefix));
+
+                var fileInfoConstructorPrefix = AccessTools.Method(typeof(FileInfoPatches), "Prefix");
+                var fileInfoConstructor = fileInfoConstructors.FirstOrDefault(c =>
+                {
+                    var parameters = c.GetParameters();
+                    return parameters.Length == 1 && parameters[0].ParameterType == typeof(string);
+                });
+                if (fileInfoConstructor != null)
+                {
+                    HarmonyPatcher.HarmonyInstance.Patch(fileInfoConstructor,
+                        prefix: new HarmonyMethod(fileInfoConstructorPrefix));
+                }
 
                 Logger.Info("System methods patched successfully!");
                 State = PatchingState.Patched;
@@ -78,6 +91,19 @@ namespace WineBridgePlugin.Patchers
         }
     }
 
+    internal static class FileInfoPatches
+    {
+        private static bool Prefix(ref string fileName)
+        {
+            if (fileName != null && fileName.StartsWith(Constants.WineBridgePrefix))
+            {
+                fileName = Directory.GetCurrentDirectory();
+            }
+
+            return true;
+        }
+    }
+
     internal static class ProcessPatches
     {
         private static readonly ILogger Logger = LogManager.GetLogger();
@@ -90,6 +116,12 @@ namespace WineBridgePlugin.Patchers
             ref bool __result
         )
         {
+            if (WineBridgeSettings.DebugLoggingEnabled)
+            {
+                Logger.Debug(
+                    $"Starting process: \"{__instance.StartInfo.FileName}\" with arguments \"{__instance.StartInfo.Arguments}\"");
+            }
+
             var fileName = __instance.StartInfo.FileName;
             if (WineBridgeSettings.SteamIntegrationEnabled)
             {
@@ -140,7 +172,7 @@ namespace WineBridgePlugin.Patchers
             if (fileName.StartsWith(Constants.WineBridgePrefix))
             {
                 var process = LinuxProcessStarter
-                    .Start(fileName.Substring(Constants.WineBridgePrefix.Length))
+                    .Start($"{fileName.Substring(Constants.WineBridgePrefix.Length)} {__instance.StartInfo.Arguments}")
                     .Process;
                 __result = process != null;
                 return false;
@@ -182,42 +214,52 @@ namespace WineBridgePlugin.Patchers
                 return false;
             }
 
-            if (WineBridgeSettings.RedirectExplorerCallsToLinux &&
-                (fileName == "explorer.exe" || fileName.EndsWith(@"\explorer.exe")))
+            if (WineBridgeSettings.RedirectExplorerCallsToLinux)
             {
-                try
+                if (fileName == "explorer.exe" || fileName.EndsWith(@"\explorer.exe"))
                 {
-                    var args = __instance.StartInfo.Arguments.Trim();
-                    if (args.StartsWith("shell:"))
+                    try
                     {
-                        return true;
-                    }
+                        var args = __instance.StartInfo.Arguments.Trim();
+                        if (args.StartsWith("shell:"))
+                        {
+                            return true;
+                        }
 
-                    var parentFolder = false;
-                    if (args.StartsWith("/select,"))
+                        var parentFolder = false;
+                        if (args.StartsWith("/select,"))
+                        {
+                            args = args.Substring("/select,".Length);
+                            parentFolder = true;
+                        }
+
+                        Process process;
+                        if (!string.IsNullOrEmpty(args))
+                        {
+                            var fullPath = CleanupAndTransformToLinuxFilePath(args, parentFolder);
+
+                            process = LinuxProcessStarter.Start($"xdg-open \"{fullPath}\"").Process;
+                        }
+                        else
+                        {
+                            process = LinuxProcessStarter.Start("xdg-open .").Process;
+                        }
+
+                        __result = process != null;
+                        return false;
+                    }
+                    catch (Exception e)
                     {
-                        args = args.Substring("/select,".Length);
-                        parentFolder = true;
+                        Logger.Error(e, "Error occurred while redirecting explorer call!");
                     }
+                }
+                else if (Directory.Exists(fileName))
+                {
+                    var fullPath = CleanupAndTransformToLinuxFilePath(fileName);
 
-                    Process process;
-                    if (!string.IsNullOrEmpty(args))
-                    {
-                        var fullPath = CleanupAndTransformToLinuxFilePath(args, parentFolder);
-
-                        process = LinuxProcessStarter.Start($"xdg-open \"{fullPath}\"").Process;
-                    }
-                    else
-                    {
-                        process = LinuxProcessStarter.Start("xdg-open .").Process;
-                    }
-
+                    var process = LinuxProcessStarter.Start($"xdg-open \"{fullPath}\"").Process;
                     __result = process != null;
                     return false;
-                }
-                catch (Exception e)
-                {
-                    Logger.Error(e, "Error occurred while redirecting explorer call!");
                 }
             }
 

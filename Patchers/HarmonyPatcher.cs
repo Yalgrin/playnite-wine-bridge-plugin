@@ -1,6 +1,4 @@
 ﻿using System;
-using System.IO;
-using System.Reflection;
 using HarmonyLib;
 using Playnite.SDK;
 using WineBridgePlugin.Models;
@@ -87,15 +85,7 @@ namespace WineBridgePlugin.Patchers
 
             try
             {
-                var directoryName = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                if (directoryName == null)
-                {
-                    Logger.Error("Could not determine plugin directory.");
-                    return;
-                }
-
-                var scriptPath = Path.Combine(directoryName, @"Resources\run-in-linux.sh");
-                LinuxProcessStarter.StartRawCommand($"chmod a+x '{WineUtils.WindowsPathToLinux(scriptPath)}'");
+                LinuxProcessStarter.StartRawCommand($"chmod a+x '{WineUtils.ScriptPathLinux}'");
             }
             catch (Exception e)
             {

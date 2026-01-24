@@ -26,7 +26,7 @@ namespace WineBridgePlugin.Processes
             var encodedCommand = command.Base64Encode();
             var asyncTrackingStr = asyncTracking ? "1" : "0";
             var encodedTrackingExpression = asyncTracking ? trackingExpression.Base64Encode() : "-".Base64Encode();
-            var linuxScript = WineUtils.WindowsPathToLinux(Path.Combine(directoryName, @"Resources\run-in-linux.sh"));
+            var linuxScript = WineUtils.ScriptPathLinux;
             var correlationId = DateTime.Now.ToString("yyyyMMddHHmmss") + "-" + Guid.NewGuid();
             var trackingDirectory = WineBridgeSettings.TrackingDirectoryLinux.Base64Encode();
 

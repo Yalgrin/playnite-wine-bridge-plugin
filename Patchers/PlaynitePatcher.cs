@@ -14,6 +14,7 @@ using WineBridgePlugin.Integrations.Lutris;
 using WineBridgePlugin.Integrations.Steam;
 using WineBridgePlugin.Models;
 using WineBridgePlugin.Processes;
+using WineBridgePlugin.Utils;
 
 namespace WineBridgePlugin.Patchers
 {
@@ -56,7 +57,10 @@ namespace WineBridgePlugin.Patchers
                     new[] { typeof(GameAction), typeof(bool), typeof(OnGameStartingEventArgs) }, null);
                 var disposeMethod = genericPlayControllerType.GetMethod("Dispose");
                 var powershellErrorField = AccessTools.Field(gamesEditorType, "showedPowerShellError");
-                if (startMethod == null || disposeMethod == null || powershellErrorField == null)
+                var startEmulatorMethod = genericPlayControllerType.GetMethod("StartEmulatorProcess",
+                    BindingFlags.Instance | BindingFlags.NonPublic);
+                if (startMethod == null || disposeMethod == null || powershellErrorField == null ||
+                    startEmulatorMethod == null)
                 {
                     Logger.Warn("Failed to find Playnite methods!");
                     State = PatchingState.MissingClasses;
@@ -68,6 +72,10 @@ namespace WineBridgePlugin.Patchers
                 var startControllerDisposePrefix = AccessTools.Method(typeof(GenericPlayGamePatcher), "DisposePrefix");
                 HarmonyPatcher.HarmonyInstance.Patch(disposeMethod,
                     prefix: new HarmonyMethod(startControllerDisposePrefix));
+                var startEmulatorProcessControllerPlayPrefix =
+                    AccessTools.Method(typeof(GenericPlayGamePatcher), "StartEmulatorProcessPrefix");
+                HarmonyPatcher.HarmonyInstance.Patch(startEmulatorMethod,
+                    prefix: new HarmonyMethod(startEmulatorProcessControllerPlayPrefix));
                 powershellErrorField.SetValue(null, true);
 
                 Logger.Info("Playnite methods patched successfully!");
@@ -164,6 +172,46 @@ namespace WineBridgePlugin.Patchers
                     LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
                     return false;
                 }
+            }
+
+            return true;
+        }
+
+        private static readonly ILogger Logger = LogManager.GetLogger();
+
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        private static bool StartEmulatorProcessPrefix(
+            [SuppressMessage("ReSharper", "InconsistentNaming")] PlayController __instance,
+            string path,
+            string args,
+            string workDir,
+            string emulatorDir,
+            string romPath,
+            bool asyncExec,
+            Emulator emulator,
+            EmulatorProfile emuProfile,
+            TrackingMode trackingMode,
+            string trackingPath)
+        {
+            Logger.Debug("Starting emulator process: " + path + " " + args + "");
+            Logger.Debug("Working directory: " + workDir);
+            Logger.Debug("Emulator directory: " + emulatorDir);
+            Logger.Debug("ROM path: " + romPath);
+            Logger.Debug("Async execution: " + asyncExec);
+            Logger.Debug("Emulator: " + emulator.Name);
+            Logger.Debug("Emulator profile: " + emuProfile.Name);
+            Logger.Debug("Tracking mode: " + trackingMode);
+            Logger.Debug("Tracking path: " + trackingPath);
+
+            if (path.StartsWith(Constants.WineBridgePrefix))
+            {
+                var watcherToken = new CancellationTokenSource();
+                PlayCancelationTokenSources[__instance] = watcherToken;
+                var process = LinuxProcessStarter.Start(
+                    $"{path.Replace(Constants.WineBridgePrefix, "")} {args.Replace(romPath, WineUtils.WindowsPathToLinux(romPath))}");
+                LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
+
+                return false;
             }
 
             return true;
