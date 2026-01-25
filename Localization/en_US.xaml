@@ -26,6 +26,11 @@
 
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_Instructions">Instructions</sys:String>
 
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_Tab_Paths">Paths</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_Tab_Integrations">Integrations</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_Tab_Other">Other settings</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_Tab_Status">Status</sys:String>
+
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_TrackingDirectoryLinux">Tracking directory (Linux)</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_SetScriptExecutePermissions">Set script execute permissions upon startup</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_RedirectExplorerCallsToLinux">Redirect Explorer.exe calls to Linux</sys:String>
@@ -52,6 +57,8 @@
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_LutrisExecutablePathLinux">Lutris executable path (Linux)</sys:String>
 
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_DebugLoggingEnabled">Enable debug logging</sys:String>
+
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_PatchingStateDescription">All of the following entries should be "Patched" unless you don't have the corresponding library plugin installed. If that's not the case, please report the issue on GitHub or on official Playnite Discord server with extensions.log file included.</sys:String>
 
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_SystemPatchingState">System patching state:</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_PlaynitePatchingState">Playnite patching state:</sys:String>
