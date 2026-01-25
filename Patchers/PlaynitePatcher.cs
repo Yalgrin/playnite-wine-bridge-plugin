@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading;
 using HarmonyLib;
 using Playnite.SDK;
@@ -14,6 +15,7 @@ using WineBridgePlugin.Integrations.Lutris;
 using WineBridgePlugin.Integrations.Steam;
 using WineBridgePlugin.Models;
 using WineBridgePlugin.Processes;
+using WineBridgePlugin.Settings;
 using WineBridgePlugin.Utils;
 
 namespace WineBridgePlugin.Patchers
@@ -45,7 +47,8 @@ namespace WineBridgePlugin.Patchers
 
                 var genericPlayControllerType = assembly.GetType("Playnite.Controllers.GenericPlayController");
                 var gamesEditorType = assembly.GetType("Playnite.GamesEditor");
-                if (genericPlayControllerType == null || gamesEditorType == null)
+                var emulationType = assembly.GetType("Playnite.Emulators.Emulation");
+                if (genericPlayControllerType == null || gamesEditorType == null || emulationType == null)
                 {
                     Logger.Warn("Failed to find Playnite classes!");
                     State = PatchingState.MissingClasses;
@@ -59,8 +62,12 @@ namespace WineBridgePlugin.Patchers
                 var powershellErrorField = AccessTools.Field(gamesEditorType, "showedPowerShellError");
                 var startEmulatorMethod = genericPlayControllerType.GetMethod("StartEmulatorProcess",
                     BindingFlags.Instance | BindingFlags.NonPublic);
+                var getProfileMethod = emulationType.GetMethod("GetProfile",
+                    BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+                var getExecutableMethod = emulationType.GetMethod("GetExecutable",
+                    BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
                 if (startMethod == null || disposeMethod == null || powershellErrorField == null ||
-                    startEmulatorMethod == null)
+                    startEmulatorMethod == null || getProfileMethod == null || getExecutableMethod == null)
                 {
                     Logger.Warn("Failed to find Playnite methods!");
                     State = PatchingState.MissingClasses;
@@ -76,6 +83,12 @@ namespace WineBridgePlugin.Patchers
                     AccessTools.Method(typeof(GenericPlayGamePatcher), "StartEmulatorProcessPrefix");
                 HarmonyPatcher.HarmonyInstance.Patch(startEmulatorMethod,
                     prefix: new HarmonyMethod(startEmulatorProcessControllerPlayPrefix));
+                var getProfilePostfix = AccessTools.Method(typeof(EmulationPatches), "GetProfilePostfix");
+                HarmonyPatcher.HarmonyInstance.Patch(getProfileMethod,
+                    postfix: new HarmonyMethod(getProfilePostfix));
+                var getExecutablePrefix = AccessTools.Method(typeof(EmulationPatches), "GetExecutablePrefix");
+                HarmonyPatcher.HarmonyInstance.Patch(getExecutableMethod,
+                    prefix: new HarmonyMethod(getExecutablePrefix));
                 powershellErrorField.SetValue(null, true);
 
                 Logger.Info("Playnite methods patched successfully!");
@@ -177,11 +190,10 @@ namespace WineBridgePlugin.Patchers
             return true;
         }
 
-        private static readonly ILogger Logger = LogManager.GetLogger();
-
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
         private static bool StartEmulatorProcessPrefix(
-            [SuppressMessage("ReSharper", "InconsistentNaming")] PlayController __instance,
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
+            PlayController __instance,
             string path,
             string args,
             string workDir,
@@ -193,16 +205,6 @@ namespace WineBridgePlugin.Patchers
             TrackingMode trackingMode,
             string trackingPath)
         {
-            Logger.Debug("Starting emulator process: " + path + " " + args + "");
-            Logger.Debug("Working directory: " + workDir);
-            Logger.Debug("Emulator directory: " + emulatorDir);
-            Logger.Debug("ROM path: " + romPath);
-            Logger.Debug("Async execution: " + asyncExec);
-            Logger.Debug("Emulator: " + emulator.Name);
-            Logger.Debug("Emulator profile: " + emuProfile.Name);
-            Logger.Debug("Tracking mode: " + trackingMode);
-            Logger.Debug("Tracking path: " + trackingPath);
-
             if (path.StartsWith(Constants.WineBridgePrefix))
             {
                 var watcherToken = new CancellationTokenSource();
@@ -211,6 +213,62 @@ namespace WineBridgePlugin.Patchers
                     $"{path.Replace(Constants.WineBridgePrefix, "")} {args.Replace(romPath, WineUtils.WindowsPathToLinux(romPath))}");
                 LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
 
+                return false;
+            }
+
+            return true;
+        }
+    }
+
+    public static class EmulationPatches
+    {
+        private static readonly ILogger Logger = LogManager.GetLogger();
+
+        private static void GetProfilePostfix(ref EmulatorDefinitionProfile __result, string emulatorId,
+            string profileName)
+        {
+            var emulatorConfigs = WineBridgeSettings.EmulatorConfigs;
+            var matchingConfig = emulatorConfigs.FirstOrDefault(c => c.EmulatorId == emulatorId);
+            if (matchingConfig == null)
+            {
+                return;
+            }
+
+            Logger.Debug($"Replacing emulator profile for emulator {emulatorId} with {profileName}");
+            var currentResult = __result;
+
+            __result = new EmulatorDefinitionProfile
+            {
+                Name = currentResult.Name,
+                Platforms = currentResult.Platforms,
+                ImageExtensions = currentResult.ImageExtensions,
+                ProfileFiles = currentResult.ProfileFiles,
+                InstallationFile = $"{Constants.WineBridgePrefix}{matchingConfig.LinuxPath}",
+                StartupArguments = GetStartupArguments(currentResult, emulatorId),
+                StartupExecutable = $"{Constants.WineBridgePrefix}{matchingConfig.LinuxPath}",
+                ScriptStartup = false,
+                ScriptGameImport = false
+            };
+        }
+
+        private static string GetStartupArguments(EmulatorDefinitionProfile oldResult, string emulatorId)
+        {
+            if (emulatorId != "retroarch")
+            {
+                return oldResult.StartupArguments;
+            }
+
+            return Regex.Replace(oldResult.StartupArguments, "-L \"\\.\\\\cores\\\\(.+)_libretro\\.dll\"",
+                $"-L \"$1\"");
+        }
+
+        private static bool GetExecutablePrefix(ref string __result, string directory,
+            EmulatorDefinitionProfile profile, bool relative)
+        {
+            if (profile.StartupExecutable.StartsWith(Constants.WineBridgePrefix))
+            {
+                Logger.Debug($"Replacing executable prefix for profile {profile.Name} to {profile.InstallationFile}");
+                __result = profile.StartupExecutable;
                 return false;
             }
 

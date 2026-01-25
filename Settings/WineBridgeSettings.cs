@@ -1,4 +1,7 @@
-﻿namespace WineBridgePlugin.Settings
+﻿using System.Collections.Generic;
+using System.Linq;
+
+namespace WineBridgePlugin.Settings
 {
     public static class WineBridgeSettings
     {
@@ -71,6 +74,10 @@
 
         public static string LutrisExecutablePathLinux => WineBridgePlugin.Settings?.LutrisExecutablePathLinux ??
                                                           DefaultSettingFinder.LutrisConfiguration.ExecutablePath;
+
+        public static List<WineBridgeEmulatorConfig> EmulatorConfigs =>
+            WineBridgePlugin.Settings?.EmulatorConfigs?.ToList() ??
+            new List<WineBridgeEmulatorConfig>();
 
         public static bool DebugLoggingEnabled => WineBridgePlugin.Settings?.DebugLoggingEnabled ?? false;
 

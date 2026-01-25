@@ -130,7 +130,7 @@ namespace WineBridgePlugin.Settings
                 return true;
             }
 
-            Logger.Debug($"Cloud not find native Steam data folder at: {dataFolder}");
+            Logger.Debug($"Could not find native Steam data folder at: {dataFolder}");
             steamConfiguration = null;
             return false;
         }
@@ -153,7 +153,7 @@ namespace WineBridgePlugin.Settings
                 return true;
             }
 
-            Logger.Debug($"Cloud not find flatpak Steam data folder at: {dataFolder}");
+            Logger.Debug($"Could not find flatpak Steam data folder at: {dataFolder}");
             steamConfiguration = null;
             return false;
         }
@@ -213,7 +213,7 @@ namespace WineBridgePlugin.Settings
                 return true;
             }
 
-            Logger.Debug($"Cloud not find native Heroic data folder at: {dataFolder}");
+            Logger.Debug($"Could not find native Heroic data folder at: {dataFolder}");
             heroicConfiguration = null;
             return false;
         }
@@ -237,7 +237,7 @@ namespace WineBridgePlugin.Settings
                 return true;
             }
 
-            Logger.Debug($"Cloud not find flatpak Heroic data folder at: {dataFolder}");
+            Logger.Debug($"Could not find flatpak Heroic data folder at: {dataFolder}");
             heroicConfiguration = null;
             return false;
         }
@@ -294,7 +294,7 @@ namespace WineBridgePlugin.Settings
                 return true;
             }
 
-            Logger.Debug($"Cloud not find native Lutris data folder at: {dataFolder}");
+            Logger.Debug($"Could not find native Lutris data folder at: {dataFolder}");
             heroicConfiguration = null;
             return false;
         }
@@ -315,7 +315,7 @@ namespace WineBridgePlugin.Settings
                 return true;
             }
 
-            Logger.Debug($"Cloud not find flatpak Lutris data folder at: {dataFolder}");
+            Logger.Debug($"Could not find flatpak Lutris data folder at: {dataFolder}");
             heroicConfiguration = null;
             return false;
         }

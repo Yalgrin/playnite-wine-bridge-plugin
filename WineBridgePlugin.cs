@@ -11,6 +11,7 @@ using Playnite.SDK.Plugins;
 using WineBridgePlugin.Integrations.Heroic;
 using WineBridgePlugin.Integrations.Lutris;
 using WineBridgePlugin.Patchers;
+using WineBridgePlugin.Settings;
 using WineBridgePlugin.Utils;
 
 namespace WineBridgePlugin

@@ -28,6 +28,7 @@
 
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_Tab_Paths">Paths</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_Tab_Integrations">Integrations</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_Tab_Emulators">Emulators</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_Tab_Other">Other settings</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_Tab_Status">Status</sys:String>
 
@@ -55,6 +56,12 @@
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_LutrisItchIoIntegrationEnabled">Enable Itch.io integration with Lutris</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_LutrisDataPathLinux">Lutris data path (Linux)</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_LutrisExecutablePathLinux">Lutris executable path (Linux)</sys:String>
+
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_Emulators_AddEmulatorConfig">Add emulator config</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_Emulators_Emulator">Emulator</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_Emulators_LinuxPath">Executable path (Linux)</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_Emulators_IncompleteConfiguration">Incomplete emulator configuration specified!</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_Emulators_DuplicatedConfiguration">Defined multiple configurations for the same emulator!</sys:String>
 
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_DebugLoggingEnabled">Enable debug logging</sys:String>
 

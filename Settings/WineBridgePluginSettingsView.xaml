@@ -4,10 +4,10 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:cmd="clr-namespace:WineBridgePlugin.Commands"
-             xmlns:wineBridgePlugin="clr-namespace:WineBridgePlugin"
+             xmlns:settings="clr-namespace:WineBridgePlugin.Settings"
              mc:Ignorable="d"
              d:DesignHeight="400" d:DesignWidth="600"
-             d:DataContext="{d:DesignInstance wineBridgePlugin:WineBridgePluginSettingsViewModel}">
+             d:DataContext="{d:DesignInstance settings:WineBridgePluginSettingsViewModel}">
     <StackPanel Margin="20" CanVerticallyScroll="True" CanHorizontallyScroll="True">
         <TextBlock VerticalAlignment="Center">
             <Hyperlink NavigateUri="https://github.com/Yalgrin/playnite-wine-bridge-plugin/blob/master/README.md"
@@ -122,6 +122,73 @@
                         <CheckBox IsChecked="{Binding Settings.LutrisItchIoIntegrationEnabled}"
                                   Content="{DynamicResource LOC_Yalgrin_WineBridge_Settings_LutrisItchIoIntegrationEnabled}"
                                   Margin="0, 15, 0, 0" />
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="{DynamicResource LOC_Yalgrin_WineBridge_Settings_Tab_Emulators}">
+                <ScrollViewer>
+                    <StackPanel Margin="10" CanVerticallyScroll="True" CanHorizontallyScroll="True">
+                        <Button HorizontalAlignment="Left" Margin="5, 0, 0, 0"
+                                Command="{Binding AddEmulatorConfig}"
+                                Content="{DynamicResource LOC_Yalgrin_WineBridge_Settings_Emulators_AddEmulatorConfig}" />
+
+                        <ListView Margin="10,5,10,10" DockPanel.Dock="Top"
+                                  ItemsSource="{Binding Settings.EmulatorConfigs}">
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="{x:Type ListViewItem}"
+                                       BasedOn="{StaticResource {x:Type ListViewItem}}">
+                                    <Setter Property="Focusable" Value="False" />
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="{x:Type ListViewItem}">
+                                                <Border Padding="{TemplateBinding Padding}" Background="Transparent">
+                                                    <GridViewRowPresenter
+                                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                                        VerticalAlignment="Stretch" />
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Width="300"
+                                                    Header="{DynamicResource LOC_Yalgrin_WineBridge_Settings_Emulators_Emulator}">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ComboBox SelectedValue="{Binding EmulatorId}" Margin="0,5,0,0"
+                                                          ItemsSource="{Binding DataContext.EmulatorDescriptors, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                                          DisplayMemberPath="Name"
+                                                          SelectedValuePath="Id"
+                                                          VerticalAlignment="Stretch" VerticalContentAlignment="Center"
+                                                          IsEditable="False" />
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Width="450"
+                                                    Header="{DynamicResource LOC_Yalgrin_WineBridge_Settings_Emulators_LinuxPath}">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBox Text="{Binding LinuxPath}" Margin="0,5,0,0"
+                                                         VerticalAlignment="Stretch" VerticalContentAlignment="Center" />
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Width="60">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                                                    <Button FontFamily="Marlett" Content="r"
+                                                            Command="{Binding DataContext.RemoveEmulatorConfig, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                                            CommandParameter="{Binding}" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>

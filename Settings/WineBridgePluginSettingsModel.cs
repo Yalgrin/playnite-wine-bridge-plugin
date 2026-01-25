@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows.Input;
 using Playnite.SDK;
 using Playnite.SDK.Data;
 using WineBridgePlugin.Models;
 using WineBridgePlugin.Patchers;
-using WineBridgePlugin.Settings;
 using WineBridgePlugin.Utils;
 
-namespace WineBridgePlugin
+namespace WineBridgePlugin.Settings
 {
     public class WineBridgePluginSettingsModel : ObservableObject
     {
@@ -35,6 +36,8 @@ namespace WineBridgePlugin
         private bool _lutrisItchIoIntegrationEnabled;
         private string _lutrisDataPathLinux;
         private string _lutrisExecutablePathLinux;
+
+        private ObservableCollection<WineBridgeEmulatorConfig> _emulatorConfigs;
 
         private bool _debugLoggingEnabled;
 
@@ -159,11 +162,41 @@ namespace WineBridgePlugin
             set => SetValue(ref _lutrisExecutablePathLinux, value);
         }
 
+        public ObservableCollection<WineBridgeEmulatorConfig> EmulatorConfigs
+        {
+            get => _emulatorConfigs;
+            set => SetValue(ref _emulatorConfigs, value);
+        }
+
         public bool DebugLoggingEnabled
         {
             get => _debugLoggingEnabled;
             set => SetValue(ref _debugLoggingEnabled, value);
         }
+    }
+
+    public class WineBridgeEmulatorConfig : ObservableObject
+    {
+        private string _emulatorId;
+        private string _linuxPath;
+
+        public string EmulatorId
+        {
+            get => _emulatorId;
+            set => SetValue(ref _emulatorId, value);
+        }
+
+        public string LinuxPath
+        {
+            get => _linuxPath;
+            set => SetValue(ref _linuxPath, value);
+        }
+    }
+
+    public class EmulatorDescriptor
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
     }
 
     public class PatchingStatuses
@@ -199,9 +232,14 @@ namespace WineBridgePlugin
         }
 
         public PatchingStatuses PatchingStatuses { get; set; }
+
+        public List<EmulatorDescriptor> EmulatorDescriptors { get; private set; }
+
         public ICommand AutoDetectSteam { get; private set; }
         public ICommand AutoDetectHeroic { get; private set; }
         public ICommand AutoDetectLutris { get; private set; }
+        public ICommand AddEmulatorConfig { get; private set; }
+        public ICommand RemoveEmulatorConfig { get; private set; }
 
         public WineBridgePluginSettingsViewModel(WineBridgePlugin plugin)
         {
@@ -222,6 +260,26 @@ namespace WineBridgePlugin
             AutoDetectSteam = new RelayCommand(DoAutoDetectSteam);
             AutoDetectHeroic = new RelayCommand(DoAutoDetectHeroic);
             AutoDetectLutris = new RelayCommand(DoAutoDetectLutris);
+            AddEmulatorConfig = new RelayCommand(() =>
+            {
+                Logger.Debug("Adding a new emulator config...");
+                if (Settings.EmulatorConfigs == null)
+                {
+                    Settings.EmulatorConfigs = new ObservableCollection<WineBridgeEmulatorConfig>();
+                }
+
+                Settings.EmulatorConfigs.Add(new WineBridgeEmulatorConfig());
+            });
+            RemoveEmulatorConfig = new RelayCommand<WineBridgeEmulatorConfig>((emulatorConfig) =>
+            {
+                Logger.Debug($"Removing emulator config: {emulatorConfig.EmulatorId}");
+                Settings.EmulatorConfigs.Remove(emulatorConfig);
+            });
+            EmulatorDescriptors = _plugin.PlayniteApi.Emulation.Emulators.Select(e => new EmulatorDescriptor
+            {
+                Id = e.Id,
+                Name = e.Name
+            }).OrderBy(e => e.Name).ToList();
         }
 
         private void FillSettingsWithDefaults()
@@ -375,13 +433,33 @@ namespace WineBridgePlugin
 
         public void EndEdit()
         {
+            Settings.EmulatorConfigs =
+                new ObservableCollection<WineBridgeEmulatorConfig>(Settings.EmulatorConfigs.OrderBy(e => e.EmulatorId));
             _plugin.SavePluginSettings(Settings);
         }
 
         public bool VerifySettings(out List<string> errors)
         {
             errors = new List<string>();
-            return true;
+            if (HasDuplicateConfigurations())
+            {
+                errors.Add(ResourceProvider.GetString(
+                    "LOC_Yalgrin_WineBridge_Settings_Emulators_DuplicatedConfiguration"));
+            }
+
+            if (Settings.EmulatorConfigs.Any(c =>
+                    string.IsNullOrEmpty(c.EmulatorId) || string.IsNullOrEmpty(c.LinuxPath)))
+            {
+                errors.Add(ResourceProvider.GetString(
+                    "LOC_Yalgrin_WineBridge_Settings_Emulators_IncompleteConfiguration"));
+            }
+
+            return errors.Count == 0;
+        }
+
+        private bool HasDuplicateConfigurations()
+        {
+            return Settings.EmulatorConfigs.Select(c => c.EmulatorId).GroupBy(id => id).Any(g => g.Count() > 1);
         }
     }
 }
