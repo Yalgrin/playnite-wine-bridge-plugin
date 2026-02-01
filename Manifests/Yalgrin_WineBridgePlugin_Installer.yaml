@@ -52,3 +52,10 @@ Packages:
       - Added emulator support
       - Added partial tool support
       - Revamped settings view
+  - Version: 0.4.1
+    RequiredApiVersion: 6.11.0
+    ReleaseDate: 2026-02-01
+    PackageUrl: https://github.com/Yalgrin/playnite-wine-bridge-plugin/releases/download/0.4.1/Yalgrin_WineBridgePlugin_0_4_1.pext
+    Changelog:
+      - Added GUI for picking Steam games when adding play actions
+      - Fixed null reference exception in settings
