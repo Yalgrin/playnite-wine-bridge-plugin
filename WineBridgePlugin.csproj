@@ -150,7 +150,9 @@
         <Compile Include="Integrations\Lutris\LutrisProcessStarter.cs"/>
         <Compile Include="Integrations\Lutris\LutrisClient.cs"/>
         <Compile Include="Integrations\Lutris\LutrisUtils.cs"/>
+        <Compile Include="Integrations\Steam\SteamGamesService.cs"/>
         <Compile Include="Integrations\Steam\SteamProcessStarter.cs"/>
+        <Compile Include="Integrations\Steam\SteamUtils.cs"/>
         <Compile Include="Models\PatchingState.cs"/>
         <Compile Include="Models\ProcessWithCorrelationId.cs"/>
         <Compile Include="Patchers\AmazonPatcher.cs"/>
@@ -180,6 +182,38 @@
         <Compile Include="Utils\WineUtils.cs"/>
         <Compile Include="WineBridgePlugin.cs"/>
         <Compile Include="Properties\AssemblyInfo.cs"/>
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Include="VDFParser\VDFParser\VDFParser.cs">
+            <Link>Shared\VDFParser.cs</Link>
+        </Compile>
+        <Compile Include="VDFParser\VDFParser\Exceptions.cs">
+            <Link>Shared\Exceptions.cs</Link>
+        </Compile>
+        <Compile Include="VDFParser\VDFParser\Extensions.cs">
+            <Link>Shared\Extensions.cs</Link>
+        </Compile>
+        <Compile Include="VDFParser\VDFParser\Shared.cs">
+            <Link>Shared\Shared.cs</Link>
+        </Compile>
+        <Compile Include="VDFParser\VDFParser\Machines\VDFSM.cs">
+            <Link>Shared\VDFSM.cs</Link>
+        </Compile>
+        <Compile Include="VDFParser\VDFParser\Machines\VDFFieldsSM.cs">
+            <Link>Shared\VDFFieldsSM.cs</Link>
+        </Compile>
+        <Compile Include="VDFParser\VDFParser\Machines\VDFIndexedArraySM.cs">
+            <Link>Shared\VDFIndexedArraySM.cs</Link>
+        </Compile>
+        <Compile Include="VDFParser\VDFParser\Models\VDFEntry.cs">
+            <Link>Shared\VDFEntry.cs</Link>
+        </Compile>
+        <Compile Include="VDFParser\VDFParser\Models\VDFField.cs">
+            <Link>Shared\VDFField.cs</Link>
+        </Compile>
+        <Compile Include="VDFParser\VDFParser\Models\VDFFieldType.cs">
+            <Link>Shared\VDFFieldType.cs</Link>
+        </Compile>
     </ItemGroup>
     <ItemGroup>
         <None Include="App.config"/>

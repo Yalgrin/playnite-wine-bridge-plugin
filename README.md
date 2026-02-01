@@ -22,10 +22,12 @@ The plugin currently supports:
 
 - integrations for libraries such as: Steam, GOG, Amazon & more using Steam Linux client, Heroic Games Launcher and
   Lutris
+- integration for emulators running natively on Linux
 - option to add custom Steam play actions including non-Steam games
 - option to add Heroic play actions for any installed game
 - option to add Lutris play actions for any installed game
 - option to add custom play actions for any game
+- option to define Linux tools
 
 ## Integrations
 
@@ -37,7 +39,6 @@ The plugin currently supports:
 
 ## Planned features
 
-- search options when adding game actions for Steam
 - support for more libraries such as GOG OSS, Legendary and Nile
 - support for other Playnite features such as tools and emulators
 
@@ -235,4 +236,5 @@ If you like what I do, feel free to buy me a coffee.
 - [Playnite](https://playnite.link/) by [JosefNemec](https://github.com/JosefNemec)
 - [Harmony](https://harmony.pardeike.net/) by [Pardeike](https://github.com/pardeike)
 - [Wine project](https://www.winehq.org/)
+- [VDFParser](https://github.com/BrianLima/VDFParser) by [Brian Lima](https://github.com/BrianLima)
 - [Wine icons created by Freepik - Flaticon](https://www.flaticon.com/free-icons/wine)

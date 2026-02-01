@@ -290,6 +290,11 @@ namespace WineBridgePlugin.Settings
                 return;
             }
 
+            if (Settings.EmulatorConfigs == null)
+            {
+                Settings.EmulatorConfigs = new ObservableCollection<WineBridgeEmulatorConfig>();
+            }
+
             if (Settings.TrackingDirectoryLinux == null)
             {
                 Settings.TrackingDirectoryLinux = "/tmp";
@@ -447,8 +452,7 @@ namespace WineBridgePlugin.Settings
                     "LOC_Yalgrin_WineBridge_Settings_Emulators_DuplicatedConfiguration"));
             }
 
-            if (Settings.EmulatorConfigs.Any(c =>
-                    string.IsNullOrEmpty(c.EmulatorId) || string.IsNullOrEmpty(c.LinuxPath)))
+            if (HasIncompleteConfigurations())
             {
                 errors.Add(ResourceProvider.GetString(
                     "LOC_Yalgrin_WineBridge_Settings_Emulators_IncompleteConfiguration"));
@@ -459,7 +463,14 @@ namespace WineBridgePlugin.Settings
 
         private bool HasDuplicateConfigurations()
         {
-            return Settings.EmulatorConfigs.Select(c => c.EmulatorId).GroupBy(id => id).Any(g => g.Count() > 1);
+            return Settings.EmulatorConfigs?.Select(c => c.EmulatorId).GroupBy(id => id).Any(g => g.Count() > 1) ??
+                   false;
+        }
+
+        private bool HasIncompleteConfigurations()
+        {
+            return Settings.EmulatorConfigs?.Any(c =>
+                string.IsNullOrEmpty(c.EmulatorId) || string.IsNullOrEmpty(c.LinuxPath)) ?? false;
         }
     }
 }

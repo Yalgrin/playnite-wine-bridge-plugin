@@ -10,6 +10,7 @@ using Playnite.SDK.Models;
 using Playnite.SDK.Plugins;
 using WineBridgePlugin.Integrations.Heroic;
 using WineBridgePlugin.Integrations.Lutris;
+using WineBridgePlugin.Integrations.Steam;
 using WineBridgePlugin.Patchers;
 using WineBridgePlugin.Settings;
 using WineBridgePlugin.Utils;
@@ -63,6 +64,13 @@ namespace WineBridgePlugin
         public override IEnumerable<GameMenuItem> GetGameMenuItems(GetGameMenuItemsArgs args)
         {
             var menuSection = ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_SectionName");
+
+            yield return new GameMenuItem
+            {
+                Description = ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_AddSteamAction"),
+                MenuSection = menuSection,
+                Action = AddSteamAction
+            };
 
             yield return new GameMenuItem
             {
@@ -210,6 +218,66 @@ namespace WineBridgePlugin
             }
         }
 
+        private void AddSteamAction(GameMenuItemActionArgs args)
+        {
+            var caption =
+                ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_SelectInstalledSteamGame");
+            var nonSteamName = ResourceProvider.GetString("LOC_Yalgrin_WineBridge_SteamService_NonSteam");
+            var installedGames = SteamGamesService.GetInstalledGames().Values.ToList();
+            var steamInstalledGames = installedGames.ConvertAll(g => new GenericItemOption
+            {
+                Name = g.Name,
+                Description = g.GameId
+            });
+            var nonSteamGames = SteamGamesService.GetNonSteamGames().ConvertAll(g => new GenericItemOption
+            {
+                Name = g.Name,
+                Description = g.GameId + " | " + nonSteamName
+            });
+            var options = steamInstalledGames.Concat(nonSteamGames).OrderBy(g => g.Name).ToList();
+            foreach (var game in args.Games)
+            {
+                var mainCaption =
+                    $"{game.Name} - {caption}";
+                var selectedItem = PlayniteApi.Dialogs.ChooseItemWithSearch(options,
+                    str => options.Where(o =>
+                        string.IsNullOrEmpty(str) || o.Name.ToLowerInvariant().Contains(str.ToLowerInvariant()) ||
+                        o.Description.ToLowerInvariant().Contains(str.ToLowerInvariant())).ToList(),
+                    caption: mainCaption);
+                if (selectedItem == null)
+                {
+                    return;
+                }
+
+                var nameResult = PlayniteApi.Dialogs.SelectString(
+                    $"{game.Name} - {ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterActionName")}",
+                    mainCaption, "Play on Linux");
+                if (!nameResult.Result)
+                {
+                    return;
+                }
+
+                var split = Regex.Split(selectedItem.Description, " \\| ");
+                if (split.Length != 1 && split.Length != 2)
+                {
+                    return;
+                }
+
+                var foundGame =
+                    installedGames.Find(g => g.GameId == split[0]);
+                var nonSteam = split.Length == 2 && split[1] == nonSteamName;
+                if (foundGame?.InstallDirectory != null)
+                {
+                    game.InstallDirectory = foundGame.InstallDirectory;
+                }
+
+                var steamAppId = Convert.ToUInt64(split[0]);
+                SteamUtils.ExtractAppIdAndTrackingId(steamAppId, nonSteam, out var appId, out var trackingId);
+
+                AddSteamWineBridgeAction(game, $"[WB] {nameResult.SelectedString}", appId, trackingId);
+            }
+        }
+
         private void AddSteamLinuxAction(GameMenuItemActionArgs args)
         {
             foreach (var game in args.Games)
@@ -264,20 +332,6 @@ namespace WineBridgePlugin
                     return;
                 }
 
-                //https://github.com/ValveSoftware/steam-for-linux/issues/9463#issuecomment-2558366504
-                ulong appId;
-                ulong trackingId;
-                if (givenId >= (ulong)1 << 32)
-                {
-                    appId = givenId;
-                    trackingId = givenId >> 32;
-                }
-                else
-                {
-                    trackingId = givenId;
-                    appId = (givenId << 32) | (1L << 25);
-                }
-
                 var nameResult = PlayniteApi.Dialogs.SelectString(
                     $"{game.Name} - {ResourceProvider.GetString("LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterActionName")}",
                     mainCaption, "Play on Linux");
@@ -286,6 +340,7 @@ namespace WineBridgePlugin
                     return;
                 }
 
+                SteamUtils.ExtractAppIdAndTrackingId(givenId, true, out var appId, out var trackingId);
                 AddSteamWineBridgeAction(game, $"[WB] {nameResult.SelectedString}", appId, trackingId);
             }
         }

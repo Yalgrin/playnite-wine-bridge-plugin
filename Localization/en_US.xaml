@@ -5,7 +5,8 @@
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_SectionName">Wine Bridge</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_AddCustomLinuxAction">Add custom Linux action</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_AddCustomAsyncLinuxAction">Add custom async Linux action</sys:String>
-    <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_AddSteamLinuxAction">Add Steam game action</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_AddSteamAction">Add Steam installed game action</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_AddSteamLinuxAction">Add Steam custom game action</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_AddSteamNonSteamLinuxAction">Add Non-Steam game added to Steam action</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_AddHeroicAction">Add Heroic installed game action</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_AddHeroicCustomAction">Add Heroic custom game action</sys:String>
@@ -14,6 +15,7 @@
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_RemoveAllActions">Remove all actions</sys:String>
 
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterLinuxCommand">Enter Linux command</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_SelectInstalledSteamGame">Select installed Steam game</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterSteamAppId">Enter the game's Steam AppID</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterSteamNonSteamAppId">Enter the game's Steam AppID (or BPID)</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterTrackingExpression">Enter tracking expression</sys:String>
@@ -87,6 +89,8 @@
     <sys:String x:Key="LOC_Yalgrin_WineBridge_PatchingState_Patched">Patched</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_PatchingState_MissingClasses">Classes not found!</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_PatchingState_Error">Error occurred!</sys:String>
+
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_SteamService_NonSteam">Non-Steam</sys:String>
 
     <sys:String x:Key="LOC_Yalgrin_WineBridge_LutrisService_Custom">Custom</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_LutrisService_Unknown">Unknown</sys:String>

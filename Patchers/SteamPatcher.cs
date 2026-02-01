@@ -11,6 +11,7 @@ using WineBridgePlugin.Integrations.Steam;
 using WineBridgePlugin.Models;
 using WineBridgePlugin.Processes;
 using WineBridgePlugin.Settings;
+using WineBridgePlugin.Utils;
 
 namespace WineBridgePlugin.Patchers
 {
@@ -118,7 +119,7 @@ namespace WineBridgePlugin.Patchers
             var installationPath = WineBridgeSettings.SteamDataPathLinux;
             if (installationPath != null)
             {
-                __result = installationPath;
+                __result = WineUtils.LinuxPathToWindows(installationPath);
                 return false;
             }
 

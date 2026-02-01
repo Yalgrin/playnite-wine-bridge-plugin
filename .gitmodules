@@ -1,0 +1,3 @@
+[submodule "VDFParser"]
+	path = VDFParser
+	url = https://github.com/BrianLima/VDFParser.git
