@@ -81,9 +81,20 @@
 
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Error_InvalidNumber">Invalid number given!</sys:String>
 
-    <sys:String x:Key="LOC_Yalgrin_WineBridge_Messages_FoundNativeConfiguration">Found configuration in directory: {0}. Going to use native executable. Make sure that it's correct!</sys:String>
-    <sys:String x:Key="LOC_Yalgrin_WineBridge_Messages_FoundFlatpakConfiguration">Found configuration in directory: {0}. Going to run the client as a flatpak. Make sure that it's correct!</sys:String>
-    <sys:String x:Key="LOC_Yalgrin_WineBridge_Messages_ConfigurationNotFoundPlaceholder">Configuration not found! Setting the placeholder configuration in folder: {0}. Make sure you manually change them to the right ones!</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Messages_DetectedTheSameConfiguration">Detected configuration is the same as the one currently configured!</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Messages_DoYouWantToReplaceConfig_Caption">Do you want to replace the configuration?</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Messages_DoYouWantToReplaceConfig" xml:space="preserve">{0}:
+Data path: {1}
+Executable: {2}
+
+Current configuration:
+Data path: {3}
+Executable: {4}
+
+Do you want to replace your current configuration with the one above?</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Messages_FoundNativeConfiguration">Found native configuration</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Messages_FoundFlatpakConfiguration">Found flatpak configuration</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Messages_ConfigurationNotFoundPlaceholder">Configuration not found! Going to use placeholder data</sys:String>
 
     <sys:String x:Key="LOC_Yalgrin_WineBridge_PatchingState_Unpatched">Unpatched</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_PatchingState_Patched">Patched</sys:String>

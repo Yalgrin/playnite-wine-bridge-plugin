@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Windows;
 using System.Windows.Input;
 using Playnite.SDK;
 using Playnite.SDK.Data;
@@ -356,78 +357,110 @@ namespace WineBridgePlugin.Settings
         private void DoAutoDetectSteam()
         {
             var foundConfiguration = DefaultSettingFinder.SteamConfiguration;
+
+            if (Settings.SteamDataPathLinux == foundConfiguration.DataPath &&
+                Settings.SteamExecutablePathLinux == foundConfiguration.ExecutablePath)
+            {
+                _plugin.PlayniteApi.Dialogs.ShowMessage(
+                    ResourceProvider.GetString("LOC_Yalgrin_WineBridge_Messages_DetectedTheSameConfiguration"), "",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var messageBoxResult = _plugin.PlayniteApi.Dialogs.ShowMessage(string.Format(
+                    ResourceProvider.GetString("LOC_Yalgrin_WineBridge_Messages_DoYouWantToReplaceConfig"),
+                    GetFoundConfigurationTypeMsg(foundConfiguration.Type),
+                    foundConfiguration.DataPath,
+                    foundConfiguration.ExecutablePath,
+                    Settings.SteamDataPathLinux,
+                    Settings.SteamExecutablePathLinux),
+                ResourceProvider.GetString("LOC_Yalgrin_WineBridge_Messages_DoYouWantToReplaceConfig_Caption"),
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+            if (messageBoxResult != MessageBoxResult.Yes)
+            {
+                return;
+            }
+
             Settings.SteamDataPathLinux = foundConfiguration.DataPath;
             Settings.SteamExecutablePathLinux = foundConfiguration.ExecutablePath;
-
-            switch (foundConfiguration.Type)
-            {
-                case "Native":
-                    _plugin.PlayniteApi.Dialogs.ShowMessage(string.Format(
-                        ResourceProvider.GetString("LOC_Yalgrin_WineBridge_Messages_FoundNativeConfiguration"),
-                        foundConfiguration.DataPath));
-                    break;
-                case "Flatpak":
-                    _plugin.PlayniteApi.Dialogs.ShowMessage(string.Format(
-                        ResourceProvider.GetString("LOC_Yalgrin_WineBridge_Messages_FoundFlatpakConfiguration"),
-                        foundConfiguration.DataPath));
-                    break;
-                default:
-                    _plugin.PlayniteApi.Dialogs.ShowErrorMessage(string.Format(
-                        ResourceProvider.GetString("LOC_Yalgrin_WineBridge_Messages_ConfigurationNotFoundPlaceholder"),
-                        foundConfiguration.DataPath));
-                    break;
-            }
         }
 
         private void DoAutoDetectHeroic()
         {
             var foundConfiguration = DefaultSettingFinder.HeroicConfiguration;
+
+            if (Settings.HeroicDataPathLinux == foundConfiguration.DataPath &&
+                Settings.HeroicExecutablePathLinux == foundConfiguration.ExecutablePath)
+            {
+                _plugin.PlayniteApi.Dialogs.ShowMessage(
+                    ResourceProvider.GetString("LOC_Yalgrin_WineBridge_Messages_DetectedTheSameConfiguration"), "",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var messageBoxResult = _plugin.PlayniteApi.Dialogs.ShowMessage(string.Format(
+                    ResourceProvider.GetString("LOC_Yalgrin_WineBridge_Messages_DoYouWantToReplaceConfig"),
+                    GetFoundConfigurationTypeMsg(foundConfiguration.Type),
+                    foundConfiguration.DataPath,
+                    foundConfiguration.ExecutablePath,
+                    Settings.HeroicDataPathLinux,
+                    Settings.HeroicExecutablePathLinux),
+                ResourceProvider.GetString("LOC_Yalgrin_WineBridge_Messages_DoYouWantToReplaceConfig_Caption"),
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+            if (messageBoxResult != MessageBoxResult.Yes)
+            {
+                return;
+            }
+
             Settings.HeroicDataPathLinux = foundConfiguration.DataPath;
             Settings.HeroicExecutablePathLinux = foundConfiguration.ExecutablePath;
-
-            switch (foundConfiguration.Type)
-            {
-                case "Native":
-                    _plugin.PlayniteApi.Dialogs.ShowMessage(string.Format(
-                        ResourceProvider.GetString("LOC_Yalgrin_WineBridge_Messages_FoundNativeConfiguration"),
-                        foundConfiguration.DataPath));
-                    break;
-                case "Flatpak":
-                    _plugin.PlayniteApi.Dialogs.ShowMessage(string.Format(
-                        ResourceProvider.GetString("LOC_Yalgrin_WineBridge_Messages_FoundFlatpakConfiguration"),
-                        foundConfiguration.DataPath));
-                    break;
-                default:
-                    _plugin.PlayniteApi.Dialogs.ShowErrorMessage(string.Format(
-                        ResourceProvider.GetString("LOC_Yalgrin_WineBridge_Messages_ConfigurationNotFoundPlaceholder"),
-                        foundConfiguration.DataPath));
-                    break;
-            }
         }
 
         private void DoAutoDetectLutris()
         {
             var foundConfiguration = DefaultSettingFinder.LutrisConfiguration;
+
+            if (Settings.LutrisDataPathLinux == foundConfiguration.DataPath &&
+                Settings.LutrisExecutablePathLinux == foundConfiguration.ExecutablePath)
+            {
+                _plugin.PlayniteApi.Dialogs.ShowMessage(
+                    ResourceProvider.GetString("LOC_Yalgrin_WineBridge_Messages_DetectedTheSameConfiguration"), "",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var messageBoxResult = _plugin.PlayniteApi.Dialogs.ShowMessage(string.Format(
+                    ResourceProvider.GetString("LOC_Yalgrin_WineBridge_Messages_DoYouWantToReplaceConfig"),
+                    GetFoundConfigurationTypeMsg(foundConfiguration.Type),
+                    foundConfiguration.DataPath,
+                    foundConfiguration.ExecutablePath,
+                    Settings.LutrisDataPathLinux,
+                    Settings.LutrisExecutablePathLinux),
+                ResourceProvider.GetString("LOC_Yalgrin_WineBridge_Messages_DoYouWantToReplaceConfig_Caption"),
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+            if (messageBoxResult != MessageBoxResult.Yes)
+            {
+                return;
+            }
+
             Settings.LutrisDataPathLinux = foundConfiguration.DataPath;
             Settings.LutrisExecutablePathLinux = foundConfiguration.ExecutablePath;
+        }
 
-            switch (foundConfiguration.Type)
+        private static string GetFoundConfigurationTypeMsg(string type)
+        {
+            switch (type)
             {
                 case "Native":
-                    _plugin.PlayniteApi.Dialogs.ShowMessage(string.Format(
-                        ResourceProvider.GetString("LOC_Yalgrin_WineBridge_Messages_FoundNativeConfiguration"),
-                        foundConfiguration.DataPath));
-                    break;
+                    return ResourceProvider.GetString("LOC_Yalgrin_WineBridge_Messages_FoundNativeConfiguration");
                 case "Flatpak":
-                    _plugin.PlayniteApi.Dialogs.ShowMessage(string.Format(
-                        ResourceProvider.GetString("LOC_Yalgrin_WineBridge_Messages_FoundFlatpakConfiguration"),
-                        foundConfiguration.DataPath));
-                    break;
+                    return ResourceProvider.GetString("LOC_Yalgrin_WineBridge_Messages_FoundFlatpakConfiguration");
                 default:
-                    _plugin.PlayniteApi.Dialogs.ShowErrorMessage(string.Format(
-                        ResourceProvider.GetString("LOC_Yalgrin_WineBridge_Messages_ConfigurationNotFoundPlaceholder"),
-                        foundConfiguration.DataPath));
-                    break;
+                    return ResourceProvider.GetString(
+                        "LOC_Yalgrin_WineBridge_Messages_ConfigurationNotFoundPlaceholder");
             }
         }
 
