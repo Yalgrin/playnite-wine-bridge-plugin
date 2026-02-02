@@ -18,10 +18,10 @@ was created.
 
 ## Features
 
-- [integration for Playnite libraries such as Steam, GOG, Epic etc.](Libraries)
-- [emulator support](Emulators)
-- [play actions for any supported launcher and custom actions](Play-Actions)
-- [custom tools](Tools)
+- [integration for Playnite libraries such as Steam, GOG, Epic etc.](https://github.com/Yalgrin/playnite-wine-bridge-plugin/wiki/Libraries)
+- [emulator support](https://github.com/Yalgrin/playnite-wine-bridge-plugin/wiki/Emulators)
+- [play actions for any supported launcher and custom actions](https://github.com/Yalgrin/playnite-wine-bridge-plugin/wiki/Play-Actions)
+- [custom tools](https://github.com/Yalgrin/playnite-wine-bridge-plugin/wiki/Tools)
 - open folders and links inside default apps in Linux
 
 ## Integrations
