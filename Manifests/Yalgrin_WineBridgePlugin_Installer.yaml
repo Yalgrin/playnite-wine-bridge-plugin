@@ -59,3 +59,11 @@ Packages:
     Changelog:
       - Added GUI for picking Steam games when adding play actions
       - Fixed null reference exception in settings
+  - Version: 0.4.2
+    RequiredApiVersion: 6.11.0
+    ReleaseDate: 2026-02-05
+    PackageUrl: https://github.com/Yalgrin/playnite-wine-bridge-plugin/releases/download/0.4.2/Yalgrin_WineBridgePlugin_0_4_2.pext
+    Changelog:
+      - Added an option to force high quality icons (disabled by default)
+      - Improved auto-detect messages
+      - Changed instructions link to the wiki
