@@ -10,7 +10,7 @@
              d:DataContext="{d:DesignInstance settings:WineBridgePluginSettingsViewModel}">
     <StackPanel Margin="20" CanVerticallyScroll="True" CanHorizontallyScroll="True">
         <TextBlock VerticalAlignment="Center">
-            <Hyperlink NavigateUri="https://github.com/Yalgrin/playnite-wine-bridge-plugin/blob/master/README.md"
+            <Hyperlink NavigateUri="https://github.com/Yalgrin/playnite-wine-bridge-plugin/wiki"
                        Command="{x:Static cmd:Commands.NavigateUrlCommand}"
                        CommandParameter="{Binding NavigateUri, RelativeSource={RelativeSource Self}}">
                 <Run Text="{DynamicResource LOC_Yalgrin_WineBridge_Settings_Instructions}" />
