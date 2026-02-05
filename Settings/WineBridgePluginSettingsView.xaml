@@ -204,6 +204,9 @@
                         <CheckBox IsChecked="{Binding Settings.RedirectProtocolCallsToLinux}"
                                   Content="{DynamicResource LOC_Yalgrin_WineBridge_Settings_RedirectProtocolCallsToLinux}"
                                   Margin="0, 15, 0, 0" />
+                        <CheckBox IsChecked="{Binding Settings.ForceHighQualityIcons}"
+                                  Content="{DynamicResource LOC_Yalgrin_WineBridge_Settings_ForceHighQualityIcons}"
+                                  Margin="0, 15, 0, 0" />
 
                         <Separator Margin="0, 25, 0, 10" />
 

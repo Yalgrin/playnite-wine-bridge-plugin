@@ -177,6 +177,7 @@
         </Compile>
         <Compile Include="Settings\WineBridgeSettings.cs"/>
         <Compile Include="Utils\HeroicPlatformExtensions.cs"/>
+        <Compile Include="Utils\IconExtractor.cs"/>
         <Compile Include="Utils\StringUtils.cs"/>
         <Compile Include="Utils\WineDetector.cs"/>
         <Compile Include="Utils\WineUtils.cs"/>

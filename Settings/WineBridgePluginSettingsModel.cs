@@ -18,6 +18,7 @@ namespace WineBridgePlugin.Settings
         private bool _setScriptExecutePermissions = true;
         private bool _redirectExplorerCallsToLinux = true;
         private bool _redirectProtocolCallsToLinux = true;
+        private bool _forceHighQualityIcons = false;
 
         private bool _steamIntegrationEnabled;
         private string _steamDataPathLinux;
@@ -64,6 +65,12 @@ namespace WineBridgePlugin.Settings
         {
             get => _redirectProtocolCallsToLinux;
             set => SetValue(ref _redirectProtocolCallsToLinux, value);
+        }
+
+        public bool ForceHighQualityIcons
+        {
+            get => _forceHighQualityIcons;
+            set => SetValue(ref _forceHighQualityIcons, value);
         }
 
         public bool SteamIntegrationEnabled

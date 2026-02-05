@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -48,7 +49,9 @@ namespace WineBridgePlugin.Patchers
                 var genericPlayControllerType = assembly.GetType("Playnite.Controllers.GenericPlayController");
                 var gamesEditorType = assembly.GetType("Playnite.GamesEditor");
                 var emulationType = assembly.GetType("Playnite.Emulators.Emulation");
-                if (genericPlayControllerType == null || gamesEditorType == null || emulationType == null)
+                var bitmapExtensionsType = assembly.GetType("System.Drawing.Imaging.BitmapExtensions");
+                if (genericPlayControllerType == null || gamesEditorType == null || emulationType == null
+                    || bitmapExtensionsType == null)
                 {
                     Logger.Warn("Failed to find Playnite classes!");
                     State = PatchingState.MissingClasses;
@@ -66,8 +69,11 @@ namespace WineBridgePlugin.Patchers
                     BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
                 var getExecutableMethod = emulationType.GetMethod("GetExecutable",
                     BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+                var bitmapFromStreamMethod = bitmapExtensionsType.GetMethod("BitmapFromStream",
+                    BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
                 if (startMethod == null || disposeMethod == null || powershellErrorField == null ||
-                    startEmulatorMethod == null || getProfileMethod == null || getExecutableMethod == null)
+                    startEmulatorMethod == null || getProfileMethod == null || getExecutableMethod == null ||
+                    bitmapFromStreamMethod == null)
                 {
                     Logger.Warn("Failed to find Playnite methods!");
                     State = PatchingState.MissingClasses;
@@ -89,6 +95,10 @@ namespace WineBridgePlugin.Patchers
                 var getExecutablePrefix = AccessTools.Method(typeof(EmulationPatches), "GetExecutablePrefix");
                 HarmonyPatcher.HarmonyInstance.Patch(getExecutableMethod,
                     prefix: new HarmonyMethod(getExecutablePrefix));
+                var bitmapFromStreamPrefix =
+                    AccessTools.Method(typeof(BitmapExtensionsPatches), "BitmapFromStreamPrefix");
+                HarmonyPatcher.HarmonyInstance.Patch(bitmapFromStreamMethod,
+                    prefix: new HarmonyMethod(bitmapFromStreamPrefix));
                 powershellErrorField.SetValue(null, true);
 
                 Logger.Info("Playnite methods patched successfully!");
@@ -270,6 +280,33 @@ namespace WineBridgePlugin.Patchers
                 Logger.Debug($"Replacing executable prefix for profile {profile.Name} to {profile.InstallationFile}");
                 __result = profile.StartupExecutable;
                 return false;
+            }
+
+            return true;
+        }
+    }
+
+    public static class BitmapExtensionsPatches
+    {
+        private static readonly ILogger Logger = LogManager.GetLogger();
+
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        private static bool BitmapFromStreamPrefix(
+            ref Stream stream)
+        {
+            if (!WineBridgeSettings.ForceHighQualityIcons)
+            {
+                return true;
+            }
+
+            try
+            {
+                stream.Seek(0, SeekOrigin.Begin);
+                stream = IconExtractor.StripIconToTheHighestQualityFrame(stream);
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e, "Failed to strip icon from stream!");
             }
 
             return true;

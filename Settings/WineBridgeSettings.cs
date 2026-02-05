@@ -16,6 +16,9 @@ namespace WineBridgePlugin.Settings
         public static bool RedirectProtocolCallsToLinux =>
             WineBridgePlugin.Settings?.RedirectProtocolCallsToLinux ?? true;
 
+        public static bool ForceHighQualityIcons =>
+            WineBridgePlugin.Settings?.ForceHighQualityIcons ?? false;
+
         public static bool SteamIntegrationEnabled => WineBridgePlugin.Settings?.SteamIntegrationEnabled ?? false;
 
         public static string SteamDataPathLinux => WineBridgePlugin.Settings?.SteamDataPathLinux ??
