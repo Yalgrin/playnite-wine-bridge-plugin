@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using HarmonyLib;
 using Playnite.SDK;
+using Playnite.SDK.Models;
 using Playnite.SDK.Plugins;
 using SteamKit2;
 using WineBridgePlugin.Integrations.Steam;
@@ -42,8 +43,9 @@ namespace WineBridgePlugin.Patchers
 
                 var steamType = assembly.GetType("SteamLibrary.Steam");
                 var steamPlayControllerType = assembly.GetType("SteamLibrary.SteamPlayController");
+                var localServiceType = AccessTools.TypeByName("SteamLibrary.Services.SteamLocalService");
 
-                if (steamType == null || steamPlayControllerType == null)
+                if (steamType == null || steamPlayControllerType == null || localServiceType == null)
                 {
                     Logger.Warn("Failed to find SteamLibrary classes!");
                     State = PatchingState.MissingClasses;
@@ -55,9 +57,10 @@ namespace WineBridgePlugin.Patchers
                 var clientPathMethod = steamType.GetProperty("ClientExecPath")?.GetGetMethod();
                 var playMethod = steamPlayControllerType.GetMethod("Play");
                 var disposeMethod = steamPlayControllerType.GetMethod("Dispose");
+                var getInstalledGamesMethod = AccessTools.Method(localServiceType, "GetInstalledGamesFromFolder");
 
                 if (isInstalledMethod == null || installPathMethod == null || clientPathMethod == null ||
-                    playMethod == null || disposeMethod == null)
+                    playMethod == null || disposeMethod == null || getInstalledGamesMethod == null)
                 {
                     Logger.Warn("Failed to find SteamLibrary methods!");
                     State = PatchingState.MissingClasses;
@@ -80,6 +83,11 @@ namespace WineBridgePlugin.Patchers
                     AccessTools.Method(typeof(SteamPlayControllerPatches), "DisposePrefix");
                 HarmonyPatcher.HarmonyInstance.Patch(disposeMethod,
                     prefix: new HarmonyMethod(playControllerDisposePrefix));
+
+                var localServiceInstalledGamesPostfix =
+                    AccessTools.Method(typeof(SteamLocalServicePatches), "GetInstalledGamesFromFolderPostfix");
+                HarmonyPatcher.HarmonyInstance.Patch(getInstalledGamesMethod,
+                    postfix: new HarmonyMethod(localServiceInstalledGamesPostfix));
 
                 Logger.Info("Steam methods patched successfully!");
                 State = PatchingState.Patched;
@@ -220,6 +228,21 @@ namespace WineBridgePlugin.Patchers
                 default:
                     return false;
             }
+        }
+    }
+
+    internal static class SteamLocalServicePatches
+    {
+        private static void GetInstalledGamesFromFolderPostfix(ref List<GameMetadata> __result)
+        {
+            if (__result == null)
+            {
+                return;
+            }
+
+            var resultCopy = new List<GameMetadata>(__result);
+            resultCopy.RemoveAll(metadata => SteamUtils.ExcludedSteamIds.Contains(metadata.GameId));
+            __result = resultCopy;
         }
     }
 }
