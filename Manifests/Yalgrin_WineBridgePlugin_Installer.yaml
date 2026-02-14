@@ -67,3 +67,10 @@ Packages:
       - Added an option to force high quality icons (disabled by default)
       - Improved auto-detect messages
       - Changed instructions link to the wiki
+  - Version: 0.4.3
+    RequiredApiVersion: 6.11.0
+    ReleaseDate: 2026-02-14
+    PackageUrl: https://github.com/Yalgrin/playnite-wine-bridge-plugin/releases/download/0.4.3/Yalgrin_WineBridgePlugin_0_4_3.pext
+    Changelog:
+      - Steam - Proton and Steam Linux Runtime apps will not longer be imported or be selectable in Steam play actions
+      - Itch.io - Fixed the Lutris toggle not working correctly
