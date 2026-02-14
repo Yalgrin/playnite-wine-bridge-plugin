@@ -233,7 +233,9 @@ namespace WineBridgePlugin.Patchers
 
     internal static class SteamLocalServicePatches
     {
-        private static void GetInstalledGamesFromFolderPostfix(ref List<GameMetadata> __result)
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        private static void GetInstalledGamesFromFolderPostfix(
+            [SuppressMessage("ReSharper", "InconsistentNaming")] ref List<GameMetadata> __result)
         {
             if (__result == null)
             {

@@ -134,73 +134,77 @@ namespace WineBridgePlugin.Patchers
         }
 
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        [SuppressMessage("ReSharper", "UnusedParameter.Local")]
         private static bool StartPrefix([SuppressMessage("ReSharper", "InconsistentNaming")] PlayController __instance,
-            GameAction playAction, [SuppressMessage("ReSharper", "UnusedParameter.Local")] bool asyncExec,
+            GameAction playAction, bool asyncExec,
             OnGameStartingEventArgs startingArgs)
         {
-            if (playAction.Type == GameActionType.File)
+            if (playAction.Type != GameActionType.File)
             {
-                if (playAction.Path.StartsWith(Constants.WineBridgePrefix))
-                {
-                    AccessTools.Property(__instance.GetType(), "StartingArgs").SetValue(__instance, startingArgs);
-                    var watcherToken = new CancellationTokenSource();
-                    PlayCancelationTokenSources[__instance] = watcherToken;
-                    var process =
-                        LinuxProcessStarter.Start(playAction.Path.Substring(Constants.WineBridgePrefix.Length));
-                    LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
-                    return false;
-                }
+                return true;
+            }
 
-                if (playAction.Path.StartsWith(Constants.WineBridgeAsyncPrefix))
-                {
-                    AccessTools.Property(__instance.GetType(), "StartingArgs").SetValue(__instance, startingArgs);
-                    var watcherToken = new CancellationTokenSource();
-                    PlayCancelationTokenSources[__instance] = watcherToken;
-                    var process = LinuxProcessStarter.Start(
-                        playAction.Path.Substring(Constants.WineBridgeAsyncPrefix.Length),
-                        true, playAction.Arguments);
-                    LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
-                    return false;
-                }
+            if (playAction.Path.StartsWith(Constants.WineBridgePrefix))
+            {
+                AccessTools.Property(__instance.GetType(), "StartingArgs").SetValue(__instance, startingArgs);
+                var watcherToken = new CancellationTokenSource();
+                PlayCancelationTokenSources[__instance] = watcherToken;
+                var process =
+                    LinuxProcessStarter.Start(playAction.Path.Substring(Constants.WineBridgePrefix.Length));
+                LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
+                return false;
+            }
 
-                if (playAction.Path.StartsWith(Constants.WineBridgeSteamPrefix))
-                {
-                    AccessTools.Property(__instance.GetType(), "StartingArgs").SetValue(__instance, startingArgs);
-                    var watcherToken = new CancellationTokenSource();
-                    PlayCancelationTokenSources[__instance] = watcherToken;
-                    var process = SteamProcessStarter.Start(
-                        playAction.Path.Substring(Constants.WineBridgeSteamPrefix.Length), playAction.Arguments);
-                    LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
-                    return false;
-                }
+            if (playAction.Path.StartsWith(Constants.WineBridgeAsyncPrefix))
+            {
+                AccessTools.Property(__instance.GetType(), "StartingArgs").SetValue(__instance, startingArgs);
+                var watcherToken = new CancellationTokenSource();
+                PlayCancelationTokenSources[__instance] = watcherToken;
+                var process = LinuxProcessStarter.Start(
+                    playAction.Path.Substring(Constants.WineBridgeAsyncPrefix.Length),
+                    true, playAction.Arguments);
+                LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
+                return false;
+            }
 
-                if (playAction.Path.StartsWith(Constants.WineBridgeHeroicPrefix))
-                {
-                    AccessTools.Property(__instance.GetType(), "StartingArgs").SetValue(__instance, startingArgs);
-                    var watcherToken = new CancellationTokenSource();
-                    PlayCancelationTokenSources[__instance] = watcherToken;
-                    var process = HeroicProcessStarter.Start(
-                        playAction.Path.Substring(Constants.WineBridgeHeroicPrefix.Length));
-                    LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
-                    return false;
-                }
+            if (playAction.Path.StartsWith(Constants.WineBridgeSteamPrefix))
+            {
+                AccessTools.Property(__instance.GetType(), "StartingArgs").SetValue(__instance, startingArgs);
+                var watcherToken = new CancellationTokenSource();
+                PlayCancelationTokenSources[__instance] = watcherToken;
+                var process = SteamProcessStarter.Start(
+                    playAction.Path.Substring(Constants.WineBridgeSteamPrefix.Length), playAction.Arguments);
+                LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
+                return false;
+            }
 
-                if (playAction.Path.StartsWith(Constants.WineBridgeLutrisPrefix))
-                {
-                    AccessTools.Property(__instance.GetType(), "StartingArgs").SetValue(__instance, startingArgs);
-                    var watcherToken = new CancellationTokenSource();
-                    PlayCancelationTokenSources[__instance] = watcherToken;
-                    var process = LutrisProcessStarter.StartUsingId(
-                        Convert.ToInt64(playAction.Path.Substring(Constants.WineBridgeLutrisPrefix.Length)));
-                    LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
-                    return false;
-                }
+            if (playAction.Path.StartsWith(Constants.WineBridgeHeroicPrefix))
+            {
+                AccessTools.Property(__instance.GetType(), "StartingArgs").SetValue(__instance, startingArgs);
+                var watcherToken = new CancellationTokenSource();
+                PlayCancelationTokenSources[__instance] = watcherToken;
+                var process = HeroicProcessStarter.Start(
+                    playAction.Path.Substring(Constants.WineBridgeHeroicPrefix.Length));
+                LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
+                return false;
+            }
+
+            if (playAction.Path.StartsWith(Constants.WineBridgeLutrisPrefix))
+            {
+                AccessTools.Property(__instance.GetType(), "StartingArgs").SetValue(__instance, startingArgs);
+                var watcherToken = new CancellationTokenSource();
+                PlayCancelationTokenSources[__instance] = watcherToken;
+                var process = LutrisProcessStarter.StartUsingId(
+                    Convert.ToInt64(playAction.Path.Substring(Constants.WineBridgeLutrisPrefix.Length)));
+                LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
+                return false;
             }
 
             return true;
         }
 
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        [SuppressMessage("ReSharper", "UnusedParameter.Local")]
         private static bool StartEmulatorProcessPrefix(
             [SuppressMessage("ReSharper", "InconsistentNaming")]
             PlayController __instance,
@@ -234,7 +238,10 @@ namespace WineBridgePlugin.Patchers
     {
         private static readonly ILogger Logger = LogManager.GetLogger();
 
-        private static void GetProfilePostfix(ref EmulatorDefinitionProfile __result, string emulatorId,
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        private static void GetProfilePostfix(
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
+            ref EmulatorDefinitionProfile __result, string emulatorId,
             string profileName)
         {
             var emulatorConfigs = WineBridgeSettings.EmulatorConfigs;
@@ -269,10 +276,14 @@ namespace WineBridgePlugin.Patchers
             }
 
             return Regex.Replace(oldResult.StartupArguments, "-L \"\\.\\\\cores\\\\(.+)_libretro\\.dll\"",
-                $"-L \"$1\"");
+                "-L \"$1\"");
         }
 
-        private static bool GetExecutablePrefix(ref string __result, string directory,
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        [SuppressMessage("ReSharper", "UnusedParameter.Local")]
+        private static bool GetExecutablePrefix(
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
+            ref string __result, string directory,
             EmulatorDefinitionProfile profile, bool relative)
         {
             if (profile.StartupExecutable.StartsWith(Constants.WineBridgePrefix))

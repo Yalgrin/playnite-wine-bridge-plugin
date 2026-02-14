@@ -39,12 +39,7 @@ namespace WineBridgePlugin.Utils
             var type = br.ReadUInt16(); // 1=ICO, 2=CUR
             var count = br.ReadUInt16();
 
-            if (reserved != 0 || (type != 1 && type != 2))
-            {
-                return stream;
-            }
-
-            if (count <= 1)
+            if (reserved != 0 || (type != 1 && type != 2) || count <= 1)
             {
                 return stream;
             }
@@ -193,13 +188,13 @@ namespace WineBridgePlugin.Utils
                 RealHeight = realHeight,
                 BitsPerPixel = bitDepth * channels,
                 IsPng = true,
-                Entry = entry,
+                Entry = entry
             };
         }
 
         private static bool IsPng(BinaryReader br)
         {
-            byte[] sig = br.ReadBytes(8);
+            var sig = br.ReadBytes(8);
 
             return sig.Length == 8 &&
                    sig[0] == 0x89 && sig[1] == 0x50 && sig[2] == 0x4E && sig[3] == 0x47 &&

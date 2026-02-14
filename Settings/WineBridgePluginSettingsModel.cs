@@ -18,7 +18,7 @@ namespace WineBridgePlugin.Settings
         private bool _setScriptExecutePermissions = true;
         private bool _redirectExplorerCallsToLinux = true;
         private bool _redirectProtocolCallsToLinux = true;
-        private bool _forceHighQualityIcons = false;
+        private bool _forceHighQualityIcons;
 
         private bool _steamIntegrationEnabled;
         private string _steamDataPathLinux;
@@ -278,7 +278,7 @@ namespace WineBridgePlugin.Settings
 
                 Settings.EmulatorConfigs.Add(new WineBridgeEmulatorConfig());
             });
-            RemoveEmulatorConfig = new RelayCommand<WineBridgeEmulatorConfig>((emulatorConfig) =>
+            RemoveEmulatorConfig = new RelayCommand<WineBridgeEmulatorConfig>(emulatorConfig =>
             {
                 Logger.Debug($"Removing emulator config: {emulatorConfig.EmulatorId}");
                 Settings.EmulatorConfigs.Remove(emulatorConfig);

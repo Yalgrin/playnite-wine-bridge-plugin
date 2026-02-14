@@ -51,7 +51,7 @@ namespace WineBridgePlugin.Patchers
                 var fileExistsPrefix = AccessTools.Method(typeof(FilePatches), "Prefix");
                 HarmonyPatcher.HarmonyInstance.Patch(fileExistsMethod, prefix: new HarmonyMethod(fileExistsPrefix));
 
-                var fileInfoConstructorPrefix = AccessTools.Method(typeof(FileInfoPatches), "Prefix");
+                var fileInfoConstructorPrefix = AccessTools.Method(typeof(FileInfoPatches), "ConstructorPrefix");
                 var fileInfoConstructor = fileInfoConstructors.FirstOrDefault(c =>
                 {
                     var parameters = c.GetParameters();
@@ -93,7 +93,8 @@ namespace WineBridgePlugin.Patchers
 
     internal static class FileInfoPatches
     {
-        private static bool Prefix(ref string fileName)
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        private static bool ConstructorPrefix(ref string fileName)
         {
             if (fileName != null && fileName.StartsWith(Constants.WineBridgePrefix))
             {

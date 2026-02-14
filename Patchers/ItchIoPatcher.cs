@@ -111,7 +111,7 @@ namespace WineBridgePlugin.Patchers
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
         private static bool IsInstalledPrefix([SuppressMessage("ReSharper", "InconsistentNaming")] ref bool __result)
         {
-            if (!WineBridgeSettings.LutrisBattleNetIntegrationEnabled)
+            if (!WineBridgeSettings.LutrisItchIoIntegrationEnabled)
             {
                 return true;
             }
@@ -123,7 +123,7 @@ namespace WineBridgePlugin.Patchers
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
         private static bool IsRunningPrefix([SuppressMessage("ReSharper", "InconsistentNaming")] ref bool __result)
         {
-            if (!WineBridgeSettings.LutrisBattleNetIntegrationEnabled)
+            if (!WineBridgeSettings.LutrisItchIoIntegrationEnabled)
             {
                 return true;
             }
@@ -137,7 +137,7 @@ namespace WineBridgePlugin.Patchers
             [SuppressMessage("ReSharper", "InconsistentNaming")]
             ref string __result)
         {
-            if (!WineBridgeSettings.LutrisBattleNetIntegrationEnabled)
+            if (!WineBridgeSettings.LutrisItchIoIntegrationEnabled)
             {
                 return true;
             }
@@ -157,7 +157,7 @@ namespace WineBridgePlugin.Patchers
             [SuppressMessage("ReSharper", "InconsistentNaming")]
             ref string __result)
         {
-            if (!WineBridgeSettings.LutrisBattleNetIntegrationEnabled)
+            if (!WineBridgeSettings.LutrisItchIoIntegrationEnabled)
             {
                 return true;
             }
@@ -176,7 +176,7 @@ namespace WineBridgePlugin.Patchers
             [SuppressMessage("ReSharper", "InconsistentNaming")]
             ref IEnumerable<InstallController> __result, GetInstallActionsArgs args)
         {
-            if (!WineBridgeSettings.LutrisBattleNetIntegrationEnabled)
+            if (!WineBridgeSettings.LutrisItchIoIntegrationEnabled)
             {
                 return true;
             }
@@ -203,7 +203,7 @@ namespace WineBridgePlugin.Patchers
             [SuppressMessage("ReSharper", "InconsistentNaming")]
             ref IEnumerable<UninstallController> __result, GetUninstallActionsArgs args)
         {
-            if (!WineBridgeSettings.LutrisBattleNetIntegrationEnabled)
+            if (!WineBridgeSettings.LutrisItchIoIntegrationEnabled)
             {
                 return true;
             }
@@ -231,7 +231,7 @@ namespace WineBridgePlugin.Patchers
             ref IEnumerable<PlayController> __result,
             GetPlayActionsArgs args)
         {
-            if (!WineBridgeSettings.LutrisBattleNetIntegrationEnabled)
+            if (!WineBridgeSettings.LutrisItchIoIntegrationEnabled)
             {
                 return true;
             }
@@ -255,7 +255,7 @@ namespace WineBridgePlugin.Patchers
             [SuppressMessage("ReSharper", "InconsistentNaming")]
             ref Dictionary<string, GameMetadata> __result)
         {
-            if (!WineBridgeSettings.LutrisBattleNetIntegrationEnabled)
+            if (!WineBridgeSettings.LutrisItchIoIntegrationEnabled)
             {
                 return true;
             }

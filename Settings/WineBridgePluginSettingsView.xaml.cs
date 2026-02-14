@@ -1,6 +1,6 @@
 ﻿using System.Windows.Controls;
 
-namespace WineBridgePlugin
+namespace WineBridgePlugin.Settings
 {
     public partial class WineBridgePluginSettingsView : UserControl
     {
