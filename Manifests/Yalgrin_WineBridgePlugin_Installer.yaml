@@ -74,3 +74,9 @@ Packages:
     Changelog:
       - Steam - Proton and Steam Linux Runtime apps will not longer be imported or be selectable in Steam play actions
       - Itch.io - Fixed the Lutris toggle not working correctly
+  - Version: 0.4.4
+    RequiredApiVersion: 6.11.0
+    ReleaseDate: 2026-02-15
+    PackageUrl: https://github.com/Yalgrin/playnite-wine-bridge-plugin/releases/download/0.4.4/Yalgrin_WineBridgePlugin_0_4_4.pext
+    Changelog:
+      - Added an option to redirect path selection dialogs to Linux programs (kdialog/zenity/yad)
