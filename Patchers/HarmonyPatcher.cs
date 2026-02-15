@@ -86,6 +86,7 @@ namespace WineBridgePlugin.Patchers
             try
             {
                 LinuxProcessStarter.StartRawCommand($"chmod a+x '{WineUtils.ScriptPathLinux}'");
+                LinuxProcessStarter.StartRawCommand($"chmod a+x '{WineUtils.OpenFileScriptPathLinux}'");
             }
             catch (Exception e)
             {

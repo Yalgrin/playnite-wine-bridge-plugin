@@ -1,6 +1,4 @@
 #!/bin/bash
-set -x
-
 COMMAND=$1
 COMMAND=$(echo "$COMMAND" | base64 -d)
 CORRELATION_ID=$2
@@ -29,8 +27,10 @@ then
   PREVIOUS_PROCESS_IDS=$(pgrep -f "$TRACKING_EXPRESSION")
   
   print_log "Running async command..."
-  eval $COMMAND
-  print_log "Done execution, looking for processes..."
+  eval "($COMMAND) & disown" > >(tee -a $TRACKING_DIRECTORY/wine-bridge-$CORRELATION_ID-output) 2> >(tee -a $TRACKING_DIRECTORY/wine-bridge-$CORRELATION_ID-error >&2) 
+  COMMAND_EXIT_STATUS=$?
+  print_log "Done execution (status: $COMMAND_EXIT_STATUS), looking for processes..."
+  echo "$COMMAND_EXIT_STATUS" | tee -a $TRACKING_DIRECTORY/wine-bridge-$CORRELATION_ID-status
   
   for i in {0..119}
   do
@@ -66,8 +66,10 @@ else
   touch $TRACKING_DIRECTORY/wine-bridge-$CORRELATION_ID
   touch $TRACKING_DIRECTORY/wine-bridge-$CORRELATION_ID-ready
   print_log "Running synchronous command..."
-  eval $COMMAND
-  print_log "Done execution"
+  eval "$COMMAND" > >(tee -a $TRACKING_DIRECTORY/wine-bridge-$CORRELATION_ID-output) 2> >(tee -a $TRACKING_DIRECTORY/wine-bridge-$CORRELATION_ID-error >&2)
+  COMMAND_EXIT_STATUS=$?
+  print_log "Done execution (status: $COMMAND_EXIT_STATUS)"
+  echo "$COMMAND_EXIT_STATUS" | tee -a $TRACKING_DIRECTORY/wine-bridge-$CORRELATION_ID-status
   rm $TRACKING_DIRECTORY/wine-bridge-$CORRELATION_ID
 fi 
 

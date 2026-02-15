@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using WineBridgePlugin.Utils;
 
 namespace WineBridgePlugin.Settings
 {
@@ -15,6 +16,18 @@ namespace WineBridgePlugin.Settings
 
         public static bool RedirectProtocolCallsToLinux =>
             WineBridgePlugin.Settings?.RedirectProtocolCallsToLinux ?? true;
+
+        public static bool RedirectFileDirectorySelectionCallsToLinux =>
+            WineBridgePlugin.Settings?.RedirectFileDirectorySelectionCallsToLinux ?? true;
+
+        public static string FileDirectorySelectionProgram
+        {
+            get
+            {
+                var program = WineBridgePlugin.Settings?.FileDirectorySelectionProgram;
+                return program != null && WineUtils.FileDirectorySelectorPrograms.Contains(program) ? program : "auto";
+            }
+        }
 
         public static bool ForceHighQualityIcons =>
             WineBridgePlugin.Settings?.ForceHighQualityIcons ?? false;

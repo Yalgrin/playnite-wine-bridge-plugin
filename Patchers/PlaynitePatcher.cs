@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Windows;
 using HarmonyLib;
 using Playnite.SDK;
 using Playnite.SDK.Events;
@@ -50,8 +51,9 @@ namespace WineBridgePlugin.Patchers
                 var gamesEditorType = assembly.GetType("Playnite.GamesEditor");
                 var emulationType = assembly.GetType("Playnite.Emulators.Emulation");
                 var bitmapExtensionsType = assembly.GetType("System.Drawing.Imaging.BitmapExtensions");
+                var systemDialogsType = assembly.GetType("Playnite.Common.SystemDialogs");
                 if (genericPlayControllerType == null || gamesEditorType == null || emulationType == null
-                    || bitmapExtensionsType == null)
+                    || bitmapExtensionsType == null || systemDialogsType == null)
                 {
                     Logger.Warn("Failed to find Playnite classes!");
                     State = PatchingState.MissingClasses;
@@ -71,9 +73,22 @@ namespace WineBridgePlugin.Patchers
                     BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
                 var bitmapFromStreamMethod = bitmapExtensionsType.GetMethod("BitmapFromStream",
                     BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+                var saveFileMethod = systemDialogsType.GetMethod("SaveFile",
+                    BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null,
+                    new[] { typeof(Window), typeof(string), typeof(bool), typeof(string) }, null);
+                var selectFolderMethod = systemDialogsType.GetMethod("SelectFolder",
+                    BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null,
+                    new[] { typeof(Window), typeof(string) }, null);
+                var selectFileMethod = systemDialogsType.GetMethod("SelectFile",
+                    BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null,
+                    new[] { typeof(Window), typeof(string), typeof(string) }, null);
+                var selectFilesMethod = systemDialogsType.GetMethod("SelectFiles",
+                    BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null,
+                    new[] { typeof(Window), typeof(string), typeof(string) }, null);
                 if (startMethod == null || disposeMethod == null || powershellErrorField == null ||
                     startEmulatorMethod == null || getProfileMethod == null || getExecutableMethod == null ||
-                    bitmapFromStreamMethod == null)
+                    bitmapFromStreamMethod == null || saveFileMethod == null || selectFolderMethod == null ||
+                    selectFileMethod == null || selectFilesMethod == null)
                 {
                     Logger.Warn("Failed to find Playnite methods!");
                     State = PatchingState.MissingClasses;
@@ -99,6 +114,16 @@ namespace WineBridgePlugin.Patchers
                     AccessTools.Method(typeof(BitmapExtensionsPatches), "BitmapFromStreamPrefix");
                 HarmonyPatcher.HarmonyInstance.Patch(bitmapFromStreamMethod,
                     prefix: new HarmonyMethod(bitmapFromStreamPrefix));
+
+                var saveFilePrefix = AccessTools.Method(typeof(SystemDialogsPatches), "SaveFilePrefix");
+                HarmonyPatcher.HarmonyInstance.Patch(saveFileMethod, prefix: new HarmonyMethod(saveFilePrefix));
+                var selectFolderPrefix = AccessTools.Method(typeof(SystemDialogsPatches), "SelectFolderPrefix");
+                HarmonyPatcher.HarmonyInstance.Patch(selectFolderMethod, prefix: new HarmonyMethod(selectFolderPrefix));
+                var selectFilesPrefix = AccessTools.Method(typeof(SystemDialogsPatches), "SelectFilesPrefix");
+                HarmonyPatcher.HarmonyInstance.Patch(selectFilesMethod, prefix: new HarmonyMethod(selectFilesPrefix));
+                var selectFilePrefix = AccessTools.Method(typeof(SystemDialogsPatches), "SelectFilePrefix");
+                HarmonyPatcher.HarmonyInstance.Patch(selectFileMethod, prefix: new HarmonyMethod(selectFilePrefix));
+
                 powershellErrorField.SetValue(null, true);
 
                 Logger.Info("Playnite methods patched successfully!");
@@ -318,6 +343,131 @@ namespace WineBridgePlugin.Patchers
             catch (Exception e)
             {
                 Logger.Error(e, "Failed to strip icon from stream!");
+            }
+
+            return true;
+        }
+    }
+
+    public static class SystemDialogsPatches
+    {
+        private static readonly ILogger Logger = LogManager.GetLogger();
+
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        private static bool SaveFilePrefix(ref string __result,
+            Window owner, string filter, bool promptOverwrite, string initialDir)
+        {
+            if (!WineBridgeSettings.RedirectFileDirectorySelectionCallsToLinux)
+            {
+                return true;
+            }
+
+            try
+            {
+                if (filter != null && filter.EndsWith("*.*"))
+                {
+                    filter = null;
+                }
+
+                var processWithCorrelationId = LinuxProcessStarter.Start(
+                    $"{WineUtils.OpenFileScriptPathLinux} \"{WineBridgeSettings.FileDirectorySelectionProgram}\" \"save\" \"{filter ?? string.Empty}\" \"{initialDir ?? string.Empty}\"");
+                __result = WineUtils.LinuxPathToWindows(
+                    LinuxProcessMonitor.TrackLinuxProcessGetResult(processWithCorrelationId));
+                return false;
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e, "Failed to redirect file directory selection call to Linux!");
+            }
+
+            return true;
+        }
+
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        private static bool SelectFolderPrefix(ref string __result,
+            Window owner, string initialDir)
+        {
+            if (!WineBridgeSettings.RedirectFileDirectorySelectionCallsToLinux)
+            {
+                return true;
+            }
+
+            try
+            {
+                var processWithCorrelationId = LinuxProcessStarter.Start(
+                    $"{WineUtils.OpenFileScriptPathLinux} \"{WineBridgeSettings.FileDirectorySelectionProgram}\" \"directory\" \"\" \"{initialDir ?? string.Empty}\"");
+                __result = WineUtils.LinuxPathToWindows(
+                    LinuxProcessMonitor.TrackLinuxProcessGetResult(processWithCorrelationId));
+                return false;
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e, "Failed to redirect file directory selection call to Linux!");
+            }
+
+            return true;
+        }
+
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        private static bool SelectFilesPrefix(ref List<string> __result,
+            Window owner, string filter, string initialDir)
+        {
+            if (!WineBridgeSettings.RedirectFileDirectorySelectionCallsToLinux)
+            {
+                return true;
+            }
+
+            try
+            {
+                if (filter != null && filter.EndsWith("*.*"))
+                {
+                    filter = null;
+                }
+
+                var processWithCorrelationId = LinuxProcessStarter.Start(
+                    $"{WineUtils.OpenFileScriptPathLinux} \"{WineBridgeSettings.FileDirectorySelectionProgram}\" \"file-multiple\" \"{filter ?? string.Empty}\" \"{initialDir ?? string.Empty}\"");
+                var result = LinuxProcessMonitor.TrackLinuxProcessGetResultInLines(processWithCorrelationId);
+                if (result == null)
+                {
+                    return true;
+                }
+
+                __result = result.Select(WineUtils.LinuxPathToWindows).ToList();
+                return false;
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e, "Failed to redirect file directory selection call to Linux!");
+            }
+
+            return true;
+        }
+
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        private static bool SelectFilePrefix(ref string __result,
+            Window owner, string filter, string initialDir)
+        {
+            if (!WineBridgeSettings.RedirectFileDirectorySelectionCallsToLinux)
+            {
+                return true;
+            }
+
+            try
+            {
+                if (filter != null && filter.EndsWith("*.*"))
+                {
+                    filter = null;
+                }
+
+                var processWithCorrelationId = LinuxProcessStarter.Start(
+                    $"{WineUtils.OpenFileScriptPathLinux} \"{WineBridgeSettings.FileDirectorySelectionProgram}\" \"file\" \"{filter ?? string.Empty}\" \"{initialDir ?? string.Empty}\"");
+                __result = WineUtils.LinuxPathToWindows(
+                    LinuxProcessMonitor.TrackLinuxProcessGetResult(processWithCorrelationId));
+                return false;
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e, "Failed to redirect file directory selection call to Linux!");
             }
 
             return true;

@@ -18,6 +18,8 @@ namespace WineBridgePlugin.Settings
         private bool _setScriptExecutePermissions = true;
         private bool _redirectExplorerCallsToLinux = true;
         private bool _redirectProtocolCallsToLinux = true;
+        private bool _redirectFileDirectorySelectionCallsToLinux = true;
+        private string _fileDirectorySelectionProgram = "auto";
         private bool _forceHighQualityIcons;
 
         private bool _steamIntegrationEnabled;
@@ -65,6 +67,18 @@ namespace WineBridgePlugin.Settings
         {
             get => _redirectProtocolCallsToLinux;
             set => SetValue(ref _redirectProtocolCallsToLinux, value);
+        }
+
+        public bool RedirectFileDirectorySelectionCallsToLinux
+        {
+            get => _redirectFileDirectorySelectionCallsToLinux;
+            set => SetValue(ref _redirectFileDirectorySelectionCallsToLinux, value);
+        }
+
+        public string FileDirectorySelectionProgram
+        {
+            get => _fileDirectorySelectionProgram;
+            set => SetValue(ref _fileDirectorySelectionProgram, value);
         }
 
         public bool ForceHighQualityIcons
@@ -242,6 +256,8 @@ namespace WineBridgePlugin.Settings
         public PatchingStatuses PatchingStatuses { get; set; }
 
         public List<EmulatorDescriptor> EmulatorDescriptors { get; private set; }
+
+        public List<string> FileDirectorySelectorPrograms => WineUtils.FileDirectorySelectorPrograms;
 
         public ICommand AutoDetectSteam { get; private set; }
         public ICommand AutoDetectHeroic { get; private set; }

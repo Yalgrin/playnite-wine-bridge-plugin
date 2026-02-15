@@ -23,7 +23,7 @@
                     <StackPanel Margin="10" CanVerticallyScroll="True" CanHorizontallyScroll="True">
                         <StackPanel Orientation="Horizontal" Margin="0,15,5,0" HorizontalAlignment="Left">
                             <TextBlock Text="{DynamicResource LOC_Yalgrin_WineBridge_Settings_TrackingDirectoryLinux}"
-                                       MinWidth="200" />
+                                       MinWidth="200" VerticalAlignment="Center" />
                             <TextBox Text="{Binding Settings.TrackingDirectoryLinux}" MinWidth="350" MaxWidth="350" />
                         </StackPanel>
 
@@ -31,7 +31,7 @@
 
                         <StackPanel Orientation="Horizontal" Margin="0,15,5,0" HorizontalAlignment="Left">
                             <TextBlock Text="{DynamicResource LOC_Yalgrin_WineBridge_Settings_SteamDataPathLinux}"
-                                       MinWidth="200" />
+                                       MinWidth="200" VerticalAlignment="Center" />
                             <TextBox Text="{Binding Settings.SteamDataPathLinux}" MinWidth="350" MaxWidth="350" />
                             <Button HorizontalAlignment="Right" Margin="5, 0, 0, 0" Command="{Binding AutoDetectSteam}"
                                     Content="{DynamicResource LOC_Yalgrin_WineBridge_Settings_AutoDetect}" />
@@ -40,7 +40,7 @@
                         <StackPanel Orientation="Horizontal" Margin="0,15,5,0" HorizontalAlignment="Left">
                             <TextBlock
                                 Text="{DynamicResource LOC_Yalgrin_WineBridge_Settings_SteamExecutablePathLinux}"
-                                MinWidth="200" />
+                                MinWidth="200" VerticalAlignment="Center" />
                             <TextBox Text="{Binding Settings.SteamExecutablePathLinux}" MinWidth="350" MaxWidth="350" />
                         </StackPanel>
 
@@ -48,7 +48,7 @@
 
                         <StackPanel Orientation="Horizontal" Margin="0,15,5,0" HorizontalAlignment="Left">
                             <TextBlock Text="{DynamicResource LOC_Yalgrin_WineBridge_Settings_HeroicDataPathLinux}"
-                                       MinWidth="200" />
+                                       MinWidth="200" VerticalAlignment="Center" />
                             <TextBox Text="{Binding Settings.HeroicDataPathLinux}" MinWidth="350" MaxWidth="350" />
                             <Button HorizontalAlignment="Right" Margin="5, 0, 0, 0"
                                     Command="{Binding AutoDetectHeroic}"
@@ -58,7 +58,7 @@
                         <StackPanel Orientation="Horizontal" Margin="0,15,5,0" HorizontalAlignment="Left">
                             <TextBlock
                                 Text="{DynamicResource LOC_Yalgrin_WineBridge_Settings_HeroicExecutablePathLinux}"
-                                MinWidth="200" />
+                                MinWidth="200" VerticalAlignment="Center" />
                             <TextBox Text="{Binding Settings.HeroicExecutablePathLinux}" MinWidth="350" MaxWidth="350" />
                         </StackPanel>
 
@@ -66,7 +66,7 @@
 
                         <StackPanel Orientation="Horizontal" Margin="0,15,5,0" HorizontalAlignment="Left">
                             <TextBlock Text="{DynamicResource LOC_Yalgrin_WineBridge_Settings_LutrisDataPathLinux}"
-                                       MinWidth="200" />
+                                       MinWidth="200" VerticalAlignment="Center" />
                             <TextBox Text="{Binding Settings.LutrisDataPathLinux}" MinWidth="350" MaxWidth="350" />
                             <Button HorizontalAlignment="Right" Margin="5, 0, 0, 0"
                                     Command="{Binding AutoDetectLutris}"
@@ -76,7 +76,7 @@
                         <StackPanel Orientation="Horizontal" Margin="0,15,5,0" HorizontalAlignment="Left">
                             <TextBlock
                                 Text="{DynamicResource LOC_Yalgrin_WineBridge_Settings_LutrisExecutablePathLinux}"
-                                MinWidth="200" />
+                                MinWidth="200" VerticalAlignment="Center" />
                             <TextBox Text="{Binding Settings.LutrisExecutablePathLinux}" MinWidth="350" MaxWidth="350" />
                         </StackPanel>
                     </StackPanel>
@@ -204,6 +204,17 @@
                         <CheckBox IsChecked="{Binding Settings.RedirectProtocolCallsToLinux}"
                                   Content="{DynamicResource LOC_Yalgrin_WineBridge_Settings_RedirectProtocolCallsToLinux}"
                                   Margin="0, 15, 0, 0" />
+                        <CheckBox IsChecked="{Binding Settings.RedirectFileDirectorySelectionCallsToLinux}"
+                                  Content="{DynamicResource LOC_Yalgrin_WineBridge_Settings_RedirectFileDirectorySelectionCallsToLinux}"
+                                  Margin="0, 15, 0, 0" />
+                        <StackPanel Orientation="Horizontal" Margin="0,15,5,0" HorizontalAlignment="Left">
+                            <TextBlock
+                                Text="{DynamicResource LOC_Yalgrin_WineBridge_Settings_FileDirectorySelectionProgram}"
+                                MinWidth="200" VerticalAlignment="Center" />
+                            <ComboBox SelectedItem="{Binding Settings.FileDirectorySelectionProgram}"
+                                      ItemsSource="{Binding FileDirectorySelectorPrograms}"
+                                      Margin="25,0,0,0" MinWidth="350" MaxWidth="350" />
+                        </StackPanel>
                         <CheckBox IsChecked="{Binding Settings.ForceHighQualityIcons}"
                                   Content="{DynamicResource LOC_Yalgrin_WineBridge_Settings_ForceHighQualityIcons}"
                                   Margin="0, 15, 0, 0" />

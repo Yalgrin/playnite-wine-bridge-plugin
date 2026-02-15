@@ -17,7 +17,7 @@ namespace WineBridgePlugin.Integrations.Lutris
             }
 
             return LinuxProcessStarter.Start(
-                $"LUTRIS_SKIP_INIT=1 {executablePath} lutris:rungameid/{id} & disown", true,
+                $"LUTRIS_SKIP_INIT=1 {executablePath} lutris:rungameid/{id}", true,
                 "lutris-wrapper");
         }
 

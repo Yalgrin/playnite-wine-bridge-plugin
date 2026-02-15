@@ -67,7 +67,7 @@ namespace WineBridgePlugin.Integrations.Heroic
             }
 
             return LinuxProcessStarter.Start(
-                $"{executablePath} --no-gui \"heroic://launch?appName={id}&runner={runner}\" & disown", true,
+                $"{executablePath} --no-gui \"heroic://launch?appName={id}&runner={runner}\"", true,
                 installPath.EscapeRegex());
         }
     }

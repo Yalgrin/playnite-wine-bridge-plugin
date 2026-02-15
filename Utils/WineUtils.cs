@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -11,11 +12,25 @@ namespace WineBridgePlugin.Utils
     {
         private static readonly ILogger Logger = LogManager.GetLogger();
 
-        private static readonly Lazy<string> InnerScriptPathLinux = new Lazy<string>(GetScriptPathLinux);
+        private static readonly Lazy<string> InnerScriptPathLinux =
+            new Lazy<string>(() => GetScriptPathLinux("run-in-linux.sh"));
+
+        private static readonly Lazy<string> InnerOpenFilePickerScriptLinux =
+            new Lazy<string>(() => GetScriptPathLinux("open-file-picker.sh"));
+
+        public static List<string> FileDirectorySelectorPrograms =>
+            new List<string>
+            {
+                "auto",
+                "kdialog",
+                "zenity",
+                "yad"
+            };
 
         public static string ScriptPathLinux => InnerScriptPathLinux.Value;
+        public static string OpenFileScriptPathLinux => InnerOpenFilePickerScriptLinux.Value;
 
-        private static string GetScriptPathLinux()
+        private static string GetScriptPathLinux(string scriptName)
         {
             var directoryName = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             if (directoryName == null)
@@ -23,7 +38,7 @@ namespace WineBridgePlugin.Utils
                 throw new Exception("Could not determine plugin directory.");
             }
 
-            var scriptPath = Path.Combine(directoryName, @"Resources\run-in-linux.sh");
+            var scriptPath = Path.Combine(directoryName, $@"Resources\{scriptName}");
             return WindowsPathToLinux(scriptPath);
         }
 
@@ -44,8 +59,7 @@ namespace WineBridgePlugin.Utils
 
                 var process = new Process();
                 process.StartInfo.FileName = "winepath";
-                process.StartInfo.Arguments =
-                    $"-u \"{windowsPath}\"";
+                process.StartInfo.Arguments = $"-u \"{windowsPath}\"";
                 process.StartInfo.UseShellExecute = false;
                 process.StartInfo.RedirectStandardOutput = true;
                 process.StartInfo.RedirectStandardError = true;
@@ -91,8 +105,7 @@ namespace WineBridgePlugin.Utils
 
                 var process = new Process();
                 process.StartInfo.FileName = "winepath";
-                process.StartInfo.Arguments =
-                    $"-w \"{linuxPath}\"";
+                process.StartInfo.Arguments = $"-w \"{linuxPath}\"";
                 process.StartInfo.UseShellExecute = false;
                 process.StartInfo.RedirectStandardOutput = true;
                 process.StartInfo.RedirectStandardError = true;

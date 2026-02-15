@@ -19,13 +19,13 @@ namespace WineBridgePlugin.Integrations.Steam
             if (shouldShowLaunchDialog)
             {
                 process = LinuxProcessStarter.Start(
-                    $"{steamExecutable} -silent \"steam://launch/{steamAppId}/Dialog\" & disown", true,
+                    $"{steamExecutable} -silent \"steam://launch/{steamAppId}/Dialog\"", true,
                     $"/reaper SteamLaunch AppId={trackingId}.*waitforexitandrun");
             }
             else
             {
                 process = LinuxProcessStarter.Start(
-                    $"{steamExecutable} -silent \"steam://rungameid/{steamAppId}\" & disown", true,
+                    $"{steamExecutable} -silent \"steam://rungameid/{steamAppId}\"", true,
                     $"/reaper SteamLaunch AppId={trackingId}.*waitforexitandrun");
             }
 
