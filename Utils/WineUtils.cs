@@ -52,6 +52,12 @@ namespace WineBridgePlugin.Utils
             try
             {
                 var debugLogging = WineBridgeSettings.DebugLoggingEnabled;
+
+                while (windowsPath.EndsWith("\\"))
+                {
+                    windowsPath = windowsPath.Substring(0, windowsPath.Length - 1);
+                }
+
                 if (debugLogging)
                 {
                     Logger.Debug($"Executing: winepath -u \"{windowsPath}\"");
