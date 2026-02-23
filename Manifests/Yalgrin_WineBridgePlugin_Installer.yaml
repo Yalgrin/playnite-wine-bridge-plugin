@@ -80,3 +80,13 @@ Packages:
     PackageUrl: https://github.com/Yalgrin/playnite-wine-bridge-plugin/releases/download/0.4.4/Yalgrin_WineBridgePlugin_0_4_4.pext
     Changelog:
       - Added an option to redirect path selection dialogs to Linux programs (kdialog/zenity/yad)
+  - Version: 0.5.0
+    RequiredApiVersion: 6.11.0
+    ReleaseDate: 2026-02-23
+    PackageUrl: https://github.com/Yalgrin/playnite-wine-bridge-plugin/releases/download/0.5.0/Yalgrin_WineBridgePlugin_0_5_0.pext
+    Changelog:
+      - Advanced process integration - allows for a better integration between Playnite and Linux processes. When running a process with wine-bridge:// prefix, it allows you to send input, receive output, wait for exit etc. just like with a regular Windows process. It allows for certain plugins to work pretty much flawlessly (tested with Ludusavi plugin) and is required for some integrations to work. Can be a bit unstable, so it's disabled by default.
+      - Itch.io Linux client integration - requires Advanced process integration
+      - Fixed not being able to open directories with a Linux file explorer
+      - Added crash logging
+      - Added a safeguard in case the Linux scripts contain invalid file endings
