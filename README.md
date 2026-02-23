@@ -31,6 +31,7 @@ was created.
 |     Steam      |                             Steam                             |             ✅             |                                                                               ✅                                                                                |     ✅     |
 |     Heroic     |                    GOG<br/>Amazon<br/>Epic                    |             ✅             | ⚠️ <br/>Cannot install/uninstall from Playnite; it will launch Heroic client for you to do that manually. After it completes Playnite will properly detect it. |     ✅     |
 |     Lutris     | GOG<br/>Amazon<br/>Epic<br/>EA App<br/>Battle.net<br/>Itch.io |             ✅             |     ️⚠️ <br/>Cannot uninstall games from Playnite; it will launch Lutris for you to do that manually. After it completes Playnite will properly detect it.     |     ✅     |
+|    Itch.io     |                            Itch.io                            |             ✅             |                                                                               ✅                                                                                |     ✅     
 
 ## Planned features
 
@@ -42,7 +43,8 @@ Visit the [wiki](https://github.com/Yalgrin/playnite-wine-bridge-plugin/wiki) fo
 
 ## Known issues
 
-Visit the [wiki page](https://github.com/Yalgrin/playnite-wine-bridge-plugin/wiki/Issues) for a list of known issues and potential solutions.
+Visit the [wiki page](https://github.com/Yalgrin/playnite-wine-bridge-plugin/wiki/Issues) for a list of known issues and
+potential solutions.
 
 ## Donate
 
