@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
@@ -10,6 +11,7 @@ using Playnite.SDK.Plugins;
 using WineBridgePlugin.Integrations.Lutris;
 using WineBridgePlugin.Models;
 using WineBridgePlugin.Settings;
+using WineBridgePlugin.Utils;
 
 namespace WineBridgePlugin.Patchers
 {
@@ -39,9 +41,10 @@ namespace WineBridgePlugin.Patchers
                 }
 
                 var mainType = assembly.GetType("ItchioLibrary.Itch");
+                var butlerType = assembly.GetType("ItchioLibrary.Butler");
                 var libraryType = assembly.GetType("ItchioLibrary.ItchioLibrary");
 
-                if (mainType == null || libraryType == null)
+                if (mainType == null || butlerType == null || libraryType == null)
                 {
                     Logger.Warn("Failed to find ItchioLibrary classes!");
                     State = PatchingState.MissingClasses;
@@ -51,6 +54,11 @@ namespace WineBridgePlugin.Patchers
                 var isInstalledMethod = mainType.GetProperty("IsInstalled")?.GetGetMethod();
                 var installPathMethod = mainType.GetProperty("InstallationPath")?.GetGetMethod();
                 var clientPathMethod = mainType.GetProperty("ClientExecPath")?.GetGetMethod();
+                var userPathMethod = mainType.GetProperty("UserPath")?.GetGetMethod();
+                var prereqsPathMethod = mainType.GetProperty("PrereqsPaths")?.GetGetMethod();
+
+                var butlerExePathMethod = butlerType.GetProperty("ExecutablePath")?.GetGetMethod();
+                var butlerDbPathMethod = butlerType.GetProperty("DatabasePath")?.GetGetMethod();
 
                 var getInstallActionsMethod = libraryType.GetMethod("GetInstallActions");
                 var getUninstallActionsMethod = libraryType.GetMethod("GetUninstallActions");
@@ -61,7 +69,8 @@ namespace WineBridgePlugin.Patchers
                 if (isInstalledMethod == null || installPathMethod == null || clientPathMethod == null
                     || getInstallActionsMethod == null || getUninstallActionsMethod == null ||
                     getPlayActionsMethod == null
-                    || getInstalledGamesMethod == null)
+                    || getInstalledGamesMethod == null || userPathMethod == null || prereqsPathMethod == null
+                    || butlerExePathMethod == null || butlerDbPathMethod == null)
                 {
                     Logger.Warn("Failed to find ItchioLibrary methods!");
                     State = PatchingState.MissingClasses;
@@ -77,6 +86,19 @@ namespace WineBridgePlugin.Patchers
                 var clientPathPrefix = AccessTools.Method(typeof(ItchIoPatches), "ClientExecPathPrefix");
                 HarmonyPatcher.HarmonyInstance.Patch(clientPathMethod,
                     prefix: new HarmonyMethod(clientPathPrefix));
+                var userPathPrefix = AccessTools.Method(typeof(ItchIoPatches), "UserPathPrefix");
+                HarmonyPatcher.HarmonyInstance.Patch(userPathMethod,
+                    prefix: new HarmonyMethod(userPathPrefix));
+                var prereqsPathPrefix = AccessTools.Method(typeof(ItchIoPatches), "PrereqsPathPrefix");
+                HarmonyPatcher.HarmonyInstance.Patch(prereqsPathMethod,
+                    prefix: new HarmonyMethod(prereqsPathPrefix));
+
+                var butlerExePathPrefix = AccessTools.Method(typeof(ButlerPatches), "ExecutablePathPrefix");
+                HarmonyPatcher.HarmonyInstance.Patch(butlerExePathMethod,
+                    prefix: new HarmonyMethod(butlerExePathPrefix));
+                var butlerDbPathPrefix = AccessTools.Method(typeof(ButlerPatches), "DatabasePathPrefix");
+                HarmonyPatcher.HarmonyInstance.Patch(butlerDbPathMethod,
+                    prefix: new HarmonyMethod(butlerDbPathPrefix));
 
                 var getInstallActionsPrefix =
                     AccessTools.Method(typeof(ItchioLibraryPatches), "GetInstallActionsPrefix");
@@ -92,8 +114,11 @@ namespace WineBridgePlugin.Patchers
                     prefix: new HarmonyMethod(getPlayActionsPrefix));
                 var getInstalledGamesPrefix =
                     AccessTools.Method(typeof(ItchioLibraryPatches), "GetInstalledGamesPrefix");
+                var getInstalledGamesPostfix =
+                    AccessTools.Method(typeof(ItchioLibraryPatches), "GetInstalledGamesPostfix");
                 HarmonyPatcher.HarmonyInstance.Patch(getInstalledGamesMethod,
-                    prefix: new HarmonyMethod(getInstalledGamesPrefix));
+                    prefix: new HarmonyMethod(getInstalledGamesPrefix),
+                    postfix: new HarmonyMethod(getInstalledGamesPostfix));
 
                 Logger.Info("Itch.io methods patched successfully!");
                 State = PatchingState.Patched;
@@ -111,19 +136,7 @@ namespace WineBridgePlugin.Patchers
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
         private static bool IsInstalledPrefix([SuppressMessage("ReSharper", "InconsistentNaming")] ref bool __result)
         {
-            if (!WineBridgeSettings.LutrisItchIoIntegrationEnabled)
-            {
-                return true;
-            }
-
-            __result = true;
-            return false;
-        }
-
-        [SuppressMessage("ReSharper", "UnusedMember.Local")]
-        private static bool IsRunningPrefix([SuppressMessage("ReSharper", "InconsistentNaming")] ref bool __result)
-        {
-            if (!WineBridgeSettings.LutrisItchIoIntegrationEnabled)
+            if (!WineBridgeSettings.LutrisItchIoIntegrationEnabled && !WineBridgeSettings.ItchIoIntegrationEnabled)
             {
                 return true;
             }
@@ -137,16 +150,24 @@ namespace WineBridgePlugin.Patchers
             [SuppressMessage("ReSharper", "InconsistentNaming")]
             ref string __result)
         {
-            if (!WineBridgeSettings.LutrisItchIoIntegrationEnabled)
+            if (WineBridgeSettings.ItchIoIntegrationEnabled)
             {
-                return true;
+                var installationPath = WineBridgeSettings.ItchIoDataPathLinux;
+                if (installationPath != null)
+                {
+                    __result = installationPath;
+                    return false;
+                }
             }
 
-            var installationPath = WineBridgeSettings.LutrisDataPathLinux;
-            if (installationPath != null)
+            if (WineBridgeSettings.LutrisItchIoIntegrationEnabled)
             {
-                __result = installationPath;
-                return false;
+                var installationPath = WineBridgeSettings.LutrisDataPathLinux;
+                if (installationPath != null)
+                {
+                    __result = installationPath;
+                    return false;
+                }
             }
 
             return true;
@@ -157,13 +178,118 @@ namespace WineBridgePlugin.Patchers
             [SuppressMessage("ReSharper", "InconsistentNaming")]
             ref string __result)
         {
-            if (!WineBridgeSettings.LutrisItchIoIntegrationEnabled)
+            if (WineBridgeSettings.ItchIoIntegrationEnabled)
             {
-                return true;
+                __result = Constants.DummyItchIoExe;
+                return false;
             }
 
-            __result = Constants.DummyLutrisExe;
-            return false;
+            if (WineBridgeSettings.LutrisItchIoIntegrationEnabled)
+            {
+                __result = Constants.DummyLutrisExe;
+                return false;
+            }
+
+            return true;
+        }
+
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        private static bool UserPathPrefix(
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
+            ref string __result)
+        {
+            if (WineBridgeSettings.ItchIoIntegrationEnabled)
+            {
+                var installationPath = WineBridgeSettings.ItchIoDataPathLinux;
+                if (installationPath != null)
+                {
+                    __result = installationPath;
+                    return false;
+                }
+            }
+
+            if (WineBridgeSettings.LutrisItchIoIntegrationEnabled)
+            {
+                var installationPath = WineBridgeSettings.LutrisDataPathLinux;
+                if (installationPath != null)
+                {
+                    __result = installationPath;
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        private static bool PrereqsPathPrefix(
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
+            ref string __result)
+        {
+            if (WineBridgeSettings.ItchIoIntegrationEnabled)
+            {
+                var installationPath = WineBridgeSettings.ItchIoDataPathLinux;
+                if (installationPath != null)
+                {
+                    __result = installationPath + "/prereqs/";
+                    return false;
+                }
+            }
+
+            if (WineBridgeSettings.LutrisItchIoIntegrationEnabled)
+            {
+                var installationPath = WineBridgeSettings.LutrisDataPathLinux;
+                if (installationPath != null)
+                {
+                    __result = installationPath + "/prereqs/";
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+
+    internal static class ButlerPatches
+    {
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        private static bool ExecutablePathPrefix(
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
+            ref string __result)
+        {
+            if (WineBridgeSettings.ItchIoIntegrationEnabled)
+            {
+                __result = Constants.DummyItchButlerExe;
+                return false;
+            }
+
+            return true;
+        }
+
+
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        private static bool DatabasePathPrefix(
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
+            ref string __result)
+        {
+            if (WineBridgeSettings.ItchIoIntegrationEnabled)
+            {
+                var installationPath = WineBridgeSettings.ItchIoDataPathLinux;
+                if (installationPath != null)
+                {
+                    var windowsPath = WineUtils.LinuxPathToWindows(installationPath);
+                    if (!Directory.Exists(windowsPath))
+                    {
+                        return true;
+                    }
+
+                    var dbPath = Path.Combine(windowsPath, "db", "butler.db");
+                    __result = WineUtils.WindowsPathToLinux(dbPath);
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 
@@ -176,7 +302,7 @@ namespace WineBridgePlugin.Patchers
             [SuppressMessage("ReSharper", "InconsistentNaming")]
             ref IEnumerable<InstallController> __result, GetInstallActionsArgs args)
         {
-            if (!WineBridgeSettings.LutrisItchIoIntegrationEnabled)
+            if (!WineBridgeSettings.AnyItchIoIntegrationEnabled)
             {
                 return true;
             }
@@ -193,7 +319,23 @@ namespace WineBridgePlugin.Patchers
                 yield break;
             }
 
-            yield return new LutrisInstallController(args.Game, LutrisPlatform.ItchIo);
+            if (WineBridgeSettings.ItchIoIntegrationEnabled)
+            {
+                var installController = AccessTools.TypeByName("ItchioLibrary.ItchInstallController");
+                if (installController != null)
+                {
+                    var constructor = AccessTools.Constructor(installController, new[] { typeof(Game) });
+                    if (constructor != null)
+                    {
+                        yield return (InstallController)constructor.Invoke(new object[] { args.Game });
+                    }
+                }
+            }
+
+            if (WineBridgeSettings.LutrisItchIoIntegrationEnabled)
+            {
+                yield return new LutrisInstallController(args.Game, LutrisPlatform.ItchIo);
+            }
         }
 
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
@@ -203,7 +345,7 @@ namespace WineBridgePlugin.Patchers
             [SuppressMessage("ReSharper", "InconsistentNaming")]
             ref IEnumerable<UninstallController> __result, GetUninstallActionsArgs args)
         {
-            if (!WineBridgeSettings.LutrisItchIoIntegrationEnabled)
+            if (!WineBridgeSettings.AnyItchIoIntegrationEnabled)
             {
                 return true;
             }
@@ -220,7 +362,27 @@ namespace WineBridgePlugin.Patchers
                 yield break;
             }
 
-            yield return new LutrisUninstallController(args.Game, LutrisPlatform.ItchIo);
+            if (WineBridgeSettings.ItchIoIntegrationEnabled && (!WineBridgeSettings.LutrisItchIoIntegrationEnabled ||
+                                                                !LutrisGamesService.IsGameInstalled(args.Game,
+                                                                    LutrisPlatform.ItchIo)))
+            {
+                var uninstallController = AccessTools.TypeByName("ItchioLibrary.ItchUninstallController");
+                if (uninstallController != null)
+                {
+                    var constructor = AccessTools.Constructor(uninstallController, new[] { typeof(Game) });
+                    if (constructor != null)
+                    {
+                        yield return (UninstallController)constructor.Invoke(new object[] { args.Game });
+                    }
+                }
+            }
+
+            if (WineBridgeSettings.LutrisItchIoIntegrationEnabled && (!WineBridgeSettings.ItchIoIntegrationEnabled ||
+                                                                      LutrisGamesService.IsGameInstalled(args.Game,
+                                                                          LutrisPlatform.ItchIo)))
+            {
+                yield return new LutrisUninstallController(args.Game, LutrisPlatform.ItchIo);
+            }
         }
 
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
@@ -231,7 +393,7 @@ namespace WineBridgePlugin.Patchers
             ref IEnumerable<PlayController> __result,
             GetPlayActionsArgs args)
         {
-            if (!WineBridgeSettings.LutrisItchIoIntegrationEnabled)
+            if (!WineBridgeSettings.AnyItchIoIntegrationEnabled)
             {
                 return true;
             }
@@ -247,7 +409,29 @@ namespace WineBridgePlugin.Patchers
                 yield break;
             }
 
-            yield return new LutrisPlayController(args.Game, LutrisPlatform.ItchIo);
+
+            if (WineBridgeSettings.ItchIoIntegrationEnabled && (!WineBridgeSettings.LutrisItchIoIntegrationEnabled ||
+                                                                !LutrisGamesService.IsGameInstalled(args.Game,
+                                                                    LutrisPlatform.ItchIo)))
+            {
+                var uninstallController = AccessTools.TypeByName("ItchioLibrary.ItchPlayController");
+                if (uninstallController != null)
+                {
+                    var constructor = AccessTools.Constructor(uninstallController,
+                        new[] { typeof(Game), typeof(IPlayniteAPI) });
+                    if (constructor != null)
+                    {
+                        yield return (PlayController)constructor.Invoke(new object[] { args.Game, API.Instance });
+                    }
+                }
+            }
+
+            if (WineBridgeSettings.LutrisItchIoIntegrationEnabled && (!WineBridgeSettings.ItchIoIntegrationEnabled ||
+                                                                      LutrisGamesService.IsGameInstalled(args.Game,
+                                                                          LutrisPlatform.ItchIo)))
+            {
+                yield return new LutrisPlayController(args.Game, LutrisPlatform.ItchIo);
+            }
         }
 
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
@@ -255,13 +439,40 @@ namespace WineBridgePlugin.Patchers
             [SuppressMessage("ReSharper", "InconsistentNaming")]
             ref Dictionary<string, GameMetadata> __result)
         {
-            if (!WineBridgeSettings.LutrisItchIoIntegrationEnabled)
+            if (WineBridgeSettings.ItchIoIntegrationEnabled || !WineBridgeSettings.LutrisItchIoIntegrationEnabled)
             {
                 return true;
             }
 
             __result = LutrisGamesService.GetInstalledGames(LutrisPlatform.ItchIo);
             return false;
+        }
+
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        private static void GetInstalledGamesPostfix(
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
+            ref Dictionary<string, GameMetadata> __result)
+        {
+            if (!WineBridgeSettings.ItchIoIntegrationEnabled)
+            {
+                return;
+            }
+
+            var result = new Dictionary<string, GameMetadata>();
+            if (WineBridgeSettings.LutrisItchIoIntegrationEnabled)
+            {
+                LutrisGamesService.GetInstalledGames(LutrisPlatform.ItchIo)
+                    .ForEach(game => result.Add(game.Key, game.Value));
+            }
+
+            __result?.ForEach(game =>
+            {
+                if (!result.ContainsKey(game.Key))
+                {
+                    result.Add(game.Key, game.Value);
+                }
+            });
+            __result = result;
         }
     }
 }

@@ -41,6 +41,12 @@
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_RedirectFileDirectorySelectionCallsToLinux">Redirect file/directory selection calls to Linux</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_FileDirectorySelectionProgram">File/directory selection program</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_ForceHighQualityIcons">Force high quality icons (requires restart)</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_AdvancedProcessIntegration">Advanced process integration (experimental, requires restart)</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_AdvancedProcessIntegration_ToolTip" xml:space="preserve">This changes the way certain Linux processes are launched.
+From the technical standpoint it allows you to launch Linux processes as if they were Windows processes. 
+It allows for a better integration with certain plugins and is required for some integrations such as Itch.io native client integration.
+
+Be warned, it can be a bit unstable!</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_AutoDetect">Auto-detect</sys:String>
 
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_SteamIntegrationEnabled">Enable Steam integration with Linux client</sys:String>
@@ -61,6 +67,10 @@
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_LutrisItchIoIntegrationEnabled">Enable Itch.io integration with Lutris</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_LutrisDataPathLinux">Lutris data path (Linux)</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_LutrisExecutablePathLinux">Lutris executable path (Linux)</sys:String>
+
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_ItchIoIntegrationEnabled">Enable Itch.io integration with Linux client (requires Advanced process integration)</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_ItchIoDataPathLinux">Itch.io data path (Linux)</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_ItchIoExecutablePathLinux">Itch.io executable path (Linux)</sys:String>
 
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_Emulators_AddEmulatorConfig">Add emulator config</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_Emulators_Emulator">Emulator</sys:String>

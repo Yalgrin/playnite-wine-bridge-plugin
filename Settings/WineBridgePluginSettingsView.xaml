@@ -79,6 +79,24 @@
                                 MinWidth="200" VerticalAlignment="Center" />
                             <TextBox Text="{Binding Settings.LutrisExecutablePathLinux}" MinWidth="350" MaxWidth="350" />
                         </StackPanel>
+
+                        <Separator Margin="0, 25, 0, 10" />
+
+                        <StackPanel Orientation="Horizontal" Margin="0,15,5,0" HorizontalAlignment="Left">
+                            <TextBlock Text="{DynamicResource LOC_Yalgrin_WineBridge_Settings_ItchIoDataPathLinux}"
+                                       MinWidth="200" VerticalAlignment="Center" />
+                            <TextBox Text="{Binding Settings.ItchIoDataPathLinux}" MinWidth="350" MaxWidth="350" />
+                            <Button HorizontalAlignment="Right" Margin="5, 0, 0, 0"
+                                    Command="{Binding AutoDetectItchIo}"
+                                    Content="{DynamicResource LOC_Yalgrin_WineBridge_Settings_AutoDetect}" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,15,5,0" HorizontalAlignment="Left">
+                            <TextBlock
+                                Text="{DynamicResource LOC_Yalgrin_WineBridge_Settings_ItchIoExecutablePathLinux}"
+                                MinWidth="200" VerticalAlignment="Center" />
+                            <TextBox Text="{Binding Settings.ItchIoExecutablePathLinux}" MinWidth="350" MaxWidth="350" />
+                        </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
@@ -121,6 +139,11 @@
                                   Margin="0, 15, 0, 0" />
                         <CheckBox IsChecked="{Binding Settings.LutrisItchIoIntegrationEnabled}"
                                   Content="{DynamicResource LOC_Yalgrin_WineBridge_Settings_LutrisItchIoIntegrationEnabled}"
+                                  Margin="0, 15, 0, 0" />
+
+                        <Separator Margin="0, 25, 0, 10" />
+                        <CheckBox IsChecked="{Binding Settings.ItchIoIntegrationEnabled}"
+                                  Content="{DynamicResource LOC_Yalgrin_WineBridge_Settings_ItchIoIntegrationEnabled}"
                                   Margin="0, 15, 0, 0" />
                     </StackPanel>
                 </ScrollViewer>
@@ -218,6 +241,13 @@
                         <CheckBox IsChecked="{Binding Settings.ForceHighQualityIcons}"
                                   Content="{DynamicResource LOC_Yalgrin_WineBridge_Settings_ForceHighQualityIcons}"
                                   Margin="0, 15, 0, 0" />
+                        <StackPanel Orientation="Horizontal" Margin="0,15,5,0" HorizontalAlignment="Left">
+                            <CheckBox IsChecked="{Binding Settings.AdvancedProcessIntegration}"
+                                      Content="{DynamicResource LOC_Yalgrin_WineBridge_Settings_AdvancedProcessIntegration}" />
+                            <TextBlock Margin="5,0" Text="ℹ"
+                                       ToolTip="{DynamicResource LOC_Yalgrin_WineBridge_Settings_AdvancedProcessIntegration_ToolTip}">
+                            </TextBlock>
+                        </StackPanel>
 
                         <Separator Margin="0, 25, 0, 10" />
 

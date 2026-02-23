@@ -47,19 +47,22 @@ namespace WineBridgePlugin.Patchers
                     return;
                 }
 
+                var playniteApplicationType = assembly.GetType("Playnite.PlayniteApplication");
                 var genericPlayControllerType = assembly.GetType("Playnite.Controllers.GenericPlayController");
                 var gamesEditorType = assembly.GetType("Playnite.GamesEditor");
                 var emulationType = assembly.GetType("Playnite.Emulators.Emulation");
                 var bitmapExtensionsType = assembly.GetType("System.Drawing.Imaging.BitmapExtensions");
                 var systemDialogsType = assembly.GetType("Playnite.Common.SystemDialogs");
                 if (genericPlayControllerType == null || gamesEditorType == null || emulationType == null
-                    || bitmapExtensionsType == null || systemDialogsType == null)
+                    || bitmapExtensionsType == null || systemDialogsType == null || playniteApplicationType == null)
                 {
                     Logger.Warn("Failed to find Playnite classes!");
                     State = PatchingState.MissingClasses;
                     return;
                 }
 
+                var crashMethod = playniteApplicationType.GetMethod("CurrentDomain_UnhandledException",
+                    BindingFlags.Instance | BindingFlags.NonPublic);
                 var startMethod = genericPlayControllerType.GetMethod("Start",
                     BindingFlags.Instance | BindingFlags.Public, null,
                     new[] { typeof(GameAction), typeof(bool), typeof(OnGameStartingEventArgs) }, null);
@@ -88,12 +91,16 @@ namespace WineBridgePlugin.Patchers
                 if (startMethod == null || disposeMethod == null || powershellErrorField == null ||
                     startEmulatorMethod == null || getProfileMethod == null || getExecutableMethod == null ||
                     bitmapFromStreamMethod == null || saveFileMethod == null || selectFolderMethod == null ||
-                    selectFileMethod == null || selectFilesMethod == null)
+                    selectFileMethod == null || selectFilesMethod == null || crashMethod == null)
                 {
                     Logger.Warn("Failed to find Playnite methods!");
                     State = PatchingState.MissingClasses;
                     return;
                 }
+
+                var crashPrefix = AccessTools.Method(typeof(ApplicationPatcher), "CrashPrefix");
+                HarmonyPatcher.HarmonyInstance.Patch(crashMethod, prefix: new HarmonyMethod(crashPrefix));
+
 
                 var startControllerPlayPrefix = AccessTools.Method(typeof(GenericPlayGamePatcher), "StartPrefix");
                 HarmonyPatcher.HarmonyInstance.Patch(startMethod, prefix: new HarmonyMethod(startControllerPlayPrefix));
@@ -137,6 +144,20 @@ namespace WineBridgePlugin.Patchers
         }
     }
 
+    public static class ApplicationPatcher
+    {
+        private static readonly ILogger Logger = LogManager.GetLogger();
+
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        public static bool CrashPrefix(
+            [SuppressMessage("ReSharper", "UnusedParameter.Global")]
+            object sender, UnhandledExceptionEventArgs e)
+        {
+            Logger.Error(e.ExceptionObject as Exception, "Playnite crashed!");
+            return true;
+        }
+    }
+
     public static class GenericPlayGamePatcher
     {
         private static readonly Dictionary<PlayController, CancellationTokenSource> PlayCancelationTokenSources =
@@ -147,9 +168,8 @@ namespace WineBridgePlugin.Patchers
             [SuppressMessage("ReSharper", "InconsistentNaming")]
             PlayController __instance)
         {
-            if (PlayCancelationTokenSources.ContainsKey(__instance))
+            if (PlayCancelationTokenSources.TryGetValue(__instance, out var token))
             {
-                var token = PlayCancelationTokenSources[__instance];
                 token?.Cancel();
                 token?.Dispose();
                 PlayCancelationTokenSources.Remove(__instance);

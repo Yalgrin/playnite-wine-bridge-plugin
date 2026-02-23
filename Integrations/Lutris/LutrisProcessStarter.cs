@@ -8,7 +8,7 @@ namespace WineBridgePlugin.Integrations.Lutris
 {
     public static class LutrisProcessStarter
     {
-        public static ProcessWithCorrelationId StartUsingId(long id)
+        public static LinuxProcess StartUsingId(long id)
         {
             var executablePath = WineBridgeSettings.LutrisExecutablePathLinux;
             if (executablePath == null)
@@ -21,7 +21,7 @@ namespace WineBridgePlugin.Integrations.Lutris
                 "lutris-wrapper");
         }
 
-        public static ProcessWithCorrelationId Start(Game game, LutrisPlatform platform)
+        public static LinuxProcess Start(Game game, LutrisPlatform platform)
         {
             var gameId = LutrisClient.GetGameId(platform, game.GameId);
             if (gameId == null)

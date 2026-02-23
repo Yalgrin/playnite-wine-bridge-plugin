@@ -46,7 +46,7 @@ namespace WineBridgePlugin.Utils
         {
             if (string.IsNullOrEmpty(windowsPath))
             {
-                return null;
+                return string.Empty;
             }
 
             try
@@ -98,7 +98,7 @@ namespace WineBridgePlugin.Utils
         {
             if (string.IsNullOrEmpty(linuxPath))
             {
-                return null;
+                return string.Empty;
             }
 
             try

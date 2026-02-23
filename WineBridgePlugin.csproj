@@ -154,7 +154,7 @@
         <Compile Include="Integrations\Steam\SteamProcessStarter.cs"/>
         <Compile Include="Integrations\Steam\SteamUtils.cs"/>
         <Compile Include="Models\PatchingState.cs"/>
-        <Compile Include="Models\ProcessWithCorrelationId.cs"/>
+        <Compile Include="Models\LinuxProcess.cs"/>
         <Compile Include="Patchers\AmazonPatcher.cs"/>
         <Compile Include="Patchers\BattleNetPatcher.cs"/>
         <Compile Include="Patchers\EaPatcher.cs"/>
@@ -165,10 +165,14 @@
         <Compile Include="Patchers\PlaynitePatcher.cs"/>
         <Compile Include="Patchers\SteamPatcher.cs"/>
         <Compile Include="Patchers\SystemPatcher.cs"/>
+        <Compile Include="Processes\LinuxProcessInputPipe.cs"/>
         <Compile Include="Processes\LinuxProcessMonitor.cs"/>
+        <Compile Include="Processes\LinuxProcessOutputPipe.cs"/>
         <Compile Include="Processes\LinuxProcessStarter.cs"/>
+        <Compile Include="Processes\WineFifo.cs"/>
         <Compile Include="Settings\DefaultSettingFinder.cs"/>
         <Compile Include="Settings\LinuxHeroicConfiguration.cs"/>
+        <Compile Include="Settings\LinuxItchIoConfiguration.cs"/>
         <Compile Include="Settings\LinuxLutrisConfiguration.cs"/>
         <Compile Include="Settings\LinuxSteamConfiguration.cs"/>
         <Compile Include="Settings\WineBridgePluginSettingsModel.cs"/>
@@ -253,6 +257,7 @@
         </None>
     </ItemGroup>
     <ItemGroup>
+        <Content Include=".editorconfig"/>
         <Content Include=".gitignore"/>
         <Content Include="LICENSE"/>
         <Content Include="Manifests\Yalgrin_WineBridgePlugin_Installer.yaml"/>

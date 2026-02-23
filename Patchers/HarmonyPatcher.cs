@@ -85,7 +85,9 @@ namespace WineBridgePlugin.Patchers
 
             try
             {
+                LinuxProcessStarter.StartRawCommand($"sed -i 's/\\r$//'  '{WineUtils.ScriptPathLinux}'");
                 LinuxProcessStarter.StartRawCommand($"chmod a+x '{WineUtils.ScriptPathLinux}'");
+                LinuxProcessStarter.StartRawCommand($"sed -i 's/\\r$//'  '{WineUtils.OpenFileScriptPathLinux}'");
                 LinuxProcessStarter.StartRawCommand($"chmod a+x '{WineUtils.OpenFileScriptPathLinux}'");
             }
             catch (Exception e)

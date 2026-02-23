@@ -32,6 +32,9 @@ namespace WineBridgePlugin.Settings
         public static bool ForceHighQualityIcons =>
             WineBridgePlugin.Settings?.ForceHighQualityIcons ?? false;
 
+        public static bool AdvancedProcessIntegration =>
+            WineBridgePlugin.Settings?.AdvancedProcessIntegration ?? false;
+
         public static bool SteamIntegrationEnabled => WineBridgePlugin.Settings?.SteamIntegrationEnabled ?? false;
 
         public static string SteamDataPathLinux => WineBridgePlugin.Settings?.SteamDataPathLinux ??
@@ -91,6 +94,15 @@ namespace WineBridgePlugin.Settings
         public static string LutrisExecutablePathLinux => WineBridgePlugin.Settings?.LutrisExecutablePathLinux ??
                                                           DefaultSettingFinder.LutrisConfiguration.ExecutablePath;
 
+        public static bool ItchIoIntegrationEnabled =>
+            (WineBridgePlugin.Settings?.ItchIoIntegrationEnabled ?? false) && AdvancedProcessIntegration;
+
+        public static string ItchIoDataPathLinux => WineBridgePlugin.Settings?.ItchIoDataPathLinux ??
+                                                    DefaultSettingFinder.ItchIoConfiguration.DataPath;
+
+        public static string ItchIoExecutablePathLinux => WineBridgePlugin.Settings?.ItchIoExecutablePathLinux ??
+                                                          DefaultSettingFinder.ItchIoConfiguration.ExecutablePath;
+
         public static List<WineBridgeEmulatorConfig> EmulatorConfigs =>
             WineBridgePlugin.Settings?.EmulatorConfigs?.ToList() ??
             new List<WineBridgeEmulatorConfig>();
@@ -105,5 +117,8 @@ namespace WineBridgePlugin.Settings
 
         public static bool AnyEpicIntegrationEnabled =>
             LutrisEpicIntegrationEnabled || HeroicEpicIntegrationEnabled;
+
+        public static bool AnyItchIoIntegrationEnabled =>
+            LutrisItchIoIntegrationEnabled || ItchIoIntegrationEnabled;
     }
 }

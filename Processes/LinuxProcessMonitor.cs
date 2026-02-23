@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using HarmonyLib;
@@ -8,7 +10,6 @@ using Playnite.SDK;
 using Playnite.SDK.Plugins;
 using WineBridgePlugin.Models;
 using WineBridgePlugin.Settings;
-using WineBridgePlugin.Utils;
 
 namespace WineBridgePlugin.Processes
 {
@@ -16,9 +17,322 @@ namespace WineBridgePlugin.Processes
     {
         private static readonly ILogger Logger = LogManager.GetLogger();
 
+        private static readonly Dictionary<Process, LinuxProcess> TrackedProcesses =
+            new Dictionary<Process, LinuxProcess>();
+
+        private static readonly Dictionary<Process, RunningLinuxProcessData> TrackedProcessData =
+            new Dictionary<Process, RunningLinuxProcessData>();
+
+        public static void RegisterProcessToTrack(Process originalProcess, LinuxProcess linuxProcess)
+        {
+            if (originalProcess == null || linuxProcess == null || !WineBridgeSettings.AdvancedProcessIntegration)
+            {
+                return;
+            }
+
+            TrackedProcesses[originalProcess] = linuxProcess;
+            var runningLinuxProcessData = new RunningLinuxProcessData();
+
+            if (originalProcess.StartInfo.RedirectStandardInput)
+            {
+                var fieldInfo =
+                    typeof(Process).GetField("standardInput", BindingFlags.Instance | BindingFlags.NonPublic);
+                if (fieldInfo != null)
+                {
+                    runningLinuxProcessData.InputPipe =
+                        new LinuxProcessInputPipe(linuxProcess.InputTrackingFile);
+
+                    var previousStream = fieldInfo.GetValue(originalProcess);
+                    fieldInfo.SetValue(originalProcess,
+                        new StreamWriter(runningLinuxProcessData.InputPipe.WriteStream, Console.InputEncoding, 4096)
+                    );
+
+                    runningLinuxProcessData.InputPipe.Token.Register(() =>
+                    {
+                        fieldInfo.SetValue(originalProcess, previousStream);
+                    });
+                    runningLinuxProcessData.InputPipe.Start(linuxProcess.CancellationTokenSource.Token);
+                }
+                else
+                {
+                    Logger.Warn("Standard input field not found! Redirection will not work!");
+                }
+            }
+
+            if (originalProcess.StartInfo.RedirectStandardOutput)
+            {
+                var fieldInfo =
+                    typeof(Process).GetField("standardOutput", BindingFlags.Instance | BindingFlags.NonPublic);
+                if (fieldInfo != null)
+                {
+                    var encoding = originalProcess.StartInfo.StandardOutputEncoding ?? Console.OutputEncoding;
+                    var pipe = new LinuxProcessOutputPipe(linuxProcess.OutputTrackingFile, pollMs: 100);
+                    runningLinuxProcessData.OutputPipe = pipe;
+
+                    var previousStream = fieldInfo.GetValue(originalProcess);
+                    fieldInfo.SetValue(originalProcess,
+                        new StreamReader(
+                            pipe.ReadStream, encoding, true,
+                            4096)
+                    );
+
+                    pipe.Token.Register(() => { fieldInfo.SetValue(originalProcess, previousStream); });
+                    pipe.Start(linuxProcess.CancellationTokenSource.Token);
+                }
+                else
+                {
+                    Logger.Warn("Standard output field not found! Redirection will not work!");
+                }
+            }
+
+            if (originalProcess.StartInfo.RedirectStandardError)
+            {
+                var fieldInfo =
+                    typeof(Process).GetField("standardError", BindingFlags.Instance | BindingFlags.NonPublic);
+                if (fieldInfo != null)
+                {
+                    var encoding = originalProcess.StartInfo.StandardErrorEncoding ?? Console.OutputEncoding;
+                    var pipe = new LinuxProcessOutputPipe(linuxProcess.ErrorTrackingFile, pollMs: 100);
+                    runningLinuxProcessData.ErrorPipe = pipe;
+
+                    var previousStream = fieldInfo.GetValue(originalProcess);
+                    fieldInfo.SetValue(originalProcess,
+                        new StreamReader(
+                            pipe.ReadStream, encoding, true,
+                            4096)
+                    );
+
+                    pipe.Token.Register(() => { fieldInfo.SetValue(originalProcess, previousStream); });
+                    pipe.Start(linuxProcess.CancellationTokenSource.Token);
+                }
+            }
+
+            TrackedProcessData[originalProcess] = runningLinuxProcessData;
+
+            Task.Run(async () =>
+            {
+                while (true)
+                {
+                    if (File.Exists(linuxProcess.StatusTrackingFile))
+                    {
+                        Logger.Debug("Cancelling for process: " + originalProcess.Id + " " +
+                                     originalProcess.StartInfo.FileName +
+                                     " " + originalProcess.StartInfo.Arguments);
+                        linuxProcess.CancellationTokenSource.Cancel();
+                        break;
+                    }
+
+                    await Task.Delay(500);
+                }
+            });
+        }
+
+        public static bool GetProcessId(Process originalProcess, out int processId)
+        {
+            if (!WineBridgeSettings.AdvancedProcessIntegration)
+            {
+                processId = -1;
+                return false;
+            }
+
+            if (TrackedProcesses.TryGetValue(originalProcess, out var linuxProcess))
+            {
+                if (File.Exists(linuxProcess.PidTrackingFile))
+                {
+                    processId = -Convert.ToInt32(File
+                        .ReadAllText(linuxProcess.PidTrackingFile)
+                        .Trim());
+                }
+                else
+                {
+                    var task = Task.Run(async () =>
+                    {
+                        var stopwatch = Stopwatch.StartNew();
+
+                        while (!File.Exists(linuxProcess.PidTrackingFile) &&
+                               (stopwatch.ElapsedMilliseconds < 15_000))
+                        {
+                            await Task.Delay(100);
+                        }
+
+                        stopwatch.Stop();
+
+                        if (File.Exists(linuxProcess.PidTrackingFile))
+                        {
+                            return -Convert.ToInt32(File
+                                .ReadAllText(linuxProcess.PidTrackingFile)
+                                .Trim());
+                        }
+
+                        return -1;
+                    });
+                    task.Wait();
+                    processId = task.Result;
+                }
+
+                return true;
+            }
+
+            processId = -1;
+            return false;
+        }
+
+        public static bool GetExitCode(Process originalProcess, out int status)
+        {
+            if (!WineBridgeSettings.AdvancedProcessIntegration)
+            {
+                status = -1;
+                return false;
+            }
+
+            if (TrackedProcesses.TryGetValue(originalProcess, out var linuxProcess))
+            {
+                status = Convert.ToInt32(File
+                    .ReadAllText(linuxProcess.StatusTrackingFile)
+                    .Trim());
+                return true;
+            }
+
+            status = -1;
+            return false;
+        }
+
+        public static bool HasExited(Process originalProcess, out bool status)
+        {
+            if (!WineBridgeSettings.AdvancedProcessIntegration)
+            {
+                status = false;
+                return false;
+            }
+
+            if (TrackedProcesses.TryGetValue(originalProcess, out var linuxProcess))
+            {
+                status = File.Exists(linuxProcess.StatusTrackingFile);
+                return true;
+            }
+
+            status = false;
+            return false;
+        }
+
+        public static bool WaitForExit(Process originalProcess, int milliseconds, out bool result)
+        {
+            if (!WineBridgeSettings.AdvancedProcessIntegration)
+            {
+                result = false;
+                return false;
+            }
+
+            if (TrackedProcesses.TryGetValue(originalProcess, out var linuxProcess))
+            {
+                var task = Task.Run(async () =>
+                {
+                    var stopwatch = Stopwatch.StartNew();
+
+                    while (!File.Exists(linuxProcess.StatusTrackingFile) &&
+                           (milliseconds < 0 || stopwatch.ElapsedMilliseconds < milliseconds))
+                    {
+                        await Task.Delay(100);
+                    }
+
+                    if (milliseconds < 0 && TrackedProcessData.TryGetValue(originalProcess, out var processData))
+                    {
+                        if (processData.InputPipe != null)
+                        {
+                            await processData.InputPipe.WaitForDone();
+                        }
+
+                        if (processData.OutputPipe != null)
+                        {
+                            await processData.OutputPipe.WaitForDone();
+                        }
+
+                        if (processData.ErrorPipe != null)
+                        {
+                            await processData.ErrorPipe.WaitForDone();
+                        }
+                    }
+
+                    stopwatch.Stop();
+
+                    return File.Exists(linuxProcess.StatusTrackingFile);
+                });
+                task.Wait();
+                result = task.Result;
+                return true;
+            }
+
+            result = false;
+            return false;
+        }
+
+        public static bool Kill(Process originalProcess)
+        {
+            if (!WineBridgeSettings.AdvancedProcessIntegration)
+            {
+                return false;
+            }
+
+            if (GetProcessId(originalProcess, out var processId) && processId < -1)
+            {
+                LinuxProcessStarter.Start(null, $"kill -9 {Math.Abs(processId)}");
+                return true;
+            }
+
+            return false;
+        }
+
+        public static void DisposeProcess(Process originalProcess)
+        {
+            if (!WineBridgeSettings.AdvancedProcessIntegration)
+            {
+                return;
+            }
+
+            if (TrackedProcessData.TryGetValue(originalProcess, out var processData))
+            {
+                if (processData.InputPipe != null)
+                {
+                    processData.InputPipe.Stop();
+
+                    var fieldInfo =
+                        typeof(Process).GetField("standardInput", BindingFlags.Instance | BindingFlags.NonPublic);
+                    fieldInfo?.SetValue(originalProcess, null);
+                }
+
+                if (processData.OutputPipe != null)
+                {
+                    processData.OutputPipe.Stop();
+                    var fieldInfo =
+                        typeof(Process).GetField("standardOutput", BindingFlags.Instance | BindingFlags.NonPublic);
+                    fieldInfo?.SetValue(originalProcess, null);
+                }
+
+                if (processData.ErrorPipe != null)
+                {
+                    processData.ErrorPipe.Stop();
+                    var fieldInfo =
+                        typeof(Process).GetField("standardError", BindingFlags.Instance | BindingFlags.NonPublic);
+                    fieldInfo?.SetValue(originalProcess, null);
+                }
+
+                TrackedProcessData.Remove(originalProcess);
+            }
+
+            if (TrackedProcesses.TryGetValue(originalProcess, out var linuxProcess))
+            {
+                Logger.Debug($"Dispose called for process: " +
+                             originalProcess.Id + " " +
+                             originalProcess.StartInfo.FileName +
+                             " " + originalProcess.StartInfo.Arguments);
+                linuxProcess.ScriptProcess.Dispose();
+                TrackedProcesses.Remove(originalProcess);
+            }
+        }
+
         public static Task TrackLinuxProcess(
             PlayController instance,
-            ProcessWithCorrelationId process,
+            LinuxProcess process,
             CancellationTokenSource watcherToken
         )
         {
@@ -26,44 +340,40 @@ namespace WineBridgePlugin.Processes
         }
 
         public static string TrackLinuxProcessGetResult(
-            ProcessWithCorrelationId process,
+            LinuxProcess process,
             CancellationTokenSource watcherToken = null
         )
         {
             Task.Run(async () => { await DoTrackLinuxProcess(process, watcherToken, 200, 200); }).Wait();
 
-            var trackingDirectory = WineUtils.LinuxPathToWindows(WineBridgeSettings.TrackingDirectoryLinux);
-            var processTrackingFile = $"{trackingDirectory}\\wine-bridge-{process.CorrelationId}";
-            var processStatus = GetProcessStatus($"{processTrackingFile}-status");
+            var processStatus = GetProcessStatus(process.StatusTrackingFile);
             switch (processStatus)
             {
                 case 0:
-                    return GetProcessOutput($"{processTrackingFile}-output");
+                    return GetProcessOutput(process.OutputTrackingFile);
                 case 1:
                     return string.Empty;
                 default:
-                    throw new Exception(GetProcessOutput($"{processTrackingFile}-error"));
+                    throw new Exception(GetProcessOutput(process.ErrorTrackingFile));
             }
         }
 
         public static string[] TrackLinuxProcessGetResultInLines(
-            ProcessWithCorrelationId process,
+            LinuxProcess process,
             CancellationTokenSource watcherToken = null
         )
         {
             Task.Run(async () => { await DoTrackLinuxProcess(process, watcherToken, 200, 200); }).Wait();
 
-            var trackingDirectory = WineUtils.LinuxPathToWindows(WineBridgeSettings.TrackingDirectoryLinux);
-            var processTrackingFile = $"{trackingDirectory}\\wine-bridge-{process.CorrelationId}";
-            var processStatus = GetProcessStatus($"{processTrackingFile}-status");
+            var processStatus = GetProcessStatus(process.StatusTrackingFile);
             switch (processStatus)
             {
                 case 0:
-                    return GetProcessOutputLines($"{processTrackingFile}-output");
+                    return GetProcessOutputLines(process.OutputTrackingFile);
                 case 1:
                     return new string[] { };
                 default:
-                    throw new Exception(GetProcessOutput($"{processTrackingFile}-error"));
+                    throw new Exception(GetProcessOutput(process.ErrorTrackingFile));
             }
         }
 
@@ -107,16 +417,15 @@ namespace WineBridgePlugin.Processes
             }
         }
 
-        private static async Task DoTrackLinuxProcess(PlayController instance, ProcessWithCorrelationId process,
+        private static async Task DoTrackLinuxProcess(PlayController instance, LinuxProcess process,
             CancellationTokenSource watcherToken)
         {
             Stopwatch stopwatch = null;
             try
             {
-                var trackingDirectory = WineUtils.LinuxPathToWindows(WineBridgeSettings.TrackingDirectoryLinux);
                 var debugLogging = WineBridgeSettings.DebugLoggingEnabled;
-                var processTrackingFile = $"{trackingDirectory}\\wine-bridge-{process.CorrelationId}";
-                var readyTrackingFile = $"{processTrackingFile}-ready";
+                var processTrackingFile = process.ProcessTrackingFile;
+                var readyTrackingFile = process.ReadyTrackingFile;
 
                 var ready = false;
                 for (var i = 0; i <= 90; i++)
@@ -150,7 +459,7 @@ namespace WineBridgePlugin.Processes
                     return;
                 }
 
-                stopwatch = InvokeStartEvent(instance, process.Process);
+                stopwatch = InvokeStartEvent(instance, process);
 
                 var running = true;
                 while (running)
@@ -184,17 +493,16 @@ namespace WineBridgePlugin.Processes
         }
 
         private static async Task DoTrackLinuxProcess(
-            ProcessWithCorrelationId process,
+            LinuxProcess process,
             CancellationTokenSource watcherToken,
             int millisecondsDelay = 2000,
             int readyIterations = 90)
         {
             try
             {
-                var trackingDirectory = WineUtils.LinuxPathToWindows(WineBridgeSettings.TrackingDirectoryLinux);
                 var debugLogging = WineBridgeSettings.DebugLoggingEnabled;
-                var processTrackingFile = $"{trackingDirectory}\\wine-bridge-{process.CorrelationId}";
-                var readyTrackingFile = $"{processTrackingFile}-ready";
+                var processTrackingFile = process.ProcessTrackingFile;
+                var readyTrackingFile = process.ReadyTrackingFile;
 
                 var ready = false;
                 for (var i = 0; i <= readyIterations; i++)
@@ -205,7 +513,7 @@ namespace WineBridgePlugin.Processes
                         return;
                     }
 
-                    if (File.Exists(readyTrackingFile))
+                    if (File.Exists(process.ReadyTrackingFile))
                     {
                         ready = true;
                         Logger.Debug($"{readyTrackingFile} exists");
@@ -256,7 +564,7 @@ namespace WineBridgePlugin.Processes
 
         private static Stopwatch InvokeStartEvent(
             PlayController instance,
-            Process process)
+            LinuxProcess process)
         {
             try
             {
@@ -265,7 +573,12 @@ namespace WineBridgePlugin.Processes
                 var stopwatch = Stopwatch.StartNew();
 
                 AccessTools.Method(instance.GetType(), "InvokeOnStarted", new[] { typeof(GameStartedEventArgs) })
-                    .Invoke(instance, new object[] { new GameStartedEventArgs { StartedProcessId = process.Id } });
+                    .Invoke(instance,
+                        new object[]
+                        {
+                            new GameStartedEventArgs
+                                { StartedProcessId = process?.OriginalProcess?.Id ?? process?.ScriptProcess?.Id ?? 0 }
+                        });
 
                 return stopwatch;
             }

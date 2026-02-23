@@ -21,6 +21,7 @@ namespace WineBridgePlugin.Settings
         private bool _redirectFileDirectorySelectionCallsToLinux = true;
         private string _fileDirectorySelectionProgram = "auto";
         private bool _forceHighQualityIcons;
+        private bool _advancedProcessIntegration;
 
         private bool _steamIntegrationEnabled;
         private string _steamDataPathLinux;
@@ -40,6 +41,10 @@ namespace WineBridgePlugin.Settings
         private bool _lutrisItchIoIntegrationEnabled;
         private string _lutrisDataPathLinux;
         private string _lutrisExecutablePathLinux;
+
+        private bool _itchIoIntegrationEnabled;
+        private string _itchIoDataPathLinux;
+        private string _itchIoExecutablePathLinux;
 
         private ObservableCollection<WineBridgeEmulatorConfig> _emulatorConfigs;
 
@@ -85,6 +90,12 @@ namespace WineBridgePlugin.Settings
         {
             get => _forceHighQualityIcons;
             set => SetValue(ref _forceHighQualityIcons, value);
+        }
+
+        public bool AdvancedProcessIntegration
+        {
+            get => _advancedProcessIntegration;
+            set => SetValue(ref _advancedProcessIntegration, value);
         }
 
         public bool SteamIntegrationEnabled
@@ -184,6 +195,24 @@ namespace WineBridgePlugin.Settings
             set => SetValue(ref _lutrisExecutablePathLinux, value);
         }
 
+        public bool ItchIoIntegrationEnabled
+        {
+            get => _itchIoIntegrationEnabled;
+            set => SetValue(ref _itchIoIntegrationEnabled, value);
+        }
+
+        public string ItchIoDataPathLinux
+        {
+            get => _itchIoDataPathLinux;
+            set => SetValue(ref _itchIoDataPathLinux, value);
+        }
+
+        public string ItchIoExecutablePathLinux
+        {
+            get => _itchIoExecutablePathLinux;
+            set => SetValue(ref _itchIoExecutablePathLinux, value);
+        }
+
         public ObservableCollection<WineBridgeEmulatorConfig> EmulatorConfigs
         {
             get => _emulatorConfigs;
@@ -262,6 +291,7 @@ namespace WineBridgePlugin.Settings
         public ICommand AutoDetectSteam { get; private set; }
         public ICommand AutoDetectHeroic { get; private set; }
         public ICommand AutoDetectLutris { get; private set; }
+        public ICommand AutoDetectItchIo { get; private set; }
         public ICommand AddEmulatorConfig { get; private set; }
         public ICommand RemoveEmulatorConfig { get; private set; }
 
@@ -284,6 +314,7 @@ namespace WineBridgePlugin.Settings
             AutoDetectSteam = new RelayCommand(DoAutoDetectSteam);
             AutoDetectHeroic = new RelayCommand(DoAutoDetectHeroic);
             AutoDetectLutris = new RelayCommand(DoAutoDetectLutris);
+            AutoDetectItchIo = new RelayCommand(DoAutoDetectItchIo);
             AddEmulatorConfig = new RelayCommand(() =>
             {
                 Logger.Debug("Adding a new emulator config...");
@@ -351,6 +382,16 @@ namespace WineBridgePlugin.Settings
                 {
                     Settings.LutrisDataPathLinux = foundConfiguration.DataPath;
                     Settings.LutrisExecutablePathLinux = foundConfiguration.ExecutablePath;
+                }
+            }
+
+            if (Settings.ItchIoDataPathLinux == null || Settings.ItchIoExecutablePathLinux == null)
+            {
+                var foundConfiguration = DefaultSettingFinder.ItchIoConfiguration;
+                if (foundConfiguration != null)
+                {
+                    Settings.ItchIoDataPathLinux = foundConfiguration.DataPath;
+                    Settings.ItchIoExecutablePathLinux = foundConfiguration.ExecutablePath;
                 }
             }
         }
@@ -471,6 +512,38 @@ namespace WineBridgePlugin.Settings
 
             Settings.LutrisDataPathLinux = foundConfiguration.DataPath;
             Settings.LutrisExecutablePathLinux = foundConfiguration.ExecutablePath;
+        }
+
+        private void DoAutoDetectItchIo()
+        {
+            var foundConfiguration = DefaultSettingFinder.ItchIoConfiguration;
+
+            if (Settings.ItchIoDataPathLinux == foundConfiguration.DataPath &&
+                Settings.ItchIoExecutablePathLinux == foundConfiguration.ExecutablePath)
+            {
+                _plugin.PlayniteApi.Dialogs.ShowMessage(
+                    ResourceProvider.GetString("LOC_Yalgrin_WineBridge_Messages_DetectedTheSameConfiguration"), "",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var messageBoxResult = _plugin.PlayniteApi.Dialogs.ShowMessage(string.Format(
+                    ResourceProvider.GetString("LOC_Yalgrin_WineBridge_Messages_DoYouWantToReplaceConfig"),
+                    GetFoundConfigurationTypeMsg(foundConfiguration.Type),
+                    foundConfiguration.DataPath,
+                    foundConfiguration.ExecutablePath,
+                    Settings.ItchIoDataPathLinux,
+                    Settings.ItchIoExecutablePathLinux),
+                ResourceProvider.GetString("LOC_Yalgrin_WineBridge_Messages_DoYouWantToReplaceConfig_Caption"),
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+            if (messageBoxResult != MessageBoxResult.Yes)
+            {
+                return;
+            }
+
+            Settings.ItchIoDataPathLinux = foundConfiguration.DataPath;
+            Settings.ItchIoExecutablePathLinux = foundConfiguration.ExecutablePath;
         }
 
         private static string GetFoundConfigurationTypeMsg(string type)

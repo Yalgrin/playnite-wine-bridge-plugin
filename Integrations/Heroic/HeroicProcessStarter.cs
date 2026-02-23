@@ -10,7 +10,7 @@ namespace WineBridgePlugin.Integrations.Heroic
 {
     public static class HeroicProcessStarter
     {
-        public static ProcessWithCorrelationId Start(string command)
+        public static LinuxProcess Start(string command)
         {
             var strings = command?.Split('/');
             if (strings == null || strings.Length != 2)
@@ -21,7 +21,7 @@ namespace WineBridgePlugin.Integrations.Heroic
             return Start(strings[0], strings[1]);
         }
 
-        private static ProcessWithCorrelationId Start(string runner, string id)
+        private static LinuxProcess Start(string runner, string id)
         {
             var heroicPlatform = runner.ToHeroicPlatform();
             var installedGames = HeroicClient.GetInstalledGames(heroicPlatform);
@@ -35,7 +35,7 @@ namespace WineBridgePlugin.Integrations.Heroic
             return Start(runner, id, installPath);
         }
 
-        public static ProcessWithCorrelationId Start(Game game, HeroicPlatform platform)
+        public static LinuxProcess Start(Game game, HeroicPlatform platform)
         {
             var platformId = game.GameId;
             var gameInstallDirectory = WineUtils.WindowsPathToLinux(game.InstallDirectory);
@@ -58,7 +58,7 @@ namespace WineBridgePlugin.Integrations.Heroic
             return process;
         }
 
-        private static ProcessWithCorrelationId Start(string runner, string id, string installPath)
+        private static LinuxProcess Start(string runner, string id, string installPath)
         {
             var executablePath = WineBridgeSettings.HeroicExecutablePathLinux;
             if (executablePath == null)

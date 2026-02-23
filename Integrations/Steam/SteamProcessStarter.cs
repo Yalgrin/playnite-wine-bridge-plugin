@@ -6,16 +6,16 @@ namespace WineBridgePlugin.Integrations.Steam
 {
     public static class SteamProcessStarter
     {
-        public static ProcessWithCorrelationId Start(string steamAppId, bool shouldShowLaunchDialog = false)
+        public static LinuxProcess Start(string steamAppId, bool shouldShowLaunchDialog = false)
         {
             return Start(steamAppId, steamAppId, shouldShowLaunchDialog);
         }
 
-        public static ProcessWithCorrelationId Start(string steamAppId, string trackingId,
+        public static LinuxProcess Start(string steamAppId, string trackingId,
             bool shouldShowLaunchDialog = false)
         {
             var steamExecutable = WineBridgeSettings.SteamExecutablePathLinux;
-            ProcessWithCorrelationId process;
+            LinuxProcess process;
             if (shouldShowLaunchDialog)
             {
                 process = LinuxProcessStarter.Start(

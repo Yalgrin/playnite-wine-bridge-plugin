@@ -319,5 +319,83 @@ namespace WineBridgePlugin.Settings
             heroicConfiguration = null;
             return false;
         }
+
+        public static LinuxItchIoConfiguration ItchIoConfiguration
+        {
+            get
+            {
+                var homeFolder = HomeFolderWindows;
+                if (homeFolder == null)
+                {
+                    Logger.Debug("Could not find home folder. Going to use a placeholder Itch.io configuration.");
+                    return new LinuxItchIoConfiguration
+                    {
+                        Type = "Placeholder",
+                        ExecutablePath = "/home/user/.itch/itch",
+                        DataPath = "/home/user/.config/itch/"
+                    };
+                }
+
+                if (GetNativeItchIoConfiguration(homeFolder, out var nativeConfig))
+                {
+                    return nativeConfig;
+                }
+
+                if (GetFlatpakItchIoConfiguration(homeFolder, out var flatpakConfig))
+                {
+                    return flatpakConfig;
+                }
+
+                Logger.Debug("Did not manage to find Itch.io configuration. Going to use a placeholder configuration.");
+                return new LinuxItchIoConfiguration
+                {
+                    Type = "Placeholder",
+                    ExecutablePath = $"{HomeFolderLinux ?? "/home/user"}/.itch/itch",
+                    DataPath = $"{HomeFolderLinux ?? "/home/user"}/.config/itch/"
+                };
+            }
+        }
+
+        private static bool GetNativeItchIoConfiguration(string homeFolder,
+            out LinuxItchIoConfiguration itchIoConfiguration)
+        {
+            var dataFolder = Path.Combine(homeFolder, @".config\itch");
+            if (Directory.Exists(dataFolder) && File.Exists(Path.Combine(dataFolder, "config.json")))
+            {
+                Logger.Debug($"Found native Itch.io data folder at {dataFolder}");
+                itchIoConfiguration = new LinuxItchIoConfiguration
+                {
+                    Type = "Native",
+                    ExecutablePath = WineUtils.WindowsPathToLinux(Path.Combine(homeFolder, ".itch", "itch")),
+                    DataPath = WineUtils.WindowsPathToLinux(dataFolder)
+                };
+                return true;
+            }
+
+            Logger.Debug($"Could not find native Itch.io data folder at: {dataFolder}");
+            itchIoConfiguration = null;
+            return false;
+        }
+
+        private static bool GetFlatpakItchIoConfiguration(string homeFolder,
+            out LinuxItchIoConfiguration itchIoConfiguration)
+        {
+            var dataFolder = Path.Combine(homeFolder, @".var\app\io.itch.itch\config\itch");
+            if (Directory.Exists(dataFolder) && File.Exists(Path.Combine(dataFolder, "config.json")))
+            {
+                Logger.Debug($"Found flatpak Lutris data folder at {dataFolder}");
+                itchIoConfiguration = new LinuxItchIoConfiguration
+                {
+                    Type = "Flatpak",
+                    ExecutablePath = "flatpak run io.itch.itch",
+                    DataPath = WineUtils.WindowsPathToLinux(dataFolder)
+                };
+                return true;
+            }
+
+            Logger.Debug($"Could not find flatpak Lutris data folder at: {dataFolder}");
+            itchIoConfiguration = null;
+            return false;
+        }
     }
 }
