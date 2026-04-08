@@ -298,7 +298,8 @@ namespace WineBridgePlugin.Patchers
 
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
         private static Exception GetGamesFinalizer(
-            [SuppressMessage("ReSharper", "InconsistentNaming")] Exception __exception,
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
+            Exception __exception,
             [SuppressMessage("ReSharper", "InconsistentNaming")]
             ref IEnumerable<GameMetadata> __result)
         {
