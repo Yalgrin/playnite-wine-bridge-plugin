@@ -1,0 +1,16 @@
+﻿id = "Yalgrin.WineBridgePlugin"
+name = "WineBridgePlugin"
+author = "Yalgrin"
+version = "1.0"
+module = "WineBridgePlugin.dll"
+
+# Troubleshooting link to be shown on addons view
+#help_link = ""
+
+# Source code link to be shown on addons view
+#source_link = ""
+
+# Sponsor links to be shown on addons view
+#[[sponsor_links]]
+#name = "Ko-fi"
+#url = "https://ko-fi.com/"

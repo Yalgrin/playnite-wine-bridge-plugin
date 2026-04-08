@@ -1,0 +1,4 @@
+﻿<Solution>
+    <Project Path="source/WineBridgePlugin.P10/WineBridgePlugin.P10.csproj"/>
+    <Project Path="source/WineBridgePlugin.P11/WineBridgePlugin.P11.csproj"/>
+</Solution>

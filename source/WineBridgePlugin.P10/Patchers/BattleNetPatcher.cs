@@ -175,7 +175,8 @@ namespace WineBridgePlugin.Patchers
     {
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
         private static bool GetInstallActionsPrefix(
-            [SuppressMessage("ReSharper", "InconsistentNaming")] LibraryPlugin __instance,
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
+            LibraryPlugin __instance,
             [SuppressMessage("ReSharper", "InconsistentNaming")]
             ref IEnumerable<InstallController> __result, GetInstallActionsArgs args)
         {
@@ -201,7 +202,8 @@ namespace WineBridgePlugin.Patchers
 
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
         private static bool GetUninstallActionsPrefix(
-            [SuppressMessage("ReSharper", "InconsistentNaming")] LibraryPlugin __instance,
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
+            LibraryPlugin __instance,
             [SuppressMessage("ReSharper", "InconsistentNaming")]
             ref IEnumerable<UninstallController> __result, GetUninstallActionsArgs args)
         {
@@ -227,8 +229,10 @@ namespace WineBridgePlugin.Patchers
 
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
         private static bool GetPlayActionsPrefix(
-            [SuppressMessage("ReSharper", "InconsistentNaming")] LibraryPlugin __instance,
-            [SuppressMessage("ReSharper", "InconsistentNaming")] ref IEnumerable<PlayController> __result,
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
+            LibraryPlugin __instance,
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
+            ref IEnumerable<PlayController> __result,
             GetPlayActionsArgs args)
         {
             if (!WineBridgeSettings.LutrisBattleNetIntegrationEnabled)
@@ -252,7 +256,8 @@ namespace WineBridgePlugin.Patchers
 
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
         private static bool GetInstalledGamesPrefix(
-            [SuppressMessage("ReSharper", "InconsistentNaming")] ref Dictionary<string, GameMetadata> __result)
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
+            ref Dictionary<string, GameMetadata> __result)
         {
             if (!WineBridgeSettings.LutrisBattleNetIntegrationEnabled)
             {
