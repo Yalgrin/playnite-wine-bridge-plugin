@@ -35,6 +35,7 @@ was created.
 
 ## Planned features
 
+- basic support for Playnite 11 Alpha
 - support for more libraries such as GOG OSS, Legendary and Nile
 
 ## Instructions
