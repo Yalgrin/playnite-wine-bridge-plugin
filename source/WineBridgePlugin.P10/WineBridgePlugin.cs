@@ -56,7 +56,7 @@ namespace WineBridgePlugin
             return SettingsViewModel;
         }
 
-        public override UserControl GetSettingsView(bool firstRunSettings)
+        public override UserControl GetSettingsView(bool firstRunView)
         {
             return new WineBridgePluginSettingsView();
         }

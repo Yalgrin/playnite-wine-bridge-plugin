@@ -37,11 +37,11 @@ public class WineBridgePluginGameEditSessionSection : GameEditSessionSection
 public class WineBridgePluginGameEditSessionHandler : GameEditSessionHandler
 {
     private readonly Game game;
-    private readonly WineBridgePluginPlugin plugin;
+    private readonly WineBridgePlugin plugin;
 
     public WineBridgePluginData EditData { get; }
 
-    public WineBridgePluginGameEditSessionHandler(Game game, WineBridgePluginPlugin plugin)
+    public WineBridgePluginGameEditSessionHandler(Game game, WineBridgePlugin plugin)
     {
         this.game = game;
         this.plugin = plugin;

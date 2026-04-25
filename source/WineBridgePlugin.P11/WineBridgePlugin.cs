@@ -1,13 +1,12 @@
 ﻿using System.Windows.Media;
 using Playnite;
+using WineBridgePlugin.Patchers;
 using Fonts = Playnite.Fonts;
 
 namespace WineBridgePlugin;
 
-public class WineBridgePluginPlugin : Plugin
+public class WineBridgePlugin : Plugin
 {
-    // This creates logger for current class names after the class.
-    // You can also specify custom name in GetLogger("custom name") call.
     private static readonly ILogger logger = LogManager.GetLogger();
 
     // Same ID as the one specified in "extension.toml" manifest.
@@ -25,9 +24,24 @@ public class WineBridgePluginPlugin : Plugin
     // Any place where you are going to reference any work done with this specific data.
     public const string TestPropertyId = "WineBridgePlugin.TestPropery";
 
+    private WineBridgePluginSettingsHandler SettingsViewModel { get; set; }
+    public static WineBridgePluginSettingsModel? Settings { get; private set; }
+
     public IPluginLibraryCollection<WineBridgePluginData> DataCollection = null!;
 
-    public WineBridgePluginPlugin()
+    static WineBridgePlugin()
+    {
+        try
+        {
+            HarmonyPatcher.Initialize();
+        }
+        catch (Exception e)
+        {
+            logger.Error(e, "Failed to initialize harmony patcher!");
+        }
+    }
+
+    public WineBridgePlugin()
     {
         // Used only for cases where you also implement GetPluginGameDataPresenter for themes to display your data.
         // XamlId = "WineBridgePlugin";
@@ -45,6 +59,7 @@ public class WineBridgePluginPlugin : Plugin
         // - clienticon.png: used at places referencing the original/external library client (GOG Galaxy, Steam client etc.)
 
         // If you have readme.md in plugin folder, Playnite will display it in addons view when opening section for your plugin.
+        HarmonyPatcher.MakeScriptExecutable();
     }
 
     // Since a lot of methods in the API now have asynchronous signature (they expect Task as return value),
@@ -87,6 +102,9 @@ public class WineBridgePluginPlugin : Plugin
         // Installation directory of your plugin, in case you need to reference files from your installation package.
         // This folder gets completely removed during plugin update, don't store any user data here.
         var installDir = args.PluginInstallDir;
+
+        SettingsViewModel = new WineBridgePluginSettingsHandler(this);
+        Settings = SettingsViewModel.Settings;
     }
 
     // Following are descriptions of specific method features implementations.
@@ -273,23 +291,6 @@ public class WineBridgePluginPlugin : Plugin
     {
         if (args.ItemId == TestPropertyId)
             return new TestPropertySorter(this);
-
-        return null;
-    }
-
-    // Filter support, again very similar to grouping and sorting stuff.
-    public override ICollection<GameFiltererDescriptor> GetGameFilterDescriptors(GetGameFiltereDescriptorsArgs args)
-    {
-        return
-        [
-            new GameFiltererDescriptor(TestPropertyId, "Test property")
-        ];
-    }
-
-    public override GameFilterer? GetGameFilterer(GetGameFilterersArgs args)
-    {
-        if (args.ItemId == TestPropertyId)
-            return new TestPropertyGameFilterer(this, args);
 
         return null;
     }
@@ -555,12 +556,5 @@ public class WineBridgePluginPlugin : Plugin
             [], // Items to add
             [], // Items to update
             []); // Items to remove
-    }
-
-    public async Task BackgroundOperationsExample()
-    {
-        // This puts new operation into background queue.
-        // When and if the operation will be started is controlled by Playnite a user.
-        PlayniteApi.AddBackgroundOperation(new TestBackgroundOperation());
     }
 }

@@ -1,15 +1,14 @@
 ﻿using Playnite.Markup;
-using WineBridgePlugin;
 
 namespace Playnite;
 
 public class LocalizedString : LocStringMarkup
 {
-    public LocalizedString() : base(WineBridgePluginPlugin.Id)
+    public LocalizedString() : base(WineBridgePlugin.WineBridgePlugin.Id)
     {
     }
 
-    public LocalizedString(string stringId) : base(WineBridgePluginPlugin.Id, stringId)
+    public LocalizedString(string stringId) : base(WineBridgePlugin.WineBridgePlugin.Id, stringId)
     {
     }
 }

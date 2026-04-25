@@ -1,15 +1,27 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <AssemblyName>WineBridgePlugin</AssemblyName>
+        <RootNamespace>WineBridgePlugin</RootNamespace>
         <TargetFramework>net10.0-windows</TargetFramework>
         <Nullable>enable</Nullable>
         <UseWPF>true</UseWPF>
         <ImplicitUsings>enable</ImplicitUsings>
         <EnableDynamicLoading>true</EnableDynamicLoading>
+        <EanbleWindowsTargeting>true</EanbleWindowsTargeting>
     </PropertyGroup>
 
     <ItemGroup>
         <None Update="Localization\*.ftl">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\run-in-linux.bat">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\run-in-linux.sh">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\open-file-picker.sh">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>
@@ -22,9 +34,46 @@
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>
+    <ItemGroup>
+        <Compile Include="..\WineBridgePlugin.P10\VDFParser\VDFParser\VDFParser.cs">
+            <Link>Shared\VDFParser.cs</Link>
+        </Compile>
+        <Compile Include="..\WineBridgePlugin.P10\VDFParser\VDFParser\Exceptions.cs">
+            <Link>Shared\Exceptions.cs</Link>
+        </Compile>
+        <Compile Include="..\WineBridgePlugin.P10\VDFParser\VDFParser\Extensions.cs">
+            <Link>Shared\Extensions.cs</Link>
+        </Compile>
+        <Compile Include="..\WineBridgePlugin.P10\VDFParser\VDFParser\Shared.cs">
+            <Link>Shared\Shared.cs</Link>
+        </Compile>
+        <Compile Include="..\WineBridgePlugin.P10\VDFParser\VDFParser\Machines\VDFSM.cs">
+            <Link>Shared\VDFSM.cs</Link>
+        </Compile>
+        <Compile Include="..\WineBridgePlugin.P10\VDFParser\VDFParser\Machines\VDFFieldsSM.cs">
+            <Link>Shared\VDFFieldsSM.cs</Link>
+        </Compile>
+        <Compile Include="..\WineBridgePlugin.P10\VDFParser\VDFParser\Machines\VDFIndexedArraySM.cs">
+            <Link>Shared\VDFIndexedArraySM.cs</Link>
+        </Compile>
+        <Compile Include="..\WineBridgePlugin.P10\VDFParser\VDFParser\Models\VDFEntry.cs">
+            <Link>Shared\VDFEntry.cs</Link>
+        </Compile>
+        <Compile Include="..\WineBridgePlugin.P10\VDFParser\VDFParser\Models\VDFField.cs">
+            <Link>Shared\VDFField.cs</Link>
+        </Compile>
+        <Compile Include="..\WineBridgePlugin.P10\VDFParser\VDFParser\Models\VDFFieldType.cs">
+            <Link>Shared\VDFFieldType.cs</Link>
+        </Compile>
+    </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Lib.Harmony" Version="2.4.2"/>
+        <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.5"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.4"/>
         <PackageReference Include="Playnite.SDK" Version="11.0.0-alpha6"/>
+        <PackageReference Include="SteamKit2" Version="3.4.0"/>
+        <PackageReference Include="YamlDotNet" Version="17.0.1"/>
     </ItemGroup>
 
     <ItemGroup>

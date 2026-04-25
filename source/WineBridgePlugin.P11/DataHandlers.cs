@@ -1,12 +1,11 @@
-﻿using System.ComponentModel;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Playnite;
 
 namespace WineBridgePlugin;
 
 public class TestPropertyGrouper : GameGrouper
 {
-    private readonly WineBridgePluginPlugin plugin;
+    private readonly WineBridgePlugin plugin;
 
     // We can prepare groups in advance here since we have simple bool properly.
     private static readonly List<List<GameGroup>> groups =
@@ -20,7 +19,7 @@ public class TestPropertyGrouper : GameGrouper
     // Calling DataChangedAsync with an ID set in affectedDataIds will tell Playnite that the list might need
     // regrouping if grouping by one of the affectedDataIds is currently being applied.
     // This works the same way for sorting as well if you need to call for the list re-sort.
-    public TestPropertyGrouper(WineBridgePluginPlugin plugin) : base([WineBridgePluginPlugin.TestPropertyId])
+    public TestPropertyGrouper(WineBridgePlugin plugin) : base([WineBridgePlugin.TestPropertyId])
     {
         this.plugin = plugin;
     }
@@ -62,7 +61,7 @@ public class TestPropertyGrouper : GameGrouper
 
 public class TestPropertySorter : GameSorter
 {
-    public TestPropertySorter(WineBridgePluginPlugin plugin) : base([WineBridgePluginPlugin.TestPropertyId])
+    public TestPropertySorter(WineBridgePlugin plugin) : base([WineBridgePlugin.TestPropertyId])
     {
     }
 
@@ -92,89 +91,6 @@ public partial class TestPropertyGameFiltererSettings : ObservableObject
     [ObservableProperty] private bool? state;
 }
 
-public class TestPropertyGameFilterer : GameFilterer
-{
-    private readonly WineBridgePluginPlugin plugin;
-    public TestPropertyGameFiltererSettings Settings { get; } = new();
-
-    public TestPropertyGameFilterer(WineBridgePluginPlugin plugin, Plugin.GetGameFilterersArgs args) : base(args)
-    {
-        this.plugin = plugin;
-        if (args.Settings is not null)
-        {
-            // Load previously settings that we previously serialized using SerializeSettings.
-            // For example if you serialized your settings into string JSON, you'll get that JSON string here.
-        }
-
-        // We need to know where a user changed filer settings so we can tell Playnite to re-filter game list.
-        // This might get more complex depending on how complex your filterer (settings) is.
-        // We can just listen to properties changing on our settings class in this example.
-        Settings.PropertyChanged += SettingsOnPropertyChanged;
-
-        View = new TestPropertyFilterView
-        {
-            DataContext = this
-        };
-
-        // This tells Playnite whether filterer has some settings applied and is considered to be "active".
-        IsActive = Settings.State != null;
-    }
-
-    private void SettingsOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        IsActive = Settings.State != null;
-        // Tell Playnite that re-filtering is needed.
-        if (IsActive)
-            FilterChangedAsync(new FilterChangedArgs());
-    }
-
-    public override bool Filter(FilterGameArgs args)
-    {
-        // Return true if game passed filter criteria and therefore should appear in the game list.
-        return true;
-    }
-
-    public override void ClearFilter(ClearFilterArgs args)
-    {
-        // This gets called whe a user request filter to be reset to no filtering state.
-        Settings.State = null;
-
-        // We also then need to tell Playnite to reload the list, but that gets automatically
-        // called in our case via SettingsOnPropertyChanged.
-    }
-
-    // You can use these two if you need to do some warmup of the data before filtering is actually done.
-    public override void BeginFiltering(BeginFilteringArgs args)
-    {
-    }
-
-    public override void EndFiltering(EndFilteringArgs args)
-    {
-    }
-
-    // This will get called when Playnite is about to save filter's settings.
-    // Usually when a user is saving specific view configuration or by Playnite when last used
-    // filtering is saved.
-    public override SerializeSettingsResult? SerializeSettings(SerializeSettingsArgs args)
-    {
-        // Return string serialized settings, for example in JSON format.
-        // These will get later passed on via a constructor so you can load them,
-        // if filterer instance is set to be from previous state.
-        return null;
-    }
-
-    // This will get called when data explorer requests specific settings to be applied.
-    public override void ApplyExplorerFilter(ApplyExplorerFilterArgs args)
-    {
-        // args.FilterData has filtering data requested to be applied.
-        // If you are not providing exploring support for fields, don't implement this method.
-
-        // Our TestPropertyGameExplorer sends bool value which will be in args.FilterData.Data
-        if (args.FilterData.Data is bool boolVal)
-            Settings.State = boolVal;
-    }
-}
-
 public class TestPropertyGameExplorer : GameExplorer
 {
     // Our test property is bool value so we know all possible items in advance.
@@ -183,9 +99,9 @@ public class TestPropertyGameExplorer : GameExplorer
         new GameExplorerItem("explorer.id.1", "True",
             // This defines what filterer will be requested when user selects this explorer and
             // what value will be passed into it to filter by.
-            new GameExplorerFilterData(WineBridgePluginPlugin.TestPropertyId, true)),
+            new GameExplorerFilterData(WineBridgePlugin.TestPropertyId, true)),
         new GameExplorerItem("explorer.id.2", "False",
-            new GameExplorerFilterData(WineBridgePluginPlugin.TestPropertyId, false))
+            new GameExplorerFilterData(WineBridgePlugin.TestPropertyId, false))
     ];
 
     public override List<GameExplorerItem> GetExplorableItems(GetExplorableItemsArgs args)
@@ -199,9 +115,9 @@ public class TestPropertyGameExplorer : GameExplorer
 
 public class TestPropertyGameMetadataSessionHandler : GameMetadataSessionHandler
 {
-    private readonly WineBridgePluginPlugin plugin;
+    private readonly WineBridgePlugin plugin;
 
-    public TestPropertyGameMetadataSessionHandler(WineBridgePluginPlugin plugin)
+    public TestPropertyGameMetadataSessionHandler(WineBridgePlugin plugin)
     {
         this.plugin = plugin;
     }
