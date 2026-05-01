@@ -33,9 +33,9 @@ namespace WineBridgePlugin.Commands
                 case string stringUrl:
                     NavigateUrl(stringUrl);
                     break;
-                // case Link linkUrl:
-                // NavigateUrl(linkUrl.Url);
-                // break;
+                case WebLink linkUrl:
+                    NavigateUrl(linkUrl.Url);
+                    break;
                 case Uri uriUrl:
                     NavigateUrl(uriUrl.OriginalString);
                     break;
@@ -44,7 +44,7 @@ namespace WineBridgePlugin.Commands
             }
         }
 
-        private static void NavigateUrl(string url)
+        private static void NavigateUrl(string? url)
         {
             if (string.IsNullOrEmpty(url))
             {

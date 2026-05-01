@@ -24,11 +24,13 @@ namespace WineBridgePlugin.Integrations.Steam
                     throw new Exception("Steam library classes not found!");
                 }
 
-                if (method.Invoke(null, new object[] { includeMods }) is Dictionary<string, ImportableGame> result)
+                if (method.Invoke(null, [includeMods]) is Dictionary<string, ImportableGame> result)
                 {
+                    Logger.Debug($"Found {result.Count} installed Steam games.");
                     return result;
                 }
 
+                Logger.Debug("Found no installed Steam games.");
                 return new Dictionary<string, ImportableGame>();
             }
             catch (Exception e)

@@ -2,9 +2,9 @@
 {
     public class LinuxSteamConfiguration
     {
-        public string Type { get; set; }
-        public string ExecutablePath { get; set; }
-        public string DataPath { get; set; }
+        public required string Type { get; set; }
+        public string? ExecutablePath { get; set; }
+        public string? DataPath { get; set; }
 
         public override string ToString()
         {

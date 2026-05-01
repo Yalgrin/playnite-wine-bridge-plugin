@@ -272,33 +272,33 @@ namespace WineBridgePlugin.Integrations.Lutris
 
         private static T DoInConnection<T>(Func<SqliteConnection, T> action)
         {
-            return DoInConnection(WineBridgeSettings.LutrisDataPathLinux, action);
+            var dataPath = WineBridgeSettings.LutrisDataPathLinux;
+            if (dataPath == null)
+            {
+                throw new Exception("Lutris installation path not set.");
+            }
+
+            return DoInConnection(dataPath, action);
         }
 
         private static T DoInConnection<T>(string lutrisDataPathLinux, Func<SqliteConnection, T> action)
         {
-            using (var connection = new SqliteConnection(
-                       $"Data Source={Path.Combine(lutrisDataPathLinux, "pga.db")};Mode=ReadOnly;Cache=Shared"))
-            {
-                connection.Open();
-
-                return action(connection);
-            }
+            using var connection =
+                new SqliteConnection(
+                    $"Data Source={Path.Combine(lutrisDataPathLinux, "pga.db")};Mode=ReadOnly;Cache=Shared");
+            connection.Open();
+            return action(connection);
         }
 
-        private static string GetPlayniteGameId(LutrisGameEntity gameEntity)
+        private static string? GetPlayniteGameId(LutrisGameEntity gameEntity)
         {
-            switch (gameEntity.Service)
+            return gameEntity.Service switch
             {
-                case "amazon":
-                    return gameEntity.AmazonId;
-                case "battlenet":
-                    return gameEntity.BattleNetId;
-                case "ea_app":
-                    return gameEntity.EaAppId;
-                default:
-                    return gameEntity.ServiceId;
-            }
+                "amazon" => gameEntity.AmazonId,
+                "battlenet" => gameEntity.BattleNetId,
+                "ea_app" => gameEntity.EaAppId,
+                _ => gameEntity.ServiceId
+            };
         }
 
         private static void AddServiceAndIdParameters(ref string query,
@@ -336,12 +336,12 @@ namespace WineBridgePlugin.Integrations.Lutris
             command.Parameters.AddWithValue("gameId", playniteGameId);
         }
 
-        private static long GetLongValue(object val)
+        private static long? GetLongValue(object? val)
         {
             return Convert.ToInt64(val);
         }
 
-        private static string GetStringValue(object val)
+        private static string? GetStringValue(object? val)
         {
             return Convert.ToString(val);
         }

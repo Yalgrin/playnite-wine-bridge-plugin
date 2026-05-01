@@ -18,17 +18,24 @@ namespace WineBridgePlugin.Integrations.Heroic
             var games = HeroicClient.GetInstalledGames(platform);
 
             var result = new Dictionary<string, ImportableGame>();
-            games?.ForEach(game =>
+            games.ForEach(game =>
             {
+                var gameName = game.Name;
+                var gameAppId = game.AppId;
+                if (gameName == null || gameAppId == null)
+                {
+                    return;
+                }
+
                 var metadata =
-                    new ImportableGame(game.Name, platform == HeroicPlatform.Gog ? "Crow.GOG" : "", game.AppId)
+                    new ImportableGame(gameName, platform == HeroicPlatform.Gog ? "Crow.GOG" : "", gameAppId)
                     {
                         Source = GogSourceProperty,
                         InstallDirectory = WineUtils.LinuxPathToWindows(game.InstallPath),
                         InstallState = InstallState.Installed,
                         Platforms = [PcSpecProperty],
                         ExternalIdentifiers = platform == HeroicPlatform.Gog
-                            ? [new ImportableExternalIdentifier("gog", "GOG", game.AppId)]
+                            ? [new ImportableExternalIdentifier("gog", "GOG", gameAppId)]
                             : []
                     };
 

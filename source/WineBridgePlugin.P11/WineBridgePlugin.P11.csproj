@@ -8,7 +8,8 @@
         <UseWPF>true</UseWPF>
         <ImplicitUsings>enable</ImplicitUsings>
         <EnableDynamicLoading>true</EnableDynamicLoading>
-        <EanbleWindowsTargeting>true</EanbleWindowsTargeting>
+        <EnableWindowsTargeting>true</EnableWindowsTargeting>
+        <Version>0.1</Version>
     </PropertyGroup>
 
     <ItemGroup>
@@ -79,4 +80,16 @@
     <ItemGroup>
         <EditorConfigFiles Remove=".editorconfig"/>
     </ItemGroup>
+
+    <Target Name="CleanOldPackedPlugins" BeforeTargets="BeforeClean">
+        <RemoveDir Directories="packed"/>
+    </Target>
+
+    <Target Name="GenerateLocalization" BeforeTargets="BeforeCompile">
+        <Exec Command='Toolbox.exe ftlgen "Localization" "Localization"' WorkingDirectory="$(ProjectDir)"/>
+    </Target>
+
+    <Target Name="PackPlugin" AfterTargets="AfterBuild">
+        <Exec Command='Toolbox.exe pack "$([System.String]::Copy($(OutDir)).TrimEnd(`\`))" "$(ProjectDir)\packed\$(AssemblyName)-$(Version).pext2"' WorkingDirectory="$(ProjectDir)"/>
+    </Target>
 </Project>

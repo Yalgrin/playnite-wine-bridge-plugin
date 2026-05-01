@@ -60,6 +60,7 @@ namespace WineBridgePlugin.Processes
             process.StartInfo.RedirectStandardOutput = debugLogging;
             process.StartInfo.RedirectStandardError = debugLogging;
             process.StartInfo.CreateNoWindow = true;
+
             process.StartInfo.Environment.Remove("LD_LIBRARY_PATH");
             process.StartInfo.Environment.Remove("OS");
             var list = process.StartInfo.Environment.Keys.Where(key => key.StartsWith("WINE")).ToList();

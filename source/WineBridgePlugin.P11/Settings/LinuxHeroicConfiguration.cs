@@ -2,7 +2,7 @@
 {
     public class LinuxHeroicConfiguration
     {
-        public string? Type { get; set; }
+        public required string Type { get; set; }
         public string? ExecutablePath { get; set; }
         public string? DataPath { get; set; }
 

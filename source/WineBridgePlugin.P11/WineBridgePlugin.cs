@@ -1,5 +1,7 @@
-﻿using System.Windows.Media;
+﻿using System.Text.RegularExpressions;
+using System.Windows.Media;
 using Playnite;
+using WineBridgePlugin.Integrations.Steam;
 using WineBridgePlugin.Patchers;
 using Fonts = Playnite.Fonts;
 
@@ -153,16 +155,17 @@ public class WineBridgePlugin : Plugin
     {
         return
         [
-            new MenuItemDescriptor("game.menu.item.id", "Test item"),
-            // You can also specify subsection for the item, which used in settings views.
-            new MenuItemDescriptor("game.menu.other.item.id", "Some other test", "Test section"),
+            new MenuItemDescriptor(
+                "LOC_Yalgrin_WineBridge_GameMenuItem_AddSteamAction",
+                Loc.LOC_Yalgrin_WineBridge_GameMenuItem_AddSteamAction(),
+                "LOC_Yalgrin_WineBridge_GameMenuItem_SectionName"),
         ];
     }
 
     // This will get called every time a menu item is to be loaded in the UI.
     public override ICollection<MenuItemImpl>? GetGameMenuItems(GetGameMenuItemsArgs args)
     {
-        if (args.ItemId == "game.menu.other.item.id")
+        if (args.ItemId == "LOC_Yalgrin_WineBridge_GameMenuItem_AddSteamAction")
         {
             // GetGameMenuItemsArgs args contains some useful info, like for use case in which menu items are being loaded for:
             // main game list, keyboard search results, detail view menu etc.
@@ -172,19 +175,131 @@ public class WineBridgePlugin : Plugin
             // You can either implement custom icon, or use some predefined types via UIIcon.From* methods.
             // This example creates an icon using font symbol from https://www.nerdfonts.com project.
             // Playnite comes bundled with NerdFonts and IcoFonts, but you can use any FontFamily here.
-            var icon = UIIcon.FromFontIcon("f0668", Fonts.NerdFont, new SolidColorBrush(Colors.DeepPink));
 
             return
             [
-                new MenuItemImpl("Some other test", async () =>
+                new MenuItemImpl("LOC_Yalgrin_WineBridge_GameMenuItem_AddSteamAction", async () =>
                 {
                     // This gets executed when menu item is clicked
-                    await PlayniteApi.Dialogs.ShowMessageAsync("called from plugin");
-                }, icon: icon)
+                    await AddSteamAction(args);
+                })
             ];
         }
 
         return null;
+    }
+
+    private async Task AddSteamAction(GetGameMenuItemsArgs args)
+    {
+        var caption = Loc.LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_SelectInstalledSteamGame();
+        var nonSteamName = Loc.LOC_Yalgrin_WineBridge_SteamService_NonSteam();
+        var installedGames = SteamGamesService.GetInstalledGames().Values.ToList();
+        var steamInstalledGames = installedGames.ConvertAll(g => new ChooseDialogItem(g.Name, g.GameId));
+        var nonSteamGames = SteamGamesService.GetNonSteamGames()
+            .ConvertAll(g => new ChooseDialogItem(g.Name, g.GameId + " | " + nonSteamName));
+        var options = steamInstalledGames.Concat(nonSteamGames).OrderBy(g => g.Name).ToList();
+        foreach (var game in args.Games)
+        {
+            var mainCaption =
+                $"{game.Name} - {caption}";
+            var selectedItem = await PlayniteApi.Dialogs.ChooseItemWithSearchAsync("",
+                a => Task.FromResult<IEnumerable<ChooseDialogItem>>(options),
+                mainCaption);
+            if (selectedItem == null || selectedItem.Description == null)
+            {
+                return;
+            }
+
+            var nameResult = await PlayniteApi.Dialogs.SelectStringAsync(
+                $"{game.Name} - {PlayniteApi.GetLocalizedString("LOC_Yalgrin_WineBridge_GameMenuItem_Dialog_EnterActionName")}",
+                mainCaption, "Play on Linux");
+            if (!nameResult.Result)
+            {
+                return;
+            }
+
+            var split = Regex.Split(selectedItem.Description, " \\| ");
+            if (split.Length != 1 && split.Length != 2)
+            {
+                return;
+            }
+
+            var foundGame =
+                installedGames.Find(g => g.GameId == split[0]);
+            var nonSteam = split.Length == 2 && split[1] == nonSteamName;
+            if (foundGame?.InstallDirectory != null)
+            {
+                game.InstallDirectory = foundGame.InstallDirectory;
+            }
+
+            var steamAppId = Convert.ToUInt64(split[0]);
+            SteamUtils.ExtractAppIdAndTrackingId(steamAppId, nonSteam, out var appId, out var trackingId);
+
+            await AddSteamWineBridgeAction(game, $"[WB] {nameResult.SelectedString}", appId, trackingId);
+        }
+    }
+
+    private async Task AddSteamWineBridgeAction(Game game, string name, ulong steamAppId, ulong trackingAppId)
+    {
+        await AddWineBridgeAction(game, name, $"{Constants.WineBridgeSteamPrefix}{steamAppId}", $"{trackingAppId}");
+    }
+
+    private async Task AddWineBridgeAction(Game game, string name, string launchScript,
+        string? trackingExpression)
+    {
+        var gameActionIds = game.GameActionIds;
+        if (gameActionIds == null)
+        {
+            gameActionIds = new List<string>();
+            game.GameActionIds = gameActionIds;
+        }
+
+        var libraryGameActions = PlayniteApi.Library.GameActions;
+
+        FileGameAction? action = null;
+        var add = false;
+        for (var i = 0; i < gameActionIds.Count; i++)
+        {
+            var gameActionId = gameActionIds[i];
+            var gameAction = libraryGameActions.Get(gameActionId);
+            if (gameAction is not FileGameAction fileGameAction || fileGameAction.Name != name)
+            {
+                continue;
+            }
+
+            action = fileGameAction;
+            break;
+        }
+
+        if (action == null)
+        {
+            action = new FileGameAction();
+            add = true;
+        }
+
+        action.Name = name;
+        action.IsPlayAction = true;
+        action.Path = launchScript;
+        if (trackingExpression != null)
+        {
+            action.Arguments = $"{trackingExpression}";
+        }
+
+        action.WorkingDir = "";
+
+        if (add)
+        {
+            await libraryGameActions.AddAsync(action);
+        }
+        else
+        {
+            await libraryGameActions.UpdateAsync(action);
+        }
+
+        game.InstallState = InstallState.Installed;
+        game.OverrideInstallState = true;
+        game.IncludePluginActions = false;
+        await PlayniteApi.Library.Games.UpdateAsync(game);
     }
 
     // AddGameMenu works exactly the same as GameMenu related methods.
@@ -496,10 +611,10 @@ public class WineBridgePlugin : Plugin
         // Toolbox.exe ftlgen "path_where_ftl_files_are" "path_where_gen_output_should_be"
 
         // This will generate LocId class that you can then use this way:
-        var example2 = Loc.GetString(LocId.example_string);
+        // var example2 = Loc.GetString(LocId.example_string);
 
         // For strings that accept parameter(s):
-        var example3 = Loc.GetString(LocId.example_string_param, ("param", "param value"));
+        // var example3 = Loc.GetString(LocId.example_string_param, ("param", "param value"));
 
         // Check WineBridgePluginSettingsView.xaml to see how to use this in XAML views.
     }

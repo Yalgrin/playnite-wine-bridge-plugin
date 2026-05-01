@@ -124,8 +124,12 @@ namespace WineBridgePlugin.Patchers
             var installationPath = WineBridgeSettings.SteamDataPathLinux;
             if (installationPath != null)
             {
-                __result = WineUtils.LinuxPathToWindows(installationPath);
-                return false;
+                var linuxPathToWindows = WineUtils.LinuxPathToWindows(installationPath);
+                if (linuxPathToWindows != null)
+                {
+                    __result = linuxPathToWindows;
+                    return false;
+                }
             }
 
             return true;

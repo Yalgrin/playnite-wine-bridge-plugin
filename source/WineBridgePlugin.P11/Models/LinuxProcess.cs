@@ -6,22 +6,22 @@ namespace WineBridgePlugin.Models
     public class LinuxProcess
     {
         public Process? OriginalProcess { get; set; }
-        public Process ScriptProcess { get; set; }
-        public string CorrelationId { get; set; }
-        public CancellationTokenSource CancellationTokenSource { get; set; }
-        public string ProcessTrackingFile { get; set; }
-        public string OutputTrackingFile { get; set; }
-        public string ErrorTrackingFile { get; set; }
-        public string InputTrackingFile { get; set; }
-        public string StatusTrackingFile { get; set; }
-        public string PidTrackingFile { get; set; }
-        public string ReadyTrackingFile { get; set; }
+        public required Process ScriptProcess { get; set; }
+        public required string CorrelationId { get; set; }
+        public required CancellationTokenSource CancellationTokenSource { get; set; }
+        public required string ProcessTrackingFile { get; set; }
+        public required string OutputTrackingFile { get; set; }
+        public required string ErrorTrackingFile { get; set; }
+        public required string InputTrackingFile { get; set; }
+        public required string StatusTrackingFile { get; set; }
+        public required string PidTrackingFile { get; set; }
+        public required string ReadyTrackingFile { get; set; }
     }
 
     public class RunningLinuxProcessData
     {
-        public LinuxProcessInputPipe InputPipe { get; set; }
-        public LinuxProcessOutputPipe OutputPipe { get; set; }
-        public LinuxProcessOutputPipe ErrorPipe { get; set; }
+        public LinuxProcessInputPipe? InputPipe { get; set; }
+        public LinuxProcessOutputPipe? OutputPipe { get; set; }
+        public LinuxProcessOutputPipe? ErrorPipe { get; set; }
     }
 }

@@ -113,7 +113,7 @@ namespace WineBridgePlugin.Processes
                         Logger.Debug("Cancelling for process: " + originalProcess.Id + " " +
                                      originalProcess.StartInfo.FileName +
                                      " " + originalProcess.StartInfo.Arguments);
-                        linuxProcess.CancellationTokenSource.Cancel();
+                        await linuxProcess.CancellationTokenSource.CancelAsync();
                         break;
                     }
 
@@ -336,7 +336,7 @@ namespace WineBridgePlugin.Processes
 
         public static string TrackLinuxProcessGetResult(
             LinuxProcess process,
-            CancellationTokenSource watcherToken = null
+            CancellationTokenSource? watcherToken = null
         )
         {
             Task.Run(async () => { await DoTrackLinuxProcess(process, watcherToken, 200, 200); }).Wait();
@@ -355,7 +355,7 @@ namespace WineBridgePlugin.Processes
 
         public static string[] TrackLinuxProcessGetResultInLines(
             LinuxProcess process,
-            CancellationTokenSource watcherToken = null
+            CancellationTokenSource? watcherToken = null
         )
         {
             Task.Run(async () => { await DoTrackLinuxProcess(process, watcherToken, 200, 200); }).Wait();
@@ -415,7 +415,7 @@ namespace WineBridgePlugin.Processes
         private static async Task DoTrackLinuxProcess(PlayController instance, LinuxProcess process,
             CancellationTokenSource watcherToken)
         {
-            Stopwatch stopwatch = null;
+            Stopwatch? stopwatch = null;
             try
             {
                 var debugLogging = WineBridgeSettings.DebugLoggingEnabled;
@@ -489,7 +489,7 @@ namespace WineBridgePlugin.Processes
 
         private static async Task DoTrackLinuxProcess(
             LinuxProcess process,
-            CancellationTokenSource watcherToken,
+            CancellationTokenSource? watcherToken,
             int millisecondsDelay = 2000,
             int readyIterations = 90)
         {
@@ -568,13 +568,12 @@ namespace WineBridgePlugin.Processes
                 var stopwatch = Stopwatch.StartNew();
 
                 var result = AccessTools.Method(instance.GetType(), "GameStartedAsync",
-                        new[] { typeof(PlayController.GameStartedArgs) })
+                        [typeof(PlayController.GameStartedArgs)])
                     .Invoke(instance,
-                        new object[]
-                        {
-                            new PlayController.GameStartedArgs(process?.OriginalProcess?.Id ??
-                                                               process?.ScriptProcess?.Id ?? 0)
-                        });
+                    [
+                        new PlayController.GameStartedArgs(process?.OriginalProcess?.Id ??
+                                                           process?.ScriptProcess?.Id ?? 0)
+                    ]);
                 if (result is Task t)
                 {
                     await t;
@@ -591,7 +590,7 @@ namespace WineBridgePlugin.Processes
 
         private static async Task InvokeStopEvent(
             PlayController instance,
-            Stopwatch stopwatch)
+            Stopwatch? stopwatch)
         {
             try
             {
@@ -600,12 +599,11 @@ namespace WineBridgePlugin.Processes
                 stopwatch?.Stop();
 
                 var result = AccessTools.Method(instance.GetType(), "GameStoppedAsync",
-                        new[] { typeof(PlayController.GameStoppedArgs) })
+                        [typeof(PlayController.GameStoppedArgs)])
                     .Invoke(instance,
-                        new object[]
-                        {
-                            new PlayController.GameStoppedArgs(Convert.ToUInt32(stopwatch?.Elapsed.TotalSeconds ?? 0))
-                        });
+                    [
+                        new PlayController.GameStoppedArgs(Convert.ToUInt32(stopwatch?.Elapsed.TotalSeconds ?? 0))
+                    ]);
                 if (result is Task t)
                 {
                     await t;

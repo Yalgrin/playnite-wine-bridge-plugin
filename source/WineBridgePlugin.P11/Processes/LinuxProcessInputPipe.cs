@@ -13,12 +13,12 @@ namespace WineBridgePlugin.Processes
         public AnonymousPipeServerStream WriteStream { get; }
         public CancellationToken Token => TokenSource.Token;
 
-        private CancellationTokenSource TokenSource { get; } = new CancellationTokenSource();
+        private CancellationTokenSource TokenSource { get; } = new();
 
         private AnonymousPipeClientStream ReadStream { get; }
         private string FifoPath { get; }
 
-        private Task _runTask;
+        private Task? _runTask;
         private bool _disposed;
 
         public LinuxProcessInputPipe(string fifoPath)

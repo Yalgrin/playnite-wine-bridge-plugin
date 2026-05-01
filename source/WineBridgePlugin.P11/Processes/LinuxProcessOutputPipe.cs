@@ -9,7 +9,7 @@ namespace WineBridgePlugin.Processes
     {
         private static readonly ILogger Logger = LogManager.GetLogger();
 
-        public MemoryStream Output { get; } = new MemoryStream();
+        public MemoryStream Output { get; }
 
         public AnonymousPipeClientStream ReadStream { get; }
         public CancellationToken Token => TokenSource.Token;
@@ -19,7 +19,7 @@ namespace WineBridgePlugin.Processes
         private string FilePath { get; }
         private int PollMs { get; }
 
-        private Task _runTask;
+        private Task? _runTask;
         private bool _disposed;
 
         public LinuxProcessOutputPipe(string filePath, int pollMs)
@@ -149,7 +149,7 @@ namespace WineBridgePlugin.Processes
             return _runTask ?? Task.CompletedTask;
         }
 
-        private static void CloseStream(Stream stream)
+        private static void CloseStream(Stream? stream)
         {
             try
             {

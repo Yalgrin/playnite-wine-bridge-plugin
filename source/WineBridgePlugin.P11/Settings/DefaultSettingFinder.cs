@@ -92,12 +92,12 @@ namespace WineBridgePlugin.Settings
 
                 if (GetNativeSteamConfiguration(homeFolder, out var nativeConfig))
                 {
-                    return nativeConfig;
+                    return nativeConfig!;
                 }
 
                 if (GetFlatpakSteamConfiguration(homeFolder, out var flatpakConfig))
                 {
-                    return flatpakConfig;
+                    return flatpakConfig!;
                 }
 
                 Logger.Debug("Did not manage to find Steam configuration. Going to use a placeholder configuration.");
@@ -111,7 +111,7 @@ namespace WineBridgePlugin.Settings
         }
 
         private static bool GetNativeSteamConfiguration(string homeFolder,
-            out LinuxSteamConfiguration steamConfiguration)
+            out LinuxSteamConfiguration? steamConfiguration)
         {
             var dataFolder = Path.Combine(homeFolder, @".local\share\Steam");
             if (Directory.Exists(dataFolder) && Directory.Exists(Path.Combine(dataFolder, "steamapps")) &&
@@ -133,7 +133,7 @@ namespace WineBridgePlugin.Settings
         }
 
         private static bool GetFlatpakSteamConfiguration(string homeFolder,
-            out LinuxSteamConfiguration steamConfiguration)
+            out LinuxSteamConfiguration? steamConfiguration)
         {
             var dataFolder = Path.Combine(homeFolder, @".var\app\com.valvesoftware.Steam\.local\share\Steam");
             if (Directory.Exists(dataFolder)
@@ -173,12 +173,12 @@ namespace WineBridgePlugin.Settings
 
                 if (GetNativeHeroicConfiguration(homeFolder, out var nativeConfig))
                 {
-                    return nativeConfig;
+                    return nativeConfig!;
                 }
 
                 if (GetFlatpakHeroicConfiguration(homeFolder, out var flatpakConfig))
                 {
-                    return flatpakConfig;
+                    return flatpakConfig!;
                 }
 
                 Logger.Debug("Did not manage to find Heroic configuration. Going to use a placeholder configuration.");
@@ -192,7 +192,7 @@ namespace WineBridgePlugin.Settings
         }
 
         private static bool GetNativeHeroicConfiguration(string homeFolder,
-            out LinuxHeroicConfiguration heroicConfiguration)
+            out LinuxHeroicConfiguration? heroicConfiguration)
         {
             var dataFolder = Path.Combine(homeFolder, @".config\heroic");
             if (Directory.Exists(dataFolder)
@@ -216,7 +216,7 @@ namespace WineBridgePlugin.Settings
         }
 
         private static bool GetFlatpakHeroicConfiguration(string homeFolder,
-            out LinuxHeroicConfiguration heroicConfiguration)
+            out LinuxHeroicConfiguration? heroicConfiguration)
         {
             var dataFolder = Path.Combine(homeFolder, @".var\app\com.heroicgameslauncher.hgl\config\heroic");
             if (Directory.Exists(dataFolder)
@@ -257,12 +257,12 @@ namespace WineBridgePlugin.Settings
 
                 if (GetNativeLutrisConfiguration(homeFolder, out var nativeConfig))
                 {
-                    return nativeConfig;
+                    return nativeConfig!;
                 }
 
                 if (GetFlatpakLutrisConfiguration(homeFolder, out var flatpakConfig))
                 {
-                    return flatpakConfig;
+                    return flatpakConfig!;
                 }
 
                 Logger.Debug("Did not manage to find Lutris configuration. Going to use a placeholder configuration.");
@@ -276,7 +276,7 @@ namespace WineBridgePlugin.Settings
         }
 
         private static bool GetNativeLutrisConfiguration(string homeFolder,
-            out LinuxLutrisConfiguration heroicConfiguration)
+            out LinuxLutrisConfiguration? heroicConfiguration)
         {
             var dataFolder = Path.Combine(homeFolder, @".local\share\lutris");
             if (Directory.Exists(dataFolder) && File.Exists(Path.Combine(dataFolder, "pga.db")))
@@ -297,7 +297,7 @@ namespace WineBridgePlugin.Settings
         }
 
         private static bool GetFlatpakLutrisConfiguration(string homeFolder,
-            out LinuxLutrisConfiguration heroicConfiguration)
+            out LinuxLutrisConfiguration? heroicConfiguration)
         {
             var dataFolder = Path.Combine(homeFolder, @".var\app\net.lutris.Lutris\data\lutris");
             if (Directory.Exists(dataFolder) && File.Exists(Path.Combine(dataFolder, "pga.db")))
@@ -335,12 +335,12 @@ namespace WineBridgePlugin.Settings
 
                 if (GetNativeItchIoConfiguration(homeFolder, out var nativeConfig))
                 {
-                    return nativeConfig;
+                    return nativeConfig!;
                 }
 
                 if (GetFlatpakItchIoConfiguration(homeFolder, out var flatpakConfig))
                 {
-                    return flatpakConfig;
+                    return flatpakConfig!;
                 }
 
                 Logger.Debug("Did not manage to find Itch.io configuration. Going to use a placeholder configuration.");
@@ -354,7 +354,7 @@ namespace WineBridgePlugin.Settings
         }
 
         private static bool GetNativeItchIoConfiguration(string homeFolder,
-            out LinuxItchIoConfiguration itchIoConfiguration)
+            out LinuxItchIoConfiguration? itchIoConfiguration)
         {
             var dataFolder = Path.Combine(homeFolder, @".config\itch");
             if (Directory.Exists(dataFolder) && File.Exists(Path.Combine(dataFolder, "config.json")))
@@ -375,7 +375,7 @@ namespace WineBridgePlugin.Settings
         }
 
         private static bool GetFlatpakItchIoConfiguration(string homeFolder,
-            out LinuxItchIoConfiguration itchIoConfiguration)
+            out LinuxItchIoConfiguration? itchIoConfiguration)
         {
             var dataFolder = Path.Combine(homeFolder, @".var\app\io.itch.itch\config\itch");
             if (Directory.Exists(dataFolder) && File.Exists(Path.Combine(dataFolder, "config.json")))

@@ -167,10 +167,10 @@ public partial class WineBridgePluginSettingsHandler : PluginSettingsHandler
             Logger.Error(e, "Failed to fill settings with default values!");
         }
 
-        AutoDetectSteam = new AsyncRelayCommand(() => DoAutoDetectSteam());
-        AutoDetectHeroic = new AsyncRelayCommand(() => DoAutoDetectHeroic());
-        AutoDetectLutris = new AsyncRelayCommand(() => DoAutoDetectLutris());
-        AutoDetectItchIo = new AsyncRelayCommand(() => DoAutoDetectItchIo());
+        AutoDetectSteam = new AsyncRelayCommand(DoAutoDetectSteam);
+        AutoDetectHeroic = new AsyncRelayCommand(DoAutoDetectHeroic);
+        AutoDetectLutris = new AsyncRelayCommand(DoAutoDetectLutris);
+        AutoDetectItchIo = new AsyncRelayCommand(DoAutoDetectItchIo);
         AddEmulatorConfig = new RelayCommand(() =>
         {
             Logger.Debug("Adding a new emulator config...");
@@ -446,7 +446,7 @@ public partial class WineBridgePluginSettingsHandler : PluginSettingsHandler
                                                                (IEnumerable<WineBridgeEmulatorConfig>)[]);
 
         var settingsFile = Path.Combine(WineBridgePlugin.PlayniteApi.UserDataDir, "settings.json");
-        File.WriteAllText(settingsFile, JsonConvert.SerializeObject(Settings, Formatting.Indented));
+        await File.WriteAllTextAsync(settingsFile, JsonConvert.SerializeObject(Settings, Formatting.Indented));
     }
 
     public override async Task<ICollection<string>> VerifySettingsAsync(VerifySettingsArgs args)

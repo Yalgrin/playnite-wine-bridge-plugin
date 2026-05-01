@@ -4,6 +4,8 @@ using System.IO;
 using System.Reflection;
 using HarmonyLib;
 using Playnite;
+using WineBridgePlugin.Integrations.Heroic;
+using WineBridgePlugin.Integrations.Lutris;
 using WineBridgePlugin.Integrations.Steam;
 using WineBridgePlugin.Models;
 using WineBridgePlugin.Processes;
@@ -27,6 +29,7 @@ namespace WineBridgePlugin.Patchers
 
             try
             {
+                //TODO async methods
                 var processStartMethod = typeof(Process).GetMethod("Start", BindingFlags.Instance | BindingFlags.Public,
                     null,
                     Type.EmptyTypes, null);
@@ -46,7 +49,8 @@ namespace WineBridgePlugin.Patchers
                     new[] { typeof(string) }, null);
                 var fileInfoConstructors = AccessTools.GetDeclaredConstructors(typeof(FileInfo));
 
-                if (processStartMethod == null || fileExistsMethod == null || (fileInfoConstructors?.Count ?? 0) == 0
+                if (processStartMethod == null || fileExistsMethod == null || fileInfoConstructors == null ||
+                    (fileInfoConstructors?.Count ?? 0) == 0
                     || processGetIdMethod == null || processWaitForExitMethod == null || processDisposeMethod == null
                     || processKillMethod == null)
                 {
@@ -79,7 +83,7 @@ namespace WineBridgePlugin.Patchers
                 HarmonyPatcher.HarmonyInstance.Patch(fileExistsMethod, prefix: new HarmonyMethod(fileExistsPrefix));
 
                 var fileInfoConstructorPrefix = AccessTools.Method(typeof(FileInfoPatches), "ConstructorPrefix");
-                var fileInfoConstructor = fileInfoConstructors.FirstOrDefault(c =>
+                var fileInfoConstructor = fileInfoConstructors!.FirstOrDefault(c =>
                 {
                     var parameters = c.GetParameters();
                     return parameters.Length == 1 && parameters[0].ParameterType == typeof(string);
@@ -275,23 +279,23 @@ namespace WineBridgePlugin.Patchers
                 return false;
             }
 
-            // if (fileName.StartsWith(Constants.WineBridgeHeroicPrefix))
-            // {
-            //     var process = HeroicProcessStarter
-            //         .Start(fileName.Substring(Constants.WineBridgeHeroicPrefix.Length))
-            //         .ScriptProcess;
-            //     __result = process != null;
-            //     return false;
-            // }
-            //
-            // if (fileName.StartsWith(Constants.WineBridgeLutrisPrefix))
-            // {
-            //     var process = LutrisProcessStarter
-            //         .StartUsingId(Convert.ToInt64(fileName.Substring(Constants.WineBridgeLutrisPrefix.Length)))
-            //         .ScriptProcess;
-            //     __result = process != null;
-            //     return false;
-            // }
+            if (fileName.StartsWith(Constants.WineBridgeHeroicPrefix))
+            {
+                var process = HeroicProcessStarter
+                    .Start(fileName.Substring(Constants.WineBridgeHeroicPrefix.Length))
+                    .ScriptProcess;
+                __result = process != null;
+                return false;
+            }
+
+            if (fileName.StartsWith(Constants.WineBridgeLutrisPrefix))
+            {
+                var process = LutrisProcessStarter
+                    .StartUsingId(Convert.ToInt64(fileName.Substring(Constants.WineBridgeLutrisPrefix.Length)))
+                    .ScriptProcess;
+                __result = process != null;
+                return false;
+            }
 
             if (fileName.StartsWith(Constants.ItchPrefix) && WineBridgeSettings.ItchIoIntegrationEnabled)
             {

@@ -10,20 +10,18 @@ namespace WineBridgePlugin.Utils
     {
         private static readonly ILogger Logger = LogManager.GetLogger();
 
-        private static readonly Lazy<string> InnerScriptPathLinux =
-            new Lazy<string>(() => GetScriptPathLinux("run-in-linux.sh"));
+        private static readonly Lazy<string> InnerScriptPathLinux = new(() => GetScriptPathLinux("run-in-linux.sh"));
 
         private static readonly Lazy<string> InnerOpenFilePickerScriptLinux =
-            new Lazy<string>(() => GetScriptPathLinux("open-file-picker.sh"));
+            new(() => GetScriptPathLinux("open-file-picker.sh"));
 
         public static List<string> FileDirectorySelectorPrograms =>
-            new List<string>
-            {
-                "auto",
-                "kdialog",
-                "zenity",
-                "yad"
-            };
+        [
+            "auto",
+            "kdialog",
+            "zenity",
+            "yad"
+        ];
 
         public static string ScriptPathLinux => InnerScriptPathLinux.Value;
         public static string OpenFileScriptPathLinux => InnerOpenFilePickerScriptLinux.Value;

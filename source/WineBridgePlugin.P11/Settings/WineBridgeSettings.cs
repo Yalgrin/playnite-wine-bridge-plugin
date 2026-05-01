@@ -33,11 +33,11 @@ namespace WineBridgePlugin.Settings
 
         public static bool SteamIntegrationEnabled => WineBridgePlugin.Settings?.SteamIntegrationEnabled ?? false;
 
-        public static string SteamDataPathLinux => WineBridgePlugin.Settings?.SteamDataPathLinux ??
-                                                   DefaultSettingFinder.SteamConfiguration.DataPath;
+        public static string? SteamDataPathLinux => WineBridgePlugin.Settings?.SteamDataPathLinux ??
+                                                    DefaultSettingFinder.SteamConfiguration.DataPath;
 
-        public static string SteamExecutablePathLinux => WineBridgePlugin.Settings?.SteamExecutablePathLinux ??
-                                                         DefaultSettingFinder.SteamConfiguration.ExecutablePath;
+        public static string? SteamExecutablePathLinux => WineBridgePlugin.Settings?.SteamExecutablePathLinux ??
+                                                          DefaultSettingFinder.SteamConfiguration.ExecutablePath;
 
         public static bool AnyHeroicIntegrationEnabled => HeroicGogIntegrationEnabled ||
                                                           HeroicAmazonIntegrationEnabled ||
@@ -52,11 +52,11 @@ namespace WineBridgePlugin.Settings
         public static bool HeroicEpicIntegrationEnabled =>
             WineBridgePlugin.Settings?.HeroicEpicIntegrationEnabled ?? false;
 
-        public static string HeroicDataPathLinux => WineBridgePlugin.Settings?.HeroicDataPathLinux ??
-                                                    DefaultSettingFinder.HeroicConfiguration.DataPath;
+        public static string? HeroicDataPathLinux => WineBridgePlugin.Settings?.HeroicDataPathLinux ??
+                                                     DefaultSettingFinder.HeroicConfiguration.DataPath;
 
-        public static string HeroicExecutablePathLinux => WineBridgePlugin.Settings?.HeroicExecutablePathLinux ??
-                                                          DefaultSettingFinder.HeroicConfiguration.ExecutablePath;
+        public static string? HeroicExecutablePathLinux => WineBridgePlugin.Settings?.HeroicExecutablePathLinux ??
+                                                           DefaultSettingFinder.HeroicConfiguration.ExecutablePath;
 
 
         public static bool AnyLutrisIntegrationEnabled => LutrisGogIntegrationEnabled ||
@@ -84,20 +84,20 @@ namespace WineBridgePlugin.Settings
         public static bool LutrisItchIoIntegrationEnabled =>
             WineBridgePlugin.Settings?.LutrisItchIoIntegrationEnabled ?? false;
 
-        public static string LutrisDataPathLinux => WineBridgePlugin.Settings?.LutrisDataPathLinux ??
-                                                    DefaultSettingFinder.LutrisConfiguration.DataPath;
+        public static string? LutrisDataPathLinux => WineBridgePlugin.Settings?.LutrisDataPathLinux ??
+                                                     DefaultSettingFinder.LutrisConfiguration.DataPath;
 
-        public static string LutrisExecutablePathLinux => WineBridgePlugin.Settings?.LutrisExecutablePathLinux ??
-                                                          DefaultSettingFinder.LutrisConfiguration.ExecutablePath;
+        public static string? LutrisExecutablePathLinux => WineBridgePlugin.Settings?.LutrisExecutablePathLinux ??
+                                                           DefaultSettingFinder.LutrisConfiguration.ExecutablePath;
 
         public static bool ItchIoIntegrationEnabled =>
             (WineBridgePlugin.Settings?.ItchIoIntegrationEnabled ?? false) && AdvancedProcessIntegration;
 
-        public static string ItchIoDataPathLinux => WineBridgePlugin.Settings?.ItchIoDataPathLinux ??
-                                                    DefaultSettingFinder.ItchIoConfiguration.DataPath;
+        public static string? ItchIoDataPathLinux => WineBridgePlugin.Settings?.ItchIoDataPathLinux ??
+                                                     DefaultSettingFinder.ItchIoConfiguration.DataPath;
 
-        public static string ItchIoExecutablePathLinux => WineBridgePlugin.Settings?.ItchIoExecutablePathLinux ??
-                                                          DefaultSettingFinder.ItchIoConfiguration.ExecutablePath;
+        public static string? ItchIoExecutablePathLinux => WineBridgePlugin.Settings?.ItchIoExecutablePathLinux ??
+                                                           DefaultSettingFinder.ItchIoConfiguration.ExecutablePath;
 
         public static List<WineBridgeEmulatorConfig> EmulatorConfigs =>
             WineBridgePlugin.Settings?.EmulatorConfigs?.ToList() ??
