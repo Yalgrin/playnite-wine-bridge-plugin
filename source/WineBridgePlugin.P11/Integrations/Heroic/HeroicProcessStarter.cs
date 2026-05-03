@@ -36,6 +36,11 @@ namespace WineBridgePlugin.Integrations.Heroic
         public static LinuxProcess Start(Game game, HeroicPlatform platform)
         {
             var platformId = game.LibraryGameId;
+            if (platformId == null)
+            {
+                throw new Exception("Could not find game id!");
+            }
+
             var gameInstallDirectory = WineUtils.WindowsPathToLinux(game.InstallDirectory);
             if (gameInstallDirectory == null)
             {

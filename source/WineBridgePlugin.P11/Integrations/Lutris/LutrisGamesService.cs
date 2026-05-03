@@ -13,17 +13,24 @@ namespace WineBridgePlugin.Integrations.Lutris
             var games = LutrisClient.GetInstalledGames(platform);
 
             var result = new Dictionary<string, ImportableGame>();
-            games?.ForEach(game =>
+            games.ForEach(game =>
             {
-                var metadata = new ImportableGame(game.Name, platform == LutrisPlatform.Gog ? "Crow.GOG" : "",
-                    game.PlayniteGameId)
+                var gameName = game.Name;
+                var playniteGameId = game.PlayniteGameId;
+                if (gameName == null || playniteGameId == null)
+                {
+                    return;
+                }
+
+                var metadata = new ImportableGame(gameName, platform == LutrisPlatform.Gog ? "Crow.GOG" : "",
+                    playniteGameId)
                 {
                     Source = GogSourceProperty,
                     InstallDirectory = WineUtils.LinuxPathToWindows(game.InstallPath),
                     InstallState = InstallState.Installed,
                     Platforms = [PcSpecProperty],
                     ExternalIdentifiers = platform == LutrisPlatform.Gog
-                        ? [new ImportableExternalIdentifier("gog", "GOG", game.PlayniteGameId)]
+                        ? [new ImportableExternalIdentifier("gog", "GOG", playniteGameId)]
                         : []
                 };
 

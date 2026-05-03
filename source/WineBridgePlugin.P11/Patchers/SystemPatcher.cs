@@ -47,12 +47,15 @@ namespace WineBridgePlugin.Patchers
                 var processKillMethod = typeof(Process).GetMethod("Kill", []);
                 var fileExistsMethod = typeof(File).GetMethod("Exists", BindingFlags.Static | BindingFlags.Public, null,
                     new[] { typeof(string) }, null);
+                var directoryExistsMethod = typeof(Directory).GetMethod("Exists",
+                    BindingFlags.Static | BindingFlags.Public, null,
+                    new[] { typeof(string) }, null);
                 var fileInfoConstructors = AccessTools.GetDeclaredConstructors(typeof(FileInfo));
 
                 if (processStartMethod == null || fileExistsMethod == null || fileInfoConstructors == null ||
                     (fileInfoConstructors?.Count ?? 0) == 0
                     || processGetIdMethod == null || processWaitForExitMethod == null || processDisposeMethod == null
-                    || processKillMethod == null)
+                    || processKillMethod == null || directoryExistsMethod == null)
                 {
                     Logger.Warn("Failed to find system methods to patch!");
                     State = PatchingState.MissingClasses;
@@ -82,6 +85,10 @@ namespace WineBridgePlugin.Patchers
                 var fileExistsPrefix = AccessTools.Method(typeof(FilePatches), "Prefix");
                 HarmonyPatcher.HarmonyInstance.Patch(fileExistsMethod, prefix: new HarmonyMethod(fileExistsPrefix));
 
+                var directoryExistsPrefix = AccessTools.Method(typeof(DirectoryPatches), "Prefix");
+                HarmonyPatcher.HarmonyInstance.Patch(directoryExistsMethod,
+                    prefix: new HarmonyMethod(directoryExistsPrefix));
+
                 var fileInfoConstructorPrefix = AccessTools.Method(typeof(FileInfoPatches), "ConstructorPrefix");
                 var fileInfoConstructor = fileInfoConstructors!.FirstOrDefault(c =>
                 {
@@ -107,10 +114,12 @@ namespace WineBridgePlugin.Patchers
 
     internal static class FilePatches
     {
+        private static readonly ILogger Logger = LogManager.GetLogger();
+
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
         private static bool Prefix(
             [SuppressMessage("ReSharper", "InconsistentNaming")]
-            ref bool __result, string path)
+            ref bool __result, ref string? path)
         {
             if (path is Constants.DummySteamExe or Constants.DummyHeroicExe ||
                 path == Constants.DummyLutrisExe || path == Constants.DummyItchIoExe ||
@@ -120,6 +129,41 @@ namespace WineBridgePlugin.Patchers
                 return false;
             }
 
+            if (path != null && !path.StartsWith('/') && !path.StartsWith('\\'))
+            {
+                return true;
+            }
+
+            var linuxPath = WineUtils.LinuxPathToWindows(path);
+            if (linuxPath != null)
+            {
+                path = linuxPath;
+            }
+
+            return true;
+        }
+    }
+
+    internal static class DirectoryPatches
+    {
+        private static readonly ILogger Logger = LogManager.GetLogger();
+
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        private static bool Prefix(
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
+            ref string? path)
+        {
+            if (path != null && !path.StartsWith('/') && !path.StartsWith('\\'))
+            {
+                return true;
+            }
+
+            var linuxPath = WineUtils.LinuxPathToWindows(path);
+            if (linuxPath != null)
+            {
+                path = linuxPath;
+            }
+
             return true;
         }
     }
@@ -127,7 +171,7 @@ namespace WineBridgePlugin.Patchers
     internal static class FileInfoPatches
     {
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
-        private static bool ConstructorPrefix(ref string fileName)
+        private static bool ConstructorPrefix(ref string? fileName)
         {
             if (fileName != null && fileName.StartsWith(Constants.WineBridgePrefix))
             {
@@ -437,10 +481,12 @@ namespace WineBridgePlugin.Patchers
         {
             if (LinuxProcessMonitor.GetProcessId(__instance, out var result))
             {
+                Logger.Debug("GetId replaced");
                 __result = result;
                 return false;
             }
 
+            Logger.Debug("GetId firing as usual");
             return true;
         }
 

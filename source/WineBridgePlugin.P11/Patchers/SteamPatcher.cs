@@ -35,10 +35,11 @@ namespace WineBridgePlugin.Patchers
 
                 var steamType = assembly.GetType("Steam.SteamLauncher");
                 var steamPluginType = assembly.GetType("Steam.SteamPlugin");
+                var gamesType = assembly.GetType("Steam.Games");
                 // var steamPlayControllerType = assembly.GetType("SteamLibrary.SteamPlayController");
                 // var localServiceType = AccessTools.TypeByName("SteamLibrary.Services.SteamLocalService");
 
-                if (steamType == null || steamPluginType == null)
+                if (steamType == null || steamPluginType == null || gamesType == null)
                 {
                     Logger.Warn("Failed to find SteamLibrary classes!");
                     State = PatchingState.MissingClasses;
@@ -51,10 +52,10 @@ namespace WineBridgePlugin.Patchers
                 var getPlayActionsMethod = steamPluginType.GetMethod("GetPlayActionsAsync");
                 // var playMethod = steamPlayControllerType.GetMethod("Play");
                 // var disposeMethod = steamPlayControllerType.GetMethod("Dispose");
-                // var getInstalledGamesMethod = AccessTools.Method(localServiceType, "GetInstalledGamesFromFolder");
+                var getInstalledGamesMethod = AccessTools.Method(gamesType, "GetInstalledGamesFromFolder");
 
                 if (isInstalledMethod == null || installPathMethod == null || clientPathMethod == null ||
-                    getPlayActionsMethod == null)
+                    getPlayActionsMethod == null || getInstalledGamesMethod == null)
                 {
                     Logger.Warn("Failed to find SteamLibrary methods!");
                     State = PatchingState.MissingClasses;
@@ -80,11 +81,11 @@ namespace WineBridgePlugin.Patchers
                 //     AccessTools.Method(typeof(SteamPlayControllerPatches), "DisposePrefix");
                 // HarmonyPatcher.HarmonyInstance.Patch(disposeMethod,
                 //     prefix: new HarmonyMethod(playControllerDisposePrefix));
-                //
-                // var localServiceInstalledGamesPostfix =
-                //     AccessTools.Method(typeof(SteamLocalServicePatches), "GetInstalledGamesFromFolderPostfix");
-                // HarmonyPatcher.HarmonyInstance.Patch(getInstalledGamesMethod,
-                //     postfix: new HarmonyMethod(localServiceInstalledGamesPostfix));
+
+                var localServiceInstalledGamesPostfix =
+                    AccessTools.Method(typeof(GamesPatches), "GetInstalledGamesFromFolderPostfix");
+                HarmonyPatcher.HarmonyInstance.Patch(getInstalledGamesMethod,
+                    postfix: new HarmonyMethod(localServiceInstalledGamesPostfix));
 
                 Logger.Info("Steam methods patched successfully!");
                 State = PatchingState.Patched;
@@ -255,22 +256,27 @@ namespace WineBridgePlugin.Patchers
     //         }
     //     }
     // }
-    //
-    // internal static class SteamLocalServicePatches
-    // {
-    //     [SuppressMessage("ReSharper", "UnusedMember.Local")]
-    //     private static void GetInstalledGamesFromFolderPostfix(
-    //         [SuppressMessage("ReSharper", "InconsistentNaming")]
-    //         ref List<GameMetadata> __result)
-    //     {
-    //         if (__result == null)
-    //         {
-    //             return;
-    //         }
-    //
-    //         var resultCopy = new List<GameMetadata>(__result);
-    //         resultCopy.RemoveAll(metadata => SteamUtils.ExcludedSteamIds.Contains(metadata.GameId));
-    //         __result = resultCopy;
-    //     }
-    // }
+
+    internal static class GamesPatches
+    {
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        private static void GetInstalledGamesFromFolderPostfix(
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
+            ref List<ImportableGame> __result)
+        {
+            if (__result == null)
+            {
+                return;
+            }
+
+            var resultCopy = new List<ImportableGame>(__result);
+            resultCopy.RemoveAll(metadata => SteamUtils.ExcludedSteamIds.Contains(metadata.GameId));
+            foreach (var importableGame in resultCopy)
+            {
+                importableGame.InstallDirectory = WineUtils.LinuxPathToWindows(importableGame.InstallDirectory);
+            }
+
+            __result = resultCopy;
+        }
+    }
 }

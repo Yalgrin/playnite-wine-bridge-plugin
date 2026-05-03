@@ -13,6 +13,7 @@
         <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
         <Deterministic>true</Deterministic>
+        <ToolboxExe>$(TOOLBOX_P10_EXE)</ToolboxExe>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <DebugSymbols>true</DebugSymbols>
@@ -262,5 +263,22 @@
             <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them. For more information, see http://go.microsoft.com/fwlink/?LinkID=322105.The missing file is {0}.</ErrorText>
         </PropertyGroup>
         <Error Condition="!Exists('..\..\packages\SQLite.3.13.0\build\net45\SQLite.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SQLite.3.13.0\build\net45\SQLite.props'))"/>
+    </Target>
+
+    <Target Name="CleanOldPackedPlugins" BeforeTargets="BeforeClean">
+        <RemoveDir Directories="packed"/>
+    </Target>
+
+    <Target Name="PackPlugin" AfterTargets="AfterBuild">
+        <Warning
+                Condition="'$(ToolboxExe)' == ''"
+                Text="Skipping plugin packaging because the TOOLBOX_P10_EXE environment variable is not set."/>
+        <Warning
+                Condition="'$(ToolboxExe)' != '' and !Exists('$(ToolboxExe)')"
+                Text="Skipping plugin packaging because TOOLBOX_P10_EXE points to a missing file: $(ToolboxExe)"/>
+        <Exec
+                Condition="'$(ToolboxExe)' != '' and Exists('$(ToolboxExe)')"
+                Command='"$(ToolboxExe)" pack "$([System.String]::Copy($(OutDir)).TrimEnd(`\`))" "$(ProjectDir)\packed\"'
+                WorkingDirectory="$(ProjectDir)"/>
     </Target>
 </Project>

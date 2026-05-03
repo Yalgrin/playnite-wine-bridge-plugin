@@ -131,7 +131,7 @@ public partial class WineBridgePluginSettingsHandler : PluginSettingsHandler
     private static readonly ILogger Logger = LogManager.GetLogger();
 
     private readonly WineBridgePlugin _plugin;
-    private WineBridgePluginSettingsModel EditingClone { get; set; }
+    private WineBridgePluginSettingsModel? EditingClone { get; set; }
 
     public WineBridgePluginSettingsModel Settings { get; set; }
 

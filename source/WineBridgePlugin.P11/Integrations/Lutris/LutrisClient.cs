@@ -240,8 +240,13 @@ namespace WineBridgePlugin.Integrations.Lutris
             };
         }
 
-        public static long? GetGameId(LutrisPlatform platform, string gameId)
+        public static long? GetGameId(LutrisPlatform platform, string? gameId)
         {
+            if (gameId == null)
+            {
+                return null;
+            }
+
             try
             {
                 return DoInConnection<long?>(connection =>

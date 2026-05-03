@@ -10,6 +10,7 @@
         <EnableDynamicLoading>true</EnableDynamicLoading>
         <EnableWindowsTargeting>true</EnableWindowsTargeting>
         <Version>0.1</Version>
+        <ToolboxExe>$(TOOLBOX_P11_EXE)</ToolboxExe>
     </PropertyGroup>
 
     <ItemGroup>
@@ -35,35 +36,40 @@
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>
+
     <ItemGroup>
-        <Compile Include="..\WineBridgePlugin.P10\VDFParser\VDFParser\VDFParser.cs">
+        <Compile Remove="VDFParser/**"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Include="VDFParser\VDFParser\VDFParser.cs">
             <Link>Shared\VDFParser.cs</Link>
         </Compile>
-        <Compile Include="..\WineBridgePlugin.P10\VDFParser\VDFParser\Exceptions.cs">
+        <Compile Include="VDFParser\VDFParser\Exceptions.cs">
             <Link>Shared\Exceptions.cs</Link>
         </Compile>
-        <Compile Include="..\WineBridgePlugin.P10\VDFParser\VDFParser\Extensions.cs">
+        <Compile Include="VDFParser\VDFParser\Extensions.cs">
             <Link>Shared\Extensions.cs</Link>
         </Compile>
-        <Compile Include="..\WineBridgePlugin.P10\VDFParser\VDFParser\Shared.cs">
+        <Compile Include="VDFParser\VDFParser\Shared.cs">
             <Link>Shared\Shared.cs</Link>
         </Compile>
-        <Compile Include="..\WineBridgePlugin.P10\VDFParser\VDFParser\Machines\VDFSM.cs">
+        <Compile Include="VDFParser\VDFParser\Machines\VDFSM.cs">
             <Link>Shared\VDFSM.cs</Link>
         </Compile>
-        <Compile Include="..\WineBridgePlugin.P10\VDFParser\VDFParser\Machines\VDFFieldsSM.cs">
+        <Compile Include="VDFParser\VDFParser\Machines\VDFFieldsSM.cs">
             <Link>Shared\VDFFieldsSM.cs</Link>
         </Compile>
-        <Compile Include="..\WineBridgePlugin.P10\VDFParser\VDFParser\Machines\VDFIndexedArraySM.cs">
+        <Compile Include="VDFParser\VDFParser\Machines\VDFIndexedArraySM.cs">
             <Link>Shared\VDFIndexedArraySM.cs</Link>
         </Compile>
-        <Compile Include="..\WineBridgePlugin.P10\VDFParser\VDFParser\Models\VDFEntry.cs">
+        <Compile Include="VDFParser\VDFParser\Models\VDFEntry.cs">
             <Link>Shared\VDFEntry.cs</Link>
         </Compile>
-        <Compile Include="..\WineBridgePlugin.P10\VDFParser\VDFParser\Models\VDFField.cs">
+        <Compile Include="VDFParser\VDFParser\Models\VDFField.cs">
             <Link>Shared\VDFField.cs</Link>
         </Compile>
-        <Compile Include="..\WineBridgePlugin.P10\VDFParser\VDFParser\Models\VDFFieldType.cs">
+        <Compile Include="VDFParser\VDFParser\Models\VDFFieldType.cs">
             <Link>Shared\VDFFieldType.cs</Link>
         </Compile>
     </ItemGroup>
@@ -86,10 +92,28 @@
     </Target>
 
     <Target Name="GenerateLocalization" BeforeTargets="BeforeCompile">
-        <Exec Command='Toolbox.exe ftlgen "Localization" "Localization"' WorkingDirectory="$(ProjectDir)"/>
+        <Warning
+                Condition="'$(ToolboxExe)' == ''"
+                Text="Skipping localization generation because the TOOLBOX_P11_EXE environment variable is not set."/>
+        <Warning
+                Condition="'$(ToolboxExe)' != '' and !Exists('$(ToolboxExe)')"
+                Text="Skipping localization generation because TOOLBOX_P11_EXE points to a missing file: $(ToolboxExe)"/>
+        <Exec
+                Condition="'$(ToolboxExe)' != '' and Exists('$(ToolboxExe)')"
+                Command='"$(ToolboxExe)" ftlgen "Localization" "Localization"'
+                WorkingDirectory="$(ProjectDir)"/>
     </Target>
 
     <Target Name="PackPlugin" AfterTargets="AfterBuild">
-        <Exec Command='Toolbox.exe pack "$([System.String]::Copy($(OutDir)).TrimEnd(`\`))" "$(ProjectDir)\packed\$(AssemblyName)-$(Version).pext2"' WorkingDirectory="$(ProjectDir)"/>
+        <Warning
+                Condition="'$(ToolboxExe)' == ''"
+                Text="Skipping plugin packaging because the TOOLBOX_P11_EXE environment variable is not set."/>
+        <Warning
+                Condition="'$(ToolboxExe)' != '' and !Exists('$(ToolboxExe)')"
+                Text="Skipping plugin packaging because TOOLBOX_P11_EXE points to a missing file: $(ToolboxExe)"/>
+        <Exec
+                Condition="'$(ToolboxExe)' != '' and Exists('$(ToolboxExe)')"
+                Command='"$(ToolboxExe)" pack "$([System.String]::Copy($(OutDir)).TrimEnd(`\`))" "$(ProjectDir)\packed\$(AssemblyName)-$(Version).pext2"'
+                WorkingDirectory="$(ProjectDir)"/>
     </Target>
 </Project>

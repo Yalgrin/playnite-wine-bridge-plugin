@@ -1,3 +1,6 @@
 [submodule "source/WineBridgePlugin.P10/VDFParser"]
 	path = source/WineBridgePlugin.P10/VDFParser
 	url = https://github.com/BrianLima/VDFParser.git
+[submodule "source/WineBridgePlugin.P11/VDFParser"]
+	path = source/WineBridgePlugin.P11/VDFParser
+	url = https://github.com/BrianLima/VDFParser.git

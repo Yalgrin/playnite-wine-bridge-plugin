@@ -1,5 +1,12 @@
-﻿using Playnite;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using HarmonyLib;
+using Playnite;
+using WineBridgePlugin.Integrations.Heroic;
+using WineBridgePlugin.Integrations.Lutris;
+using WineBridgePlugin.Integrations.Steam;
 using WineBridgePlugin.Models;
+using WineBridgePlugin.Processes;
 
 namespace WineBridgePlugin.Patchers
 {
@@ -29,25 +36,25 @@ namespace WineBridgePlugin.Patchers
                 }
 
                 // var playniteApplicationType = assembly.GetType("Playnite.PlayniteApplication");
-                // var genericPlayControllerType = assembly.GetType("Playnite.Controllers.GenericPlayController");
+                var genericFilePlayControllerType = assembly.GetType("Playnite.GenericFilePlayController");
+                var genericPlayControllerType = assembly.GetType("Playnite.GenericPlayController");
                 // var gamesEditorType = assembly.GetType("Playnite.GamesEditor");
                 // var emulationType = assembly.GetType("Playnite.Emulators.Emulation");
                 // var bitmapExtensionsType = assembly.GetType("System.Drawing.Imaging.BitmapExtensions");
                 // var systemDialogsType = assembly.GetType("Playnite.Common.SystemDialogs");
-                // if (genericPlayControllerType == null || gamesEditorType == null || emulationType == null
-                //     || bitmapExtensionsType == null || systemDialogsType == null || playniteApplicationType == null)
-                // {
-                //     Logger.Warn("Failed to find Playnite classes!");
-                //     State = PatchingState.MissingClasses;
-                //     return;
-                // }
+                if (genericPlayControllerType == null || genericFilePlayControllerType == null)
+                {
+                    Logger.Warn("Failed to find Playnite classes!");
+                    State = PatchingState.MissingClasses;
+                    return;
+                }
 
                 // var crashMethod = playniteApplicationType.GetMethod("CurrentDomain_UnhandledException",
                 //     BindingFlags.Instance | BindingFlags.NonPublic);
-                // var startMethod = genericPlayControllerType.GetMethod("Start",
-                //     BindingFlags.Instance | BindingFlags.Public, null,
-                //     new[] { typeof(GameAction), typeof(bool), typeof(OnGameStartingEventArgs) }, null);
-                // var disposeMethod = genericPlayControllerType.GetMethod("Dispose");
+                var startMethod = genericFilePlayControllerType.GetMethod("PlayAsync",
+                    BindingFlags.Instance | BindingFlags.Public, null,
+                    new[] { typeof(PlayController.PlayActionArgs) }, null);
+                var disposeMethod = genericPlayControllerType.GetMethod("DisposeAsync");
                 // var powershellErrorField = AccessTools.Field(gamesEditorType, "showedPowerShellError");
                 // var startEmulatorMethod = genericPlayControllerType.GetMethod("StartEmulatorProcess",
                 //     BindingFlags.Instance | BindingFlags.NonPublic);
@@ -69,25 +76,24 @@ namespace WineBridgePlugin.Patchers
                 // var selectFilesMethod = systemDialogsType.GetMethod("SelectFiles",
                 //     BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null,
                 //     new[] { typeof(Window), typeof(string), typeof(string) }, null);
-                // if (startMethod == null || disposeMethod == null || powershellErrorField == null ||
-                //     startEmulatorMethod == null || getProfileMethod == null || getExecutableMethod == null ||
-                //     bitmapFromStreamMethod == null || saveFileMethod == null || selectFolderMethod == null ||
-                //     selectFileMethod == null || selectFilesMethod == null || crashMethod == null)
-                // {
-                //     Logger.Warn("Failed to find Playnite methods!");
-                //     State = PatchingState.MissingClasses;
-                //     return;
-                // }
+                if (startMethod == null || disposeMethod == null)
+                {
+                    Logger.Warn("Failed to find Playnite methods!");
+                    State = PatchingState.MissingClasses;
+                    return;
+                }
+
                 //
                 // var crashPrefix = AccessTools.Method(typeof(ApplicationPatcher), "CrashPrefix");
                 // HarmonyPatcher.HarmonyInstance.Patch(crashMethod, prefix: new HarmonyMethod(crashPrefix));
                 //
                 //
-                // var startControllerPlayPrefix = AccessTools.Method(typeof(GenericPlayGamePatcher), "StartPrefix");
-                // HarmonyPatcher.HarmonyInstance.Patch(startMethod, prefix: new HarmonyMethod(startControllerPlayPrefix));
-                // var startControllerDisposePrefix = AccessTools.Method(typeof(GenericPlayGamePatcher), "DisposePrefix");
-                // HarmonyPatcher.HarmonyInstance.Patch(disposeMethod,
-                //     prefix: new HarmonyMethod(startControllerDisposePrefix));
+                var startControllerPlayPrefix = AccessTools.Method(typeof(GenericPlayGamePatcher), "PlayAsyncPrefix");
+                HarmonyPatcher.HarmonyInstance.Patch(startMethod, prefix: new HarmonyMethod(startControllerPlayPrefix));
+                var startControllerDisposePostfix =
+                    AccessTools.Method(typeof(GenericPlayGamePatcher), "DisposeAsyncPostfix");
+                HarmonyPatcher.HarmonyInstance.Patch(disposeMethod,
+                    postfix: new HarmonyMethod(startControllerDisposePostfix));
                 // var startEmulatorProcessControllerPlayPrefix =
                 //     AccessTools.Method(typeof(GenericPlayGamePatcher), "StartEmulatorProcessPrefix");
                 // HarmonyPatcher.HarmonyInstance.Patch(startEmulatorMethod,
@@ -139,126 +145,99 @@ namespace WineBridgePlugin.Patchers
     //     }
     // }
     //
-    // public static class GenericPlayGamePatcher
-    // {
-    //     private static readonly Dictionary<PlayController, CancellationTokenSource> PlayCancelationTokenSources =
-    //         new Dictionary<PlayController, CancellationTokenSource>();
-    //
-    //     [SuppressMessage("ReSharper", "UnusedMember.Local")]
-    //     private static bool DisposePrefix(
-    //         [SuppressMessage("ReSharper", "InconsistentNaming")]
-    //         PlayController __instance)
-    //     {
-    //         if (PlayCancelationTokenSources.TryGetValue(__instance, out var token))
-    //         {
-    //             token?.Cancel();
-    //             token?.Dispose();
-    //             PlayCancelationTokenSources.Remove(__instance);
-    //         }
-    //
-    //         return true;
-    //     }
-    //
-    //     [SuppressMessage("ReSharper", "UnusedMember.Local")]
-    //     [SuppressMessage("ReSharper", "UnusedParameter.Local")]
-    //     private static bool StartPrefix([SuppressMessage("ReSharper", "InconsistentNaming")] PlayController __instance,
-    //         GameAction playAction, bool asyncExec,
-    //         OnGameStartingEventArgs startingArgs)
-    //     {
-    //         if (playAction.Type != GameActionType.File)
-    //         {
-    //             return true;
-    //         }
-    //
-    //         if (playAction.Path.StartsWith(Constants.WineBridgePrefix))
-    //         {
-    //             AccessTools.Property(__instance.GetType(), "StartingArgs").SetValue(__instance, startingArgs);
-    //             var watcherToken = new CancellationTokenSource();
-    //             PlayCancelationTokenSources[__instance] = watcherToken;
-    //             var process =
-    //                 LinuxProcessStarter.Start(playAction.Path.Substring(Constants.WineBridgePrefix.Length));
-    //             LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
-    //             return false;
-    //         }
-    //
-    //         if (playAction.Path.StartsWith(Constants.WineBridgeAsyncPrefix))
-    //         {
-    //             AccessTools.Property(__instance.GetType(), "StartingArgs").SetValue(__instance, startingArgs);
-    //             var watcherToken = new CancellationTokenSource();
-    //             PlayCancelationTokenSources[__instance] = watcherToken;
-    //             var process = LinuxProcessStarter.Start(
-    //                 playAction.Path.Substring(Constants.WineBridgeAsyncPrefix.Length),
-    //                 true, playAction.Arguments);
-    //             LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
-    //             return false;
-    //         }
-    //
-    //         if (playAction.Path.StartsWith(Constants.WineBridgeSteamPrefix))
-    //         {
-    //             AccessTools.Property(__instance.GetType(), "StartingArgs").SetValue(__instance, startingArgs);
-    //             var watcherToken = new CancellationTokenSource();
-    //             PlayCancelationTokenSources[__instance] = watcherToken;
-    //             var process = SteamProcessStarter.Start(
-    //                 playAction.Path.Substring(Constants.WineBridgeSteamPrefix.Length), playAction.Arguments);
-    //             LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
-    //             return false;
-    //         }
-    //
-    //         if (playAction.Path.StartsWith(Constants.WineBridgeHeroicPrefix))
-    //         {
-    //             AccessTools.Property(__instance.GetType(), "StartingArgs").SetValue(__instance, startingArgs);
-    //             var watcherToken = new CancellationTokenSource();
-    //             PlayCancelationTokenSources[__instance] = watcherToken;
-    //             var process = HeroicProcessStarter.Start(
-    //                 playAction.Path.Substring(Constants.WineBridgeHeroicPrefix.Length));
-    //             LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
-    //             return false;
-    //         }
-    //
-    //         if (playAction.Path.StartsWith(Constants.WineBridgeLutrisPrefix))
-    //         {
-    //             AccessTools.Property(__instance.GetType(), "StartingArgs").SetValue(__instance, startingArgs);
-    //             var watcherToken = new CancellationTokenSource();
-    //             PlayCancelationTokenSources[__instance] = watcherToken;
-    //             var process = LutrisProcessStarter.StartUsingId(
-    //                 Convert.ToInt64(playAction.Path.Substring(Constants.WineBridgeLutrisPrefix.Length)));
-    //             LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
-    //             return false;
-    //         }
-    //
-    //         return true;
-    //     }
-    //
-    //     [SuppressMessage("ReSharper", "UnusedMember.Local")]
-    //     [SuppressMessage("ReSharper", "UnusedParameter.Local")]
-    //     private static bool StartEmulatorProcessPrefix(
-    //         [SuppressMessage("ReSharper", "InconsistentNaming")]
-    //         PlayController __instance,
-    //         string path,
-    //         string args,
-    //         string workDir,
-    //         string emulatorDir,
-    //         string romPath,
-    //         bool asyncExec,
-    //         Emulator emulator,
-    //         EmulatorProfile emuProfile,
-    //         TrackingMode trackingMode,
-    //         string trackingPath)
-    //     {
-    //         if (path.StartsWith(Constants.WineBridgePrefix))
-    //         {
-    //             var watcherToken = new CancellationTokenSource();
-    //             PlayCancelationTokenSources[__instance] = watcherToken;
-    //             var process = LinuxProcessStarter.Start(
-    //                 $"{path.Replace(Constants.WineBridgePrefix, "")} {args.Replace(romPath, WineUtils.WindowsPathToLinux(romPath))}");
-    //             LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
-    //
-    //             return false;
-    //         }
-    //
-    //         return true;
-    //     }
-    // }
+    public static class GenericPlayGamePatcher
+    {
+        private static readonly Dictionary<PlayController, CancellationTokenSource> PlayCancelationTokenSources =
+            new Dictionary<PlayController, CancellationTokenSource>();
+
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        private static void DisposeAsyncPostfix(
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
+            PlayController __instance)
+        {
+            if (PlayCancelationTokenSources.TryGetValue(__instance, out var token))
+            {
+                LocalDisposeAsync(__instance, token);
+            }
+        }
+
+        private static void LocalDisposeAsync(PlayController __instance, CancellationTokenSource token)
+        {
+            token?.Cancel();
+            token?.Dispose();
+            PlayCancelationTokenSources.Remove(__instance);
+        }
+
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        [SuppressMessage("ReSharper", "UnusedParameter.Local")]
+        private static bool PlayAsyncPrefix(
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
+            PlayController __instance,
+            PlayController.PlayActionArgs args,
+            ref Task __result)
+        {
+            FileGameAction? playAction =
+                AccessTools.Field(__instance.GetType(), "Action")?.GetValue(__instance) as FileGameAction;
+            var playActionPath = playAction?.Path;
+            if (playAction == null || playActionPath == null)
+            {
+                return true;
+            }
+
+            if (playActionPath.StartsWith(Constants.WineBridgePrefix))
+            {
+                var watcherToken = new CancellationTokenSource();
+                PlayCancelationTokenSources[__instance] = watcherToken;
+                var process =
+                    LinuxProcessStarter.Start(playActionPath.Substring(Constants.WineBridgePrefix.Length));
+                __result = LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
+                return false;
+            }
+
+            if (playActionPath.StartsWith(Constants.WineBridgeAsyncPrefix) && playAction.Arguments != null)
+            {
+                var watcherToken = new CancellationTokenSource();
+                PlayCancelationTokenSources[__instance] = watcherToken;
+                var process = LinuxProcessStarter.Start(
+                    playActionPath.Substring(Constants.WineBridgeAsyncPrefix.Length),
+                    true, playAction.Arguments);
+                __result = LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
+                return false;
+            }
+
+            if (playActionPath.StartsWith(Constants.WineBridgeSteamPrefix) && playAction.Arguments != null)
+            {
+                var watcherToken = new CancellationTokenSource();
+                PlayCancelationTokenSources[__instance] = watcherToken;
+                var process = SteamProcessStarter.Start(
+                    playActionPath.Substring(Constants.WineBridgeSteamPrefix.Length), playAction.Arguments);
+                __result = LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
+                return false;
+            }
+
+            if (playActionPath.StartsWith(Constants.WineBridgeHeroicPrefix))
+            {
+                var watcherToken = new CancellationTokenSource();
+                PlayCancelationTokenSources[__instance] = watcherToken;
+                var process = HeroicProcessStarter.Start(
+                    playActionPath.Substring(Constants.WineBridgeHeroicPrefix.Length));
+                __result = LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
+                return false;
+            }
+
+            if (playActionPath.StartsWith(Constants.WineBridgeLutrisPrefix))
+            {
+                var watcherToken = new CancellationTokenSource();
+                PlayCancelationTokenSources[__instance] = watcherToken;
+                var process = LutrisProcessStarter.StartUsingId(
+                    Convert.ToInt64(playActionPath.Substring(Constants.WineBridgeLutrisPrefix.Length)));
+                __result = LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
+                return false;
+            }
+
+            return true;
+        }
+    }
     //
     // public static class EmulationPatches
     // {

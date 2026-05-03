@@ -178,7 +178,7 @@ public class WineBridgePlugin : Plugin
 
             return
             [
-                new MenuItemImpl("LOC_Yalgrin_WineBridge_GameMenuItem_AddSteamAction", async () =>
+                new MenuItemImpl(Loc.LOC_Yalgrin_WineBridge_GameMenuItem_AddSteamAction(), async () =>
                 {
                     // This gets executed when menu item is clicked
                     await AddSteamAction(args);
@@ -202,8 +202,21 @@ public class WineBridgePlugin : Plugin
         {
             var mainCaption =
                 $"{game.Name} - {caption}";
-            var selectedItem = await PlayniteApi.Dialogs.ChooseItemWithSearchAsync("",
-                a => Task.FromResult<IEnumerable<ChooseDialogItem>>(options),
+            var selectedItem = await PlayniteApi.Dialogs.ChooseItemWithSearchAsync(game.Name,
+                async a =>
+                {
+                    var searchTerm = a.SearchTerm;
+                    if (searchTerm == null || searchTerm == " ")
+                    {
+                        return await options.ToAsyncEnumerable().ToListAsync();
+                    }
+                    else
+                    {
+                        return await options.ToAsyncEnumerable().Where(i =>
+                            (i.Name != null && i.Name.Contains(searchTerm)) ||
+                            (i.Description != null && i.Description.Contains(searchTerm))).ToListAsync();
+                    }
+                },
                 mainCaption);
             if (selectedItem == null || selectedItem.Description == null)
             {
@@ -299,6 +312,11 @@ public class WineBridgePlugin : Plugin
         game.InstallState = InstallState.Installed;
         game.OverrideInstallState = true;
         game.IncludePluginActions = false;
+        if (add)
+        {
+            gameActionIds.Add(action.Id);
+        }
+
         await PlayniteApi.Library.Games.UpdateAsync(game);
     }
 
