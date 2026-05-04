@@ -1,4 +1,15 @@
 #!/bin/bash
+
+while IFS= read -r name; do
+  case "$name" in
+    WINE*|PROTON*|DXVK*|LUTRIS*|UMU*|STEAM*|__GL_SHADER_DISK_CACHE*) unset "$name" ;;
+  esac
+done < <(compgen -e)
+unset "GAME_NAME"
+unset "OS"
+unset "WINE"
+unset "LD_PRELOAD"
+
 COMMAND=$1
 COMMAND=$(echo "$COMMAND" | base64 -d)
 CORRELATION_ID=$2

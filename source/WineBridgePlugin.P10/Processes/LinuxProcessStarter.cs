@@ -64,10 +64,7 @@ namespace WineBridgePlugin.Processes
             process.StartInfo.RedirectStandardOutput = debugLogging;
             process.StartInfo.RedirectStandardError = debugLogging;
             process.StartInfo.CreateNoWindow = true;
-            process.StartInfo.Environment.Remove("LD_LIBRARY_PATH");
-            process.StartInfo.Environment.Remove("OS");
-            var list = process.StartInfo.Environment.Keys.Where(key => key.StartsWith("WINE")).ToList();
-            list.ForEach(key => process.StartInfo.Environment.Remove(key));
+            ClearEnvironmentalVariables(process);
 
             var runningLinuxProcess = new LinuxProcess
             {
@@ -120,10 +117,7 @@ namespace WineBridgePlugin.Processes
             process.StartInfo.RedirectStandardOutput = debugLogging;
             process.StartInfo.RedirectStandardError = debugLogging;
             process.StartInfo.CreateNoWindow = true;
-            process.StartInfo.Environment.Remove("LD_LIBRARY_PATH");
-            process.StartInfo.Environment.Remove("OS");
-            var list = process.StartInfo.Environment.Keys.Where(key => key.StartsWith("WINE")).ToList();
-            list.ForEach(key => process.StartInfo.Environment.Remove(key));
+            ClearEnvironmentalVariables(process);
 
             if (debugLogging)
             {
@@ -138,6 +132,19 @@ namespace WineBridgePlugin.Processes
             }
 
             return process;
+        }
+
+        private static void ClearEnvironmentalVariables(Process process)
+        {
+            process.StartInfo.Environment.Remove("LD_LIBRARY_PATH");
+            process.StartInfo.Environment.Remove("OS");
+            process.StartInfo.Environment.Remove("WINE");
+            process.StartInfo.Environment.Remove("GAME_NAME");
+            var list = process.StartInfo.Environment.Keys.Where(key =>
+                key.StartsWith("WINE") || key.StartsWith("DXVK") || key.StartsWith("PROTON") ||
+                key.StartsWith("LUTRIS") || key.StartsWith("UMU") || key.StartsWith("STEAM") ||
+                key.StartsWith("__GL_SHADER_DISK_CACHE")).ToList();
+            list.ForEach(key => process.StartInfo.Environment.Remove(key));
         }
 
         private static void LogProcessOutputInBackground(Process process)
