@@ -114,8 +114,6 @@ namespace WineBridgePlugin.Patchers
 
     internal static class FilePatches
     {
-        private static readonly ILogger Logger = LogManager.GetLogger();
-
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
         private static bool Prefix(
             [SuppressMessage("ReSharper", "InconsistentNaming")]
@@ -135,7 +133,7 @@ namespace WineBridgePlugin.Patchers
             }
 
             var linuxPath = WineUtils.LinuxPathToWindows(path);
-            if (linuxPath != null)
+            if (string.IsNullOrEmpty(linuxPath))
             {
                 path = linuxPath;
             }
@@ -146,8 +144,6 @@ namespace WineBridgePlugin.Patchers
 
     internal static class DirectoryPatches
     {
-        private static readonly ILogger Logger = LogManager.GetLogger();
-
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
         private static bool Prefix(
             [SuppressMessage("ReSharper", "InconsistentNaming")]

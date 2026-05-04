@@ -245,6 +245,11 @@ namespace WineBridgePlugin.Patchers
 
             var resultCopy = new List<GameMetadata>(__result);
             resultCopy.RemoveAll(metadata => SteamUtils.ExcludedSteamIds.Contains(metadata.GameId));
+            foreach (var importableGame in resultCopy)
+            {
+                importableGame.InstallDirectory = WineUtils.LinuxPathToWindows(importableGame.InstallDirectory);
+            }
+
             __result = resultCopy;
         }
     }

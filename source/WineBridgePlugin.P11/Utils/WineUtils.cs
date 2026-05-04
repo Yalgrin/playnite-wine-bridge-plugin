@@ -17,6 +17,7 @@ namespace WineBridgePlugin.Utils
             new(() => GetScriptPathLinux("open-file-picker.sh"));
 
         private static readonly ConcurrentDictionary<string, string> LinuxPathToWindowsCache = new();
+        private static readonly ConcurrentDictionary<string, string> WindowsPathToLinuxCache = new();
 
         public static List<string> FileDirectorySelectorPrograms =>
         [
@@ -63,6 +64,16 @@ namespace WineBridgePlugin.Utils
                     windowsPath = windowsPath[..^1];
                 }
 
+                if (WindowsPathToLinuxCache.TryGetValue(windowsPath, out var cachedResult))
+                {
+                    if (debugLogging)
+                    {
+                        Logger.Debug($"Cache hit for Windows path: \"{windowsPath}\"");
+                    }
+
+                    return cachedResult;
+                }
+
                 if (debugLogging)
                 {
                     Logger.Debug($"Executing: winepath -u \"{windowsPath}\"");
@@ -84,6 +95,8 @@ namespace WineBridgePlugin.Utils
                 {
                     result = result[..^1];
                 }
+
+                WindowsPathToLinuxCache[windowsPath] = result;
 
                 if (debugLogging)
                 {

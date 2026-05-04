@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -17,6 +18,12 @@ namespace WineBridgePlugin.Utils
 
         private static readonly Lazy<string> InnerOpenFilePickerScriptLinux =
             new Lazy<string>(() => GetScriptPathLinux("open-file-picker.sh"));
+
+        private static readonly ConcurrentDictionary<string, string> LinuxPathToWindowsCache =
+            new ConcurrentDictionary<string, string>();
+
+        private static readonly ConcurrentDictionary<string, string> WindowsPathToLinuxCache =
+            new ConcurrentDictionary<string, string>();
 
         public static List<string> FileDirectorySelectorPrograms =>
             new List<string>
@@ -39,7 +46,13 @@ namespace WineBridgePlugin.Utils
             }
 
             var scriptPath = Path.Combine(directoryName, $@"Resources\{scriptName}");
-            return WindowsPathToLinux(scriptPath);
+            var linuxScriptPath = WindowsPathToLinux(scriptPath);
+            if (linuxScriptPath == null)
+            {
+                throw new Exception($"Could not convert script path to Linux path: {scriptPath}");
+            }
+
+            return linuxScriptPath;
         }
 
         public static string WindowsPathToLinux(string windowsPath)
@@ -56,6 +69,16 @@ namespace WineBridgePlugin.Utils
                 while (windowsPath.EndsWith("\\"))
                 {
                     windowsPath = windowsPath.Substring(0, windowsPath.Length - 1);
+                }
+
+                if (WindowsPathToLinuxCache.TryGetValue(windowsPath, out var cachedResult))
+                {
+                    if (debugLogging)
+                    {
+                        Logger.Debug($"Cache hit for Windows path: \"{windowsPath}\"");
+                    }
+
+                    return cachedResult;
                 }
 
                 if (debugLogging)
@@ -80,6 +103,8 @@ namespace WineBridgePlugin.Utils
                     result = result.Substring(0, result.Length - 1);
                 }
 
+                WindowsPathToLinuxCache[windowsPath] = result;
+
                 if (debugLogging)
                 {
                     Logger.Debug($"Result: \"{result}\"");
@@ -103,7 +128,23 @@ namespace WineBridgePlugin.Utils
 
             try
             {
+                if (linuxPath.StartsWith(@"\") && !linuxPath.StartsWith(@"\\"))
+                {
+                    linuxPath = linuxPath.Replace('\\', '/');
+                }
+
                 var debugLogging = WineBridgeSettings.DebugLoggingEnabled;
+
+                if (LinuxPathToWindowsCache.TryGetValue(linuxPath, out var cachedResult))
+                {
+                    if (debugLogging)
+                    {
+                        Logger.Debug($"Cache hit for Linux path: \"{linuxPath}\"");
+                    }
+
+                    return cachedResult;
+                }
+
                 if (debugLogging)
                 {
                     Logger.Debug($"Executing: winepath -w \"{linuxPath}\"");
@@ -125,6 +166,8 @@ namespace WineBridgePlugin.Utils
                 {
                     result = result.Substring(0, result.Length - 1);
                 }
+
+                LinuxPathToWindowsCache[linuxPath] = result;
 
                 if (debugLogging)
                 {
