@@ -1,16 +1,16 @@
 ﻿id = "Yalgrin.WineBridgePlugin"
-name = "WineBridgePlugin"
+name = "Wine Bridge Plugin"
 author = "Yalgrin"
-version = "1.0"
+version = "0.1"
 module = "WineBridgePlugin.dll"
 
 # Troubleshooting link to be shown on addons view
-#help_link = ""
+help_link = "https://github.com/Yalgrin/playnite-wine-bridge-plugin/wiki"
 
 # Source code link to be shown on addons view
-#source_link = ""
+source_link = "https://github.com/Yalgrin/playnite-wine-bridge-plugin"
 
 # Sponsor links to be shown on addons view
-#[[sponsor_links]]
-#name = "Ko-fi"
-#url = "https://ko-fi.com/"
+[[sponsor_links]]
+name = "Ko-fi"
+url = "https://ko-fi.com/yalgrin"

@@ -78,7 +78,7 @@
         <PackageReference Include="Lib.Harmony" Version="2.4.2"/>
         <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.5"/>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.4"/>
-        <PackageReference Include="Playnite.SDK" Version="11.0.0-alpha6"/>
+        <PackageReference Include="Playnite.SDK" Version="11.0.0-alpha11"/>
         <PackageReference Include="SteamKit2" Version="3.4.0"/>
         <PackageReference Include="YamlDotNet" Version="17.0.1"/>
     </ItemGroup>

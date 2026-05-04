@@ -178,7 +178,7 @@ public class WineBridgePlugin : Plugin
 
             return
             [
-                new MenuItemImpl(Loc.LOC_Yalgrin_WineBridge_GameMenuItem_AddSteamAction(), async () =>
+                new MenuItemImpl(Loc.LOC_Yalgrin_WineBridge_GameMenuItem_AddSteamAction(), async (clickArgs) =>
                 {
                     // This gets executed when menu item is clicked
                     await AddSteamAction(args);
@@ -604,11 +604,11 @@ public class WineBridgePlugin : Plugin
                     [
                         new MenuItemImpl(
                             "Test item",
-                            async () => await PlayniteApi.Dialogs.ShowMessageAsync("What does the dog say?"),
+                            async (clickArgs) => await PlayniteApi.Dialogs.ShowMessageAsync("What does the dog say?"),
                             icon: UIIcon.FromFontIcon("f0a43", Fonts.NerdFont)),
                         new MenuItemImpl(
                             "Test item",
-                            async () => await PlayniteApi.Dialogs.ShowMessageAsync("What does the fox say?"),
+                            async (clickArgs) => await PlayniteApi.Dialogs.ShowMessageAsync("What does the fox say?"),
                             icon: UIIcon.FromFontIcon("e855", Fonts.IcoFont)),
                     ]))
             ];

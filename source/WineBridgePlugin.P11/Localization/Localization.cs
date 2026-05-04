@@ -29,6 +29,6 @@ public static partial class Loc
 
     public static bool IsStringId(string id)
     {
-        return LocId.StringIds.Contains(id);
+        return Api.IsLocalizedStringId(id);
     }
 }
