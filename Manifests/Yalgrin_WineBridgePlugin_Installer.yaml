@@ -90,3 +90,10 @@ Packages:
       - Fixed not being able to open directories with a Linux file explorer
       - Added crash logging
       - Added a safeguard in case the Linux scripts contain invalid file endings
+  - Version: 0.5.1
+    RequiredApiVersion: 6.11.0
+    ReleaseDate: 2026-05-04
+    PackageUrl: https://github.com/Yalgrin/playnite-wine-bridge-plugin/releases/download/0.5.1/Yalgrin_WineBridgePlugin_0_5_1.pext
+    Changelog:
+      - Improved environmental variable cleanup
+      - Added caching to improve performance when going between Windows and Linux paths
