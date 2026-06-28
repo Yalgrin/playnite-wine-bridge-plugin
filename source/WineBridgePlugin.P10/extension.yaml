@@ -1,7 +1,7 @@
 ﻿Id: Yalgrin_WineBridgePlugin
 Name: Wine Bridge
 Author: Yalgrin
-Version: 0.5.1
+Version: 0.5.2
 Module: WineBridgePlugin.dll
 Type: GenericPlugin
 Icon: icon.png

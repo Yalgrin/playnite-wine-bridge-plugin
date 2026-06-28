@@ -97,3 +97,9 @@ Packages:
     Changelog:
       - Improved environmental variable cleanup
       - Added caching to improve performance when going between Windows and Linux paths
+  - Version: 0.5.2
+    RequiredApiVersion: 6.11.0
+    ReleaseDate: 2026-06-28
+    PackageUrl: https://github.com/Yalgrin/playnite-wine-bridge-plugin/releases/download/0.5.2/Yalgrin_WineBridgePlugin_0_5_2.pext
+    Changelog:
+      - Fixed the script so that it works when there are spaces in the path
