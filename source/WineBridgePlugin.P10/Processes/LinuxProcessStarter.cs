@@ -43,6 +43,11 @@ namespace WineBridgePlugin.Processes
             }
 
             var scriptPath = Path.Combine(directoryName, @"Resources\run-in-linux.bat");
+            if (scriptPath.Contains("\""))
+            {
+                Logger.Warn("Script path contains double quotes, which might cause issues.");
+            }
+
             var encodedCommand = command.Base64Encode();
             var asyncTrackingStr = asyncTracking ? "1" : "0";
             var encodedTrackingExpression = asyncTracking ? trackingExpression.Base64Encode() : "-".Base64Encode();
