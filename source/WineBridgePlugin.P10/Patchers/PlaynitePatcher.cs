@@ -268,8 +268,23 @@ namespace WineBridgePlugin.Patchers
             {
                 var watcherToken = new CancellationTokenSource();
                 PlayCancelationTokenSources[__instance] = watcherToken;
-                var process = LinuxProcessStarter.Start(
-                    $"{path.Replace(Constants.WineBridgePrefix, "")} {args.Replace(romPath, WineUtils.WindowsPathToLinux(romPath))}");
+                var adjustedArgs = args;
+                if (!string.IsNullOrEmpty(adjustedArgs) && !string.IsNullOrEmpty(romPath))
+                {
+                    adjustedArgs = adjustedArgs.Replace(romPath, WineUtils.WindowsPathToLinux(romPath));
+                }
+
+                LinuxProcess process;
+                if (!string.IsNullOrEmpty(adjustedArgs))
+                {
+                    process = LinuxProcessStarter.Start(
+                        $"{path.Replace(Constants.WineBridgePrefix, "")} {adjustedArgs}");
+                }
+                else
+                {
+                    process = LinuxProcessStarter.Start(path.Replace(Constants.WineBridgePrefix, ""));
+                }
+
                 LinuxProcessMonitor.TrackLinuxProcess(__instance, process, watcherToken);
 
                 return false;
