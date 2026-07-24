@@ -25,6 +25,9 @@ namespace WineBridgePlugin.Integrations.Steam
             "2805730", //Proton 9.0
             "3086180", //Proton Voice Files
             "3658110", //Proton 10.0
+            "4628710", //Proton 11.0
+            "4628740", //Proton 11.0 (ARM64)
+            "4862110", //Proton Contrib
             "1070560", //Steam Linux Runtime 1.0 (scout) 
             "1391110", //Steam Linux Runtime 2.0 (soldier) 
             "1628350", //Steam Linux Runtime 3.0 (sniper) 
