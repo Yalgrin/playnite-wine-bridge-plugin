@@ -103,3 +103,10 @@ Packages:
     PackageUrl: https://github.com/Yalgrin/playnite-wine-bridge-plugin/releases/download/0.5.2/Yalgrin_WineBridgePlugin_0_5_2.pext
     Changelog:
       - Fixed the script so that it works when there are spaces in the path
+  - Version: 0.5.3
+    RequiredApiVersion: 6.11.0
+    ReleaseDate: 2026-07-25
+    PackageUrl: https://github.com/Yalgrin/playnite-wine-bridge-plugin/releases/download/0.5.3/Yalgrin_WineBridgePlugin_0_5_3.pext
+    Changelog:
+      - Added more Proton app ids (such as Proton 11) to the exclude list
+      - Fixed NullReferenceException when starting an emulator without arguments
