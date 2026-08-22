@@ -26,6 +26,15 @@ namespace WineBridgePlugin
         {
             try
             {
+                ExtendedErrorLogger.Initialize();
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e, "Failed to initialize extended error logger!");
+            }
+
+            try
+            {
                 HarmonyPatcher.Initialize();
             }
             catch (Exception e)

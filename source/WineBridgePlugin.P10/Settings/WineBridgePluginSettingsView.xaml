@@ -254,6 +254,13 @@
                         <CheckBox IsChecked="{Binding Settings.DebugLoggingEnabled}"
                                   Content="{DynamicResource LOC_Yalgrin_WineBridge_Settings_DebugLoggingEnabled}"
                                   Margin="0, 15, 0, 0" />
+                        <StackPanel Orientation="Horizontal" Margin="0,15,5,0" HorizontalAlignment="Left">
+                            <CheckBox IsChecked="{Binding Settings.ExtendedErrorLoggingEnabled}"
+                                      Content="{DynamicResource LOC_Yalgrin_WineBridge_Settings_ExtendedErrorLoggingEnabled}" />
+                            <TextBlock Margin="5,0" Text="ℹ"
+                                       ToolTip="{DynamicResource LOC_Yalgrin_WineBridge_Settings_ExtendedErrorLoggingEnabled_ToolTip}">
+                            </TextBlock>
+                        </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>

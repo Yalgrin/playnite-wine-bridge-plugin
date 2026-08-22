@@ -109,6 +109,9 @@ namespace WineBridgePlugin.Settings
 
         public static bool DebugLoggingEnabled => WineBridgePlugin.Settings?.DebugLoggingEnabled ?? false;
 
+        public static bool ExtendedErrorLoggingEnabled =>
+            WineBridgePlugin.Settings?.ExtendedErrorLoggingEnabled ?? false;
+
         public static bool AnyGogIntegrationEnabled =>
             LutrisGogIntegrationEnabled || HeroicGogIntegrationEnabled;
 

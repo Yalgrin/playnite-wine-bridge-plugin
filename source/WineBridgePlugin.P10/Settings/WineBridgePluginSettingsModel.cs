@@ -49,6 +49,7 @@ namespace WineBridgePlugin.Settings
         private ObservableCollection<WineBridgeEmulatorConfig> _emulatorConfigs;
 
         private bool _debugLoggingEnabled;
+        private bool _extendedErrorLoggingEnabled;
 
         public string TrackingDirectoryLinux
         {
@@ -223,6 +224,12 @@ namespace WineBridgePlugin.Settings
         {
             get => _debugLoggingEnabled;
             set => SetValue(ref _debugLoggingEnabled, value);
+        }
+
+        public bool ExtendedErrorLoggingEnabled
+        {
+            get => _extendedErrorLoggingEnabled;
+            set => SetValue(ref _extendedErrorLoggingEnabled, value);
         }
     }
 
