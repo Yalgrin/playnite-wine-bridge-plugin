@@ -16,7 +16,8 @@ namespace WineBridgePlugin.Processes
     {
         private static readonly ILogger Logger = LogManager.GetLogger();
 
-        public static LinuxProcess Start(Process originalProcess, string command, bool asyncTracking = false,
+        public static LinuxProcess Start(Process originalProcess, string command,
+            ProcessTrackingMode trackingMode = ProcessTrackingMode.Synchronous,
             string trackingExpression = "-")
         {
             var directoryName = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -49,7 +50,8 @@ namespace WineBridgePlugin.Processes
             }
 
             var encodedCommand = command.Base64Encode();
-            var asyncTrackingStr = asyncTracking ? "1" : "0";
+            var asyncTracking = trackingMode != ProcessTrackingMode.Synchronous;
+            var trackingModeString = trackingMode.ToString();
             var encodedTrackingExpression = asyncTracking ? trackingExpression.Base64Encode() : "-".Base64Encode();
             var linuxScript = WineUtils.ScriptPathLinux;
             var trackingDirectory = WineBridgeSettings.TrackingDirectoryLinux.Base64Encode();
@@ -64,7 +66,7 @@ namespace WineBridgePlugin.Processes
             var process = new Process();
             process.StartInfo.FileName = "cmd.exe";
             process.StartInfo.Arguments =
-                $"/c {scriptPath} \"{encodedCommand}\" \"{linuxScript}\" \"{correlationId}\" \"{asyncTrackingStr}\" \"{encodedTrackingExpression}\" \"{trackingDirectory}\"";
+                $"/c {scriptPath} \"{encodedCommand}\" \"{linuxScript}\" \"{correlationId}\" \"{trackingModeString}\" \"{encodedTrackingExpression}\" \"{trackingDirectory}\"";
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.RedirectStandardOutput = debugLogging;
             process.StartInfo.RedirectStandardError = debugLogging;
@@ -103,10 +105,11 @@ namespace WineBridgePlugin.Processes
             return runningLinuxProcess;
         }
 
-        public static LinuxProcess Start(string command, bool asyncTracking = false,
+        public static LinuxProcess Start(string command,
+            ProcessTrackingMode trackingMode = ProcessTrackingMode.Synchronous,
             string trackingExpression = "-")
         {
-            return Start(null, command, asyncTracking, trackingExpression);
+            return Start(null, command, trackingMode, trackingExpression);
         }
 
         public static Process StartRawCommand(string command)

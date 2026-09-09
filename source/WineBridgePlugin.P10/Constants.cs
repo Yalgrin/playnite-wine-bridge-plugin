@@ -12,6 +12,7 @@ namespace WineBridgePlugin
 
         public const string WineBridgePrefix = "wine-bridge://";
         public const string WineBridgeAsyncPrefix = "wine-bridge-async://";
+        public const string WineBridgeAsyncContPrefix = "wine-bridge-async-cont://";
         public const string WineBridgeSteamPrefix = "wine-bridge-steam://";
         public const string WineBridgeHeroicPrefix = "wine-bridge-heroic://";
         public const string WineBridgeLutrisPrefix = "wine-bridge-lutris://";

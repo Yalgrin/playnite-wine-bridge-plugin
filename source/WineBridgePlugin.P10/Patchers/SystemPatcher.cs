@@ -304,7 +304,18 @@ namespace WineBridgePlugin.Patchers
             if (fileName.StartsWith(Constants.WineBridgeAsyncPrefix))
             {
                 var process = LinuxProcessStarter
-                    .Start(__instance, fileName.Substring(Constants.WineBridgeAsyncPrefix.Length), true,
+                    .Start(__instance, fileName.Substring(Constants.WineBridgeAsyncPrefix.Length),
+                        ProcessTrackingMode.Asynchronous,
+                        __instance.StartInfo.Arguments).ScriptProcess;
+                __result = process != null;
+                return false;
+            }
+
+            if (fileName.StartsWith(Constants.WineBridgeAsyncContPrefix))
+            {
+                var process = LinuxProcessStarter
+                    .Start(__instance, fileName.Substring(Constants.WineBridgeAsyncContPrefix.Length),
+                        ProcessTrackingMode.AsynchronousContinuous,
                         __instance.StartInfo.Arguments).ScriptProcess;
                 __result = process != null;
                 return false;

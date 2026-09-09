@@ -25,4 +25,11 @@ namespace WineBridgePlugin.Models
         public LinuxProcessOutputPipe OutputPipe { get; set; }
         public LinuxProcessOutputPipe ErrorPipe { get; set; }
     }
+
+    public enum ProcessTrackingMode
+    {
+        Synchronous,
+        Asynchronous,
+        AsynchronousContinuous
+    }
 }
