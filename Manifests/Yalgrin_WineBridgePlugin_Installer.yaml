@@ -110,3 +110,10 @@ Packages:
     Changelog:
       - Added more Proton app ids (such as Proton 11) to the exclude list
       - Fixed NullReferenceException when starting an emulator without arguments
+  - Version: 0.5.4
+    RequiredApiVersion: 6.11.0
+    ReleaseDate: 2026-09-12
+    PackageUrl: https://github.com/Yalgrin/playnite-wine-bridge-plugin/releases/download/0.5.4/Yalgrin_WineBridgePlugin_0_5_4.pext
+    Changelog:
+      - Added extended error logging to locate problems under Wine (disabled by default, can generate a TON of logs, so enable only if needed)
+      - Fixed the launch script for certain Steam games, mostly the Linux native games. New script should be more reliable in detecting how Steam spawns its processes.
