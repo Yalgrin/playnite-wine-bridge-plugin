@@ -117,3 +117,10 @@ Packages:
     Changelog:
       - Added extended error logging to locate problems under Wine (disabled by default, can generate a TON of logs, so enable only if needed)
       - Fixed the launch script for certain Steam games, mostly the Linux native games. New script should be more reliable in detecting how Steam spawns its processes.
+  - Version: 0.5.5
+    RequiredApiVersion: 6.11.0
+    ReleaseDate: 2026-09-19
+    PackageUrl: https://github.com/Yalgrin/playnite-wine-bridge-plugin/releases/download/0.5.5/Yalgrin_WineBridgePlugin_0_5_5.pext
+    Changelog:
+      - Added an option to force load failed plugins. This will allow you to still load plugins that require some sort of a dependency that is not available in Wine.
+      - Added a patch allowing Playnite Achievements to load. Not all features were checked, but regular library achievements (such as Steam) should work.
