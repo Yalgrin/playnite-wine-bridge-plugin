@@ -82,6 +82,8 @@ Be warned, it can be a bit unstable!</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_ExtendedErrorLoggingEnabled">Extended error logging</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_ExtendedErrorLoggingEnabled_ToolTip" xml:space="preserve">This will log every single exception that's thrown by the application.
 This WILL spam your log file with tons of messages, so use it only when diagnosing issues and reporting bugs!</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_ForceLoadFailedPluginsEnabled">Force load failed plugins (requires restart)</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_ForceLoadFailedPluginsEnabled_ToolTip" xml:space="preserve">This option tries to reload failed plugins. If a plugin can’t fully load because a dependency is missing, it will load whatever it can, which may let plugins that use unsupported libraries like WinRT still work partially.</sys:String>
 
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_PatchingStateDescription">All of the following entries should be "Patched" unless you don't have the corresponding library plugin installed. If that's not the case, please report the issue on GitHub or on official Playnite Discord server with extensions.log file included.</sys:String>
 
@@ -94,6 +96,7 @@ This WILL spam your log file with tons of messages, so use it only when diagnosi
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_EaPatchingState">EA patching state:</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_BattleNetPatchingState">Battle.net patching state:</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_ItchIoPatchingState">Itch.io patching state:</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_Settings_PlayniteAchievementsPatchingState">Playnite Achievements patching state:</sys:String>
 
     <sys:String x:Key="LOC_Yalgrin_WineBridge_Error_InvalidNumber">Invalid number given!</sys:String>
 

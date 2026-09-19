@@ -164,6 +164,7 @@
         <Compile Include="Patchers\GogPatcher.cs"/>
         <Compile Include="Patchers\HarmonyPatcher.cs"/>
         <Compile Include="Patchers\ItchIoPatcher.cs"/>
+        <Compile Include="Patchers\PlayniteAchievementsPatcher.cs"/>
         <Compile Include="Patchers\PlaynitePatcher.cs"/>
         <Compile Include="Patchers\SteamPatcher.cs"/>
         <Compile Include="Patchers\SystemPatcher.cs"/>

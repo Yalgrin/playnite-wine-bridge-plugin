@@ -31,6 +31,7 @@ namespace WineBridgePlugin.Patchers
             BattleNetPatcher.Patch();
             ItchIoPatcher.Patch();
             EaPatcher.Patch();
+            PlayniteAchievementsPatcher.Patch();
 
             AppDomain.CurrentDomain.AssemblyLoad += (sender, args) =>
             {
@@ -59,6 +60,9 @@ namespace WineBridgePlugin.Patchers
                         break;
                     case "EaLibrary":
                         EaPatcher.Patch();
+                        break;
+                    case "PlayniteAchievements":
+                        PlayniteAchievementsPatcher.Patch();
                         break;
                 }
             };

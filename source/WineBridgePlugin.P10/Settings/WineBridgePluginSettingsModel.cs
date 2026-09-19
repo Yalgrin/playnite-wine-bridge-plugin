@@ -50,6 +50,7 @@ namespace WineBridgePlugin.Settings
 
         private bool _debugLoggingEnabled;
         private bool _extendedErrorLoggingEnabled;
+        private bool _forceLoadFailedPluginsEnabled;
 
         public string TrackingDirectoryLinux
         {
@@ -231,6 +232,12 @@ namespace WineBridgePlugin.Settings
             get => _extendedErrorLoggingEnabled;
             set => SetValue(ref _extendedErrorLoggingEnabled, value);
         }
+
+        public bool ForceLoadFailedPluginsEnabled
+        {
+            get => _forceLoadFailedPluginsEnabled;
+            set => SetValue(ref _forceLoadFailedPluginsEnabled, value);
+        }
     }
 
     public class WineBridgeEmulatorConfig : ObservableObject
@@ -268,6 +275,7 @@ namespace WineBridgePlugin.Settings
         public string EaPatchingState { get; set; }
         public string BattleNetPatchingState { get; set; }
         public string ItchIoPatchingState { get; set; }
+        public string PlayniteAchievementsPatchingState { get; set; }
     }
 
     public class WineBridgePluginSettingsViewModel : ObservableObject, ISettings
@@ -416,7 +424,8 @@ namespace WineBridgePlugin.Settings
                 EpicPatchingState = TranslatePatchingState(EpicPatcher.State),
                 EaPatchingState = TranslatePatchingState(EaPatcher.State),
                 BattleNetPatchingState = TranslatePatchingState(BattleNetPatcher.State),
-                ItchIoPatchingState = TranslatePatchingState(ItchIoPatcher.State)
+                ItchIoPatchingState = TranslatePatchingState(ItchIoPatcher.State),
+                PlayniteAchievementsPatchingState = TranslatePatchingState(PlayniteAchievementsPatcher.State)
             };
         }
 

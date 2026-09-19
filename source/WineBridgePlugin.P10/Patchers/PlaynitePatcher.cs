@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -63,6 +64,8 @@ namespace WineBridgePlugin.Patchers
 
                 var crashMethod = playniteApplicationType.GetMethod("CurrentDomain_UnhandledException",
                     BindingFlags.Instance | BindingFlags.NonPublic);
+                var extensionLoadedMethod = playniteApplicationType.GetMethod("OnExtensionsLoaded",
+                    BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
                 var startMethod = genericPlayControllerType.GetMethod("Start",
                     BindingFlags.Instance | BindingFlags.Public, null,
                     new[] { typeof(GameAction), typeof(bool), typeof(OnGameStartingEventArgs) }, null);
@@ -91,7 +94,8 @@ namespace WineBridgePlugin.Patchers
                 if (startMethod == null || disposeMethod == null || powershellErrorField == null ||
                     startEmulatorMethod == null || getProfileMethod == null || getExecutableMethod == null ||
                     bitmapFromStreamMethod == null || saveFileMethod == null || selectFolderMethod == null ||
-                    selectFileMethod == null || selectFilesMethod == null || crashMethod == null)
+                    selectFileMethod == null || selectFilesMethod == null || crashMethod == null ||
+                    extensionLoadedMethod == null)
                 {
                     Logger.Warn("Failed to find Playnite methods!");
                     State = PatchingState.MissingClasses;
@@ -100,7 +104,9 @@ namespace WineBridgePlugin.Patchers
 
                 var crashPrefix = AccessTools.Method(typeof(ApplicationPatcher), "CrashPrefix");
                 HarmonyPatcher.HarmonyInstance.Patch(crashMethod, prefix: new HarmonyMethod(crashPrefix));
-
+                var extensionLoadedPrefix = AccessTools.Method(typeof(ApplicationPatcher), "ExtensionLoadedPrefix");
+                HarmonyPatcher.HarmonyInstance.Patch(extensionLoadedMethod,
+                    prefix: new HarmonyMethod(extensionLoadedPrefix));
 
                 var startControllerPlayPrefix = AccessTools.Method(typeof(GenericPlayGamePatcher), "StartPrefix");
                 HarmonyPatcher.HarmonyInstance.Patch(startMethod, prefix: new HarmonyMethod(startControllerPlayPrefix));
@@ -155,6 +161,196 @@ namespace WineBridgePlugin.Patchers
         {
             Logger.Error(e.ExceptionObject as Exception, "Playnite crashed!");
             return true;
+        }
+
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        public static bool ExtensionLoadedPrefix(
+            [SuppressMessage("ReSharper", "UnusedParameter.Global")]
+            object __instance)
+        {
+            if (!WineBridgeSettings.ForceLoadFailedPluginsEnabled)
+            {
+                return true;
+            }
+
+            try
+            {
+                LoadFailedPlugins(__instance);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Error occurred while loading failed plugins!");
+            }
+
+            return true;
+        }
+
+        private static void LoadFailedPlugins(object instance)
+        {
+            var extensions = instance.GetType().GetProperty("Extensions")?.GetValue(instance);
+            var failedExtensions = extensions?.GetType().GetProperty("FailedExtensions")?.GetValue(extensions);
+            var plugins = extensions?.GetType().GetProperty("Plugins")?.GetValue(extensions) as IDictionary;
+            var apiGenerator =
+                extensions?.GetType().GetField("apiGenerator", BindingFlags.Instance | BindingFlags.NonPublic)
+                    ?.GetValue(extensions) as Delegate;
+
+            if (extensions == null || failedExtensions == null || plugins == null || apiGenerator == null)
+            {
+                Logger.Warn("Failed to load failed plugins!");
+                return;
+            }
+
+            var loadedPluginType = AppDomain.CurrentDomain
+                .GetAssemblies()
+                .Select(a => a.GetType("Playnite.Plugins.LoadedPlugin"))
+                .FirstOrDefault(t => t != null);
+
+            Logger.Info($"Failed extensions: {failedExtensions}");
+            if (failedExtensions is IList failedExtensionList)
+            {
+                Logger.Info($"Failed extensions count: {failedExtensionList.Count}");
+                var loadedExtensions = new List<object>();
+                foreach (var failedExtension in failedExtensionList)
+                {
+                    DoLoadPlugin(failedExtension, extensions, apiGenerator, plugins, loadedPluginType,
+                        loadedExtensions);
+                }
+
+                foreach (object loadedExtension in loadedExtensions)
+                {
+                    failedExtensionList.Remove(loadedExtension);
+                }
+            }
+        }
+
+        private static void DoLoadPlugin(object failedExtension, object extensions, Delegate apiGenerator,
+            IDictionary plugins,
+            Type loadedPluginType, List<object> loadedExtensions)
+        {
+            try
+            {
+                var tupleType = failedExtension.GetType();
+
+                var item1Field = tupleType.GetField("Item1");
+                var descriptor = item1Field.GetValue(failedExtension);
+                Logger.Info($"Failed extension: {descriptor}");
+
+                var descriptionPath =
+                    descriptor.GetType().GetProperty("DescriptionPath")?.GetValue(descriptor) as string;
+                var module = descriptor.GetType().GetProperty("Module")?.GetValue(descriptor) as string;
+
+                if (descriptionPath == null || module == null)
+                {
+                    return;
+                }
+
+                var directoryName = Path.GetDirectoryName(descriptionPath);
+
+                if (directoryName == null)
+                {
+                    return;
+                }
+
+                var asmPath = Path.Combine(directoryName, module);
+                var asmName = AssemblyName.GetAssemblyName(asmPath);
+                var assembly = Assembly.Load(asmName);
+
+                var verifyMethod = extensions.GetType().GetMethod("VerifyAssemblyReferences",
+                    BindingFlags.Instance | BindingFlags.NonPublic);
+
+                var verifyAssemblyReferencesResult = verifyMethod?.Invoke(extensions, new[] { assembly, descriptor });
+                var pluginResult = new List<Plugin>();
+                if (verifyAssemblyReferencesResult is bool result && result)
+                {
+                    var types = LoadTypesSafely(assembly);
+
+                    foreach (var type in types)
+                    {
+                        if (type.IsInterface || type.IsAbstract)
+                        {
+                            continue;
+                        }
+
+                        if (!typeof(GenericPlugin).IsAssignableFrom(type) &&
+                            !typeof(LibraryPlugin).IsAssignableFrom(type) &&
+                            !typeof(MetadataPlugin).IsAssignableFrom(type))
+                        {
+                            continue;
+                        }
+
+                        var ignore = Attribute.IsDefined(type, typeof(IgnorePluginAttribute));
+                        var load = Attribute.IsDefined(type, typeof(LoadPluginAttribute));
+                        if ((ignore && load) || !ignore)
+                        {
+                            var api = apiGenerator.DynamicInvoke(descriptor);
+                            pluginResult.Add(
+                                (Plugin)Activator.CreateInstance(type, api));
+                        }
+                    }
+                }
+                else
+                {
+                    Logger.Error($"Plugin dependencies are not compatible: {descriptor}");
+                }
+
+                foreach (var plugin in pluginResult)
+                {
+                    if (plugin.Id == Guid.Empty)
+                    {
+                        Logger.Error($"Plugin {plugin.GetType()} doesn't have plugin ID specified.");
+                        continue;
+                    }
+
+                    if (plugins.Contains(plugin.Id))
+                    {
+                        Logger.Warn($"Plugin {plugin.Id} is already loaded.");
+                        continue;
+                    }
+
+                    var desc = AccessTools
+                        .Constructor(loadedPluginType, new Type[] { typeof(Plugin), descriptor.GetType() })
+                        .Invoke(new object[] { plugin, descriptor });
+                    plugins.Add(plugin.Id, desc);
+                    Logger.Info($"Loaded plugin: {desc}");
+                }
+
+                loadedExtensions.Add(failedExtension);
+            }
+            catch (TargetInvocationException ex)
+            {
+                Logger.Error(ex, $"Failed to load plugin: {failedExtension}");
+                var eInnerException = ex.InnerException;
+                if (eInnerException is ReflectionTypeLoadException reflectionTypeLoadException)
+                {
+                    Logger.Error(ex, $"Failed to load plugin: {failedExtension}");
+                    reflectionTypeLoadException.LoaderExceptions.ToList()
+                        .ForEach(e => Logger.Error(e, "Errored load type"));
+                }
+            }
+            catch (ReflectionTypeLoadException ex)
+            {
+                Logger.Error(ex, $"Failed to load plugin: {failedExtension}");
+                ex.LoaderExceptions.ToList().ForEach(e => Logger.Error(e, "Errored load type"));
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, $"Failed to load plugin: {failedExtension}");
+            }
+        }
+
+        private static Type[] LoadTypesSafely(Assembly assembly)
+        {
+            Type[] types;
+            try
+            {
+                types = assembly.GetTypes();
+            }
+            catch (ReflectionTypeLoadException ex)
+            {
+                types = ex.Types.Where(t => t != null).ToArray();
+            }
+
+            return types;
         }
     }
 

@@ -112,6 +112,9 @@ namespace WineBridgePlugin.Settings
         public static bool ExtendedErrorLoggingEnabled =>
             WineBridgePlugin.Settings?.ExtendedErrorLoggingEnabled ?? false;
 
+        public static bool ForceLoadFailedPluginsEnabled =>
+            WineBridgePlugin.Settings?.ForceLoadFailedPluginsEnabled ?? false;
+
         public static bool AnyGogIntegrationEnabled =>
             LutrisGogIntegrationEnabled || HeroicGogIntegrationEnabled;
 
