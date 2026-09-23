@@ -117,6 +117,7 @@ Do you want to replace your current configuration with the one above?</sys:Strin
 
     <sys:String x:Key="LOC_Yalgrin_WineBridge_PatchingState_Unpatched">Unpatched</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_PatchingState_Patched">Patched</sys:String>
+    <sys:String x:Key="LOC_Yalgrin_WineBridge_PatchingState_PartiallyPatched">Partially patched</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_PatchingState_MissingClasses">Classes not found!</sys:String>
     <sys:String x:Key="LOC_Yalgrin_WineBridge_PatchingState_Error">Error occurred!</sys:String>
 

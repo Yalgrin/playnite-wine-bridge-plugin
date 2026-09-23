@@ -4,6 +4,7 @@
     {
         Unpatched,
         Patched,
+        PartiallyPatched,
         MissingClasses,
         Error
     }
