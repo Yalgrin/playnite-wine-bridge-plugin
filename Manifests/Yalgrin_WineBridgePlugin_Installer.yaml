@@ -124,3 +124,9 @@ Packages:
     Changelog:
       - Added an option to force load failed plugins. This will allow you to still load plugins that require some sort of a dependency that is not available in Wine.
       - Added a patch allowing Playnite Achievements to load. Not all features were checked, but regular library achievements (such as Steam) should work.
+  - Version: 0.5.6
+    RequiredApiVersion: 6.11.0
+    ReleaseDate: 2026-09-23
+    PackageUrl: https://github.com/Yalgrin/playnite-wine-bridge-plugin/releases/download/0.5.6/Yalgrin_WineBridgePlugin_0_5_6.pext
+    Changelog:
+      - Fixed Playnite Achievements crash after unlocking an achievement
