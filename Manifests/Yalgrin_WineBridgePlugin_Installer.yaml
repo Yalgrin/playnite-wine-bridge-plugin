@@ -130,3 +130,9 @@ Packages:
     PackageUrl: https://github.com/Yalgrin/playnite-wine-bridge-plugin/releases/download/0.5.6/Yalgrin_WineBridgePlugin_0_5_6.pext
     Changelog:
       - Fixed Playnite Achievements crash after unlocking an achievement
+  - Version: 0.5.7
+    RequiredApiVersion: 6.11.0
+    ReleaseDate: 2026-10-13
+    PackageUrl: https://github.com/Yalgrin/playnite-wine-bridge-plugin/releases/download/0.5.7/Yalgrin_WineBridgePlugin_0_5_7.pext
+    Changelog:
+      - Fixed Itch.io integrations not working when other integration options are disabled
