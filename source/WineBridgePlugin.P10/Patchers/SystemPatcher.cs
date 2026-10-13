@@ -246,12 +246,12 @@ namespace WineBridgePlugin.Patchers
                 }
             }
 
-            if (WineBridgeSettings.AnyLutrisIntegrationEnabled)
+            if (WineBridgeSettings.ItchIoIntegrationEnabled)
             {
                 if (fileName == Constants.DummyItchIoExe)
                 {
                     var process = LinuxProcessStarter.Start(__instance,
-                            $"XDG_SESSION_TYPE=wayland {WineBridgeSettings.ItchIoExecutablePathLinux} " +
+                            $"{WineBridgeSettings.ItchIoExecutablePathLinux} " +
                             __instance.StartInfo.Arguments)
                         .ScriptProcess;
                     __result = process != null;
@@ -259,7 +259,7 @@ namespace WineBridgePlugin.Patchers
                 }
             }
 
-            if (WineBridgeSettings.AnyLutrisIntegrationEnabled)
+            if (WineBridgeSettings.ItchIoIntegrationEnabled)
             {
                 if (fileName == Constants.DummyItchButlerExe)
                 {
@@ -269,6 +269,7 @@ namespace WineBridgePlugin.Patchers
                         var windowsPath = WineUtils.LinuxPathToWindows(installationPath);
                         if (!Directory.Exists(windowsPath))
                         {
+                            Logger.Warn("Itch.io installation path does not exist: " + installationPath);
                             return true;
                         }
 
@@ -276,6 +277,7 @@ namespace WineBridgePlugin.Patchers
                         var versionPath = Path.Combine(corePath, ".chosen-version");
                         if (!File.Exists(versionPath))
                         {
+                            Logger.Warn("Itch.io Butler version file does not exist: " + versionPath);
                             return true;
                         }
 
@@ -289,6 +291,8 @@ namespace WineBridgePlugin.Patchers
                         __result = process != null;
                         return false;
                     }
+
+                    Logger.Warn("Itch.io installation path has not been defined!");
                 }
             }
 
