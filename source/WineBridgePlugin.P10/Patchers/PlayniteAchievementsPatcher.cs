@@ -46,8 +46,10 @@ namespace WineBridgePlugin.Patchers
 
                 var discoverMethod = providerRegistryType.GetMethod("DiscoverProviderTypes",
                     BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                var discoverTypeMethod = providerRegistryType.GetMethod("DiscoverTypes",
+                    BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
-                if (discoverMethod == null)
+                if (discoverMethod == null || discoverTypeMethod == null)
                 {
                     Logger.Warn("Failed to find PlayniteAchievements methods!");
                     State = PatchingState.MissingClasses;
@@ -58,6 +60,10 @@ namespace WineBridgePlugin.Patchers
                     AccessTools.Method(typeof(ProviderRegistryPatches), "DiscoverProviderTypesPrefix");
                 HarmonyPatcher.HarmonyInstance.Patch(discoverMethod,
                     prefix: new HarmonyMethod(discoverProviderTypesPrefix));
+                var discoverTypesPrefix =
+                    AccessTools.Method(typeof(ProviderRegistryPatches), "DiscoverTypesPrefix");
+                HarmonyPatcher.HarmonyInstance.Patch(discoverTypeMethod,
+                    prefix: new HarmonyMethod(discoverTypesPrefix));
 
                 Logger.Info("PlayniteAchievements base methods patched successfully!");
 
@@ -191,6 +197,42 @@ namespace WineBridgePlugin.Patchers
                     __result = ex.Types.Where(t =>
                         t != null && t.IsClass && !t.IsAbstract && !t.ContainsGenericParameters &&
                         type.IsAssignableFrom(t));
+                }
+
+                return false;
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e, "Error occurred while replacing method for looking for provider types!");
+            }
+
+            return true;
+        }
+
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        private static bool DiscoverTypesPrefix(
+            [SuppressMessage("ReSharper", "InconsistentNaming")]
+            object __instance, ref IEnumerable<Type> __result, Type contract)
+        {
+            try
+            {
+                if (contract == null)
+                {
+                    Logger.Warn("No provider type found!");
+                    return true;
+                }
+
+                try
+                {
+                    __result = __instance.GetType().Assembly.GetTypes()
+                        .Where(t => t.IsClass && !t.IsAbstract && !t.ContainsGenericParameters &&
+                                    contract.IsAssignableFrom(t));
+                }
+                catch (ReflectionTypeLoadException ex)
+                {
+                    __result = ex.Types.Where(t =>
+                        t != null && t.IsClass && !t.IsAbstract && !t.ContainsGenericParameters &&
+                        contract.IsAssignableFrom(t));
                 }
 
                 return false;
