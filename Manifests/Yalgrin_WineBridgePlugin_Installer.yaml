@@ -136,3 +136,9 @@ Packages:
     PackageUrl: https://github.com/Yalgrin/playnite-wine-bridge-plugin/releases/download/0.5.7/Yalgrin_WineBridgePlugin_0_5_7.pext
     Changelog:
       - Fixed Itch.io integrations not working when other integration options are disabled
+  - Version: 0.5.8
+    RequiredApiVersion: 6.11.0
+    ReleaseDate: 2026-11-08
+    PackageUrl: https://github.com/Yalgrin/playnite-wine-bridge-plugin/releases/download/0.5.8/Yalgrin_WineBridgePlugin_0_5_8.pext
+    Changelog:
+      - Fixed Playnite Achievements not loading
